@@ -1,11 +1,77 @@
+<div class="flex flex-col h-screen bg-ink-bg overflow-hidden">
 
-    <div class="flex flex-col items-center justify-center h-screen bg-ink-bg gap-6">
-      <h1 class="text-ink-text text-3xl font-serif tracking-wide">{{ 'EDITOR.TITLE' | transloco }}</h1>
-      <p class="text-ink-subtle text-sm">{{ 'EDITOR.COMING_SOON' | transloco }}</p>
-      <button
-        (click)="theme.toggle()"
-        class="px-4 py-2 rounded bg-ink-surface text-ink-text text-sm
-               border border-ink-border hover:border-ink-accent transition-colors">
-        Tema: {{ theme.theme() }}
-      </button>
+  <!-- Barra superior (oculta en focus mode) -->
+  @if (!focusMode()) {
+    <app-editor-top-bar
+      [documentTitle]="activeDocument()?.title ?? null"
+      [saveStatus]="saveStatus()"
+      [focusMode]="focusMode()"
+      (binderToggled)="toggleBinder()"
+      (focusToggled)="toggleFocusMode()"
+      (snapshotRequested)="createSnapshot()"
+      (titleChanged)="onTitleChanged($event)"/>
+  }
+
+  <!-- Área principal -->
+  <div class="flex flex-1 overflow-hidden">
+
+    <!-- Binder (oculto en focus mode o cuando showBinder es false) -->
+    @if (showBinder() && !focusMode()) {
+      <div class="w-60 shrink-0">
+        <app-binder
+          [activeId]="activeDocumentId()"
+          (documentOpened)="openDocument($event)"
+          (nodeRenamed)="onNodeRenamed($event)"/>
+      </div>
+    }
+
+    <!-- Editor -->
+    <div class="flex-1 overflow-hidden relative">
+
+      @if (activeDocument()) {
+        <app-tiptap-editor
+          [content]="activeDocument()!.content"
+          (contentChanged)="onContentChanged($event)"/>
+      } @else {
+        <!-- Estado vacío -->
+        <div class="flex flex-col items-center justify-center h-full gap-4 opacity-40">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.5"
+               class="text-ink-subtle">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0
+                     0 0 2-2V8z"/>
+            <polyline points="14,2 14,8 20,8"/>
+          </svg>
+          <p class="text-ink-subtle text-sm">
+            Selecciona o crea un documento en el binder
+          </p>
+        </div>
+      }
+
+      <!-- Salir de focus mode -->
+      @if (focusMode()) {
+        <button
+          (click)="toggleFocusMode()"
+          title="Salir del modo focus (Ctrl+Shift+F)"
+          class="absolute top-4 right-4 p-2 rounded text-ink-muted
+                 hover:text-ink-subtle transition-colors opacity-0
+                 hover:opacity-100">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3
+                     m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+          </svg>
+        </button>
+      }
     </div>
+
+    <!-- Placeholder panel IA (INK-08) -->
+    @if (!focusMode()) {
+      <div class="w-8 shrink-0 border-l border-ink-border bg-ink-panel
+                  flex items-center justify-center">
+        <span class="text-ink-muted text-xs [writing-mode:vertical-lr]
+                     rotate-180 select-none">IA</span>
+      </div>
+    }
+  </div>
+</div>

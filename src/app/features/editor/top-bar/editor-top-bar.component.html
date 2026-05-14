@@ -1,0 +1,101 @@
+<header class="flex items-center h-11 px-4 border-b border-ink-border
+               bg-ink-panel shrink-0 gap-3">
+
+  <!-- Botón toggle binder -->
+  <button
+    (click)="binderToggled.emit()"
+    title="Mostrar/ocultar binder (Ctrl+B)"
+    class="p-1.5 rounded text-ink-subtle hover:text-ink-text
+           hover:bg-ink-border transition-colors shrink-0">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2">
+      <line x1="3" y1="6" x2="21" y2="6"/>
+      <line x1="3" y1="12" x2="21" y2="12"/>
+      <line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+  </button>
+
+  <!-- Separador -->
+  <div class="w-px h-5 bg-ink-border shrink-0"></div>
+
+  <!-- Título del documento (editable) -->
+  @if (documentTitle()) {
+    <input
+      [value]="documentTitle()"
+      (change)="onTitleChange($event)"
+      placeholder="Sin título"
+      class="flex-1 bg-transparent text-ink-text text-sm font-medium
+             focus:outline-none placeholder:text-ink-muted min-w-0
+             border-b border-transparent focus:border-ink-accent
+             transition-colors pb-0.5"/>
+  } @else {
+    <span class="flex-1 text-ink-subtle text-sm italic">
+      Ningún documento abierto
+    </span>
+  }
+
+  <!-- Estado de guardado -->
+  <div class="flex items-center gap-1.5 text-xs shrink-0">
+    @switch (saveStatus()) {
+      @case ('saved') {
+        <span class="text-ink-success">✓</span>
+        <span class="text-ink-subtle">Guardado</span>
+      }
+      @case ('saving') {
+        <span class="inline-block w-3 h-3 border border-ink-subtle
+                     border-t-transparent rounded-full animate-spin"></span>
+        <span class="text-ink-subtle">Guardando...</span>
+      }
+      @case ('unsaved') {
+        <span class="text-ink-warning">●</span>
+        <span class="text-ink-subtle">Sin guardar</span>
+      }
+      @case ('error') {
+        <span class="text-ink-danger">✕</span>
+        <span class="text-ink-danger">Error al guardar</span>
+      }
+    }
+  </div>
+
+  <!-- Separador -->
+  <div class="w-px h-5 bg-ink-border shrink-0"></div>
+
+  <!-- Botón snapshot -->
+  <button
+    (click)="snapshotRequested.emit()"
+    [disabled]="!documentTitle()"
+    title="Crear snapshot"
+    class="p-1.5 rounded text-ink-subtle hover:text-ink-text
+           hover:bg-ink-border transition-colors disabled:opacity-30
+           disabled:cursor-not-allowed">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="3"/>
+      <path d="M20.188 10.934c.2.59.312 1.219.312 1.872 0 3.314-2.686
+               6-6 6a6 6 0 0 1-6-6c0-3.314 2.686-6 6-6 .653 0 1.282.112
+               1.872.312"/>
+      <path d="M16 3l2 2-2 2"/>
+    </svg>
+  </button>
+
+  <!-- Botón modo focus -->
+  <button
+    (click)="focusToggled.emit()"
+    title="Modo focus (Ctrl+Shift+F)"
+    class="p-1.5 rounded text-ink-subtle hover:text-ink-text
+           hover:bg-ink-border transition-colors">
+    @if (focusMode()) {
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2">
+        <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3
+                 m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+      </svg>
+    } @else {
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2">
+        <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+      </svg>
+    }
+  </button>
+
+</header>

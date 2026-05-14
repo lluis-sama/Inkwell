@@ -1,0 +1,101 @@
+<div>
+  <!-- Fila del nodo -->
+  <div
+    class="group flex items-center gap-1.5 px-2 py-1.5 rounded cursor-pointer select-none transition-colors text-sm"
+    [style.paddingLeft.px]="depth() * 12 + 8"
+    [class]="
+      isActive()
+        ? 'bg-ink-surface text-ink-text'
+        : 'text-ink-subtle hover:bg-ink-surface hover:text-ink-text'
+    "
+    (click)="onRowClick()"
+    (contextmenu)="onContextMenu($event)"
+  >
+    <!-- Chevron (solo en carpetas) -->
+    <span class="w-4 h-4 flex items-center justify-center shrink-0">
+      @if (node().type === "folder") {
+        <svg
+          width="10"
+          height="10"
+          viewBox="0 0 10 10"
+          fill="currentColor"
+          class="transition-transform duration-150"
+          [class.rotate-90]="expanded()"
+        >
+          <path
+            d="M3 2 L7 5 L3 8"
+            stroke="currentColor"
+            stroke-width="1.5"
+            fill="none"
+            stroke-linecap="round"
+          />
+        </svg>
+      }
+    </span>
+
+    <!-- Icono carpeta / documento -->
+    @if (node().type === "folder") {
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        class="shrink-0"
+      >
+        <path
+          d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1
+                 2-2h5l2 3h9a2 2 0 0 1 2 2z"
+        />
+      </svg>
+    } @else {
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        class="shrink-0"
+      >
+        <path
+          d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0
+                 0 0 2-2V8z"
+        />
+        <polyline points="14,2 14,8 20,8" />
+      </svg>
+    }
+
+    <!-- Título (editable inline al renombrar) -->
+    @if (renaming()) {
+      <input
+        #renameInput
+        [value]="node().title"
+        (blur)="commitRename($event)"
+        (keydown.enter)="commitRename($event)"
+        (keydown.escape)="renameCancel.emit()"
+        (click)="$event.stopPropagation()"
+        class="flex-1 bg-ink-bg border border-ink-accent rounded px-1 py-0 text-ink-text text-sm focus:outline-none w-full"
+      />
+    } @else {
+      <span class="flex-1 truncate">{{ node().title }}</span>
+    }
+  </div>
+
+  <!-- Hijos (si carpeta expandida) -->
+  @if (node().type === "folder" && expanded()) {
+    @for (child of node().children; track child.id) {
+      <app-binder-node
+        [node]="child"
+        [depth]="depth() + 1"
+        [activeId]="activeId()"
+        [renamingId]="renamingId()"
+        (nodeClicked)="nodeClicked.emit($event)"
+        (contextMenu)="contextMenu.emit($event)"
+        (renamed)="renamed.emit($event)"
+        (renameCancel)="renameCancel.emit()"
+      />
+    }
+  }
+</div>
