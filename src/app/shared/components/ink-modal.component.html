@@ -1,0 +1,43 @@
+
+    <!-- Overlay -->
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center"
+      (click)="onOverlayClick($event)">
+
+      <!-- Fondo semitransparente -->
+      <div class="absolute inset-0 bg-ink-panel opacity-70"></div>
+
+      <!-- Panel del modal -->
+      <div
+        class="relative z-10 w-full max-w-md mx-4 rounded-lg border border-ink-border
+               bg-ink-surface shadow-2xl"
+        (click)="$event.stopPropagation()">
+
+        <!-- Header -->
+        <div class="flex items-center justify-between px-6 py-4 border-b border-ink-border">
+          <h2 class="text-ink-text font-medium text-base">{{ title() }}</h2>
+          <button
+            (click)="closed.emit()"
+            class="text-ink-subtle hover:text-ink-text transition-colors p-1 rounded
+                   hover:bg-ink-border">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M12.207 4.207a1 1 0 0 0-1.414-1.414L8 5.586 5.207 2.793a1 1 0 0
+                       0-1.414 1.414L6.586 7l-2.793 2.793a1 1 0 1 0 1.414 1.414L8
+                       8.414l2.793 2.793a1 1 0 0 0 1.414-1.414L9.414 7l2.793-2.793z"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Contenido -->
+        <div class="px-6 py-5">
+          <ng-content />
+        </div>
+
+        <!-- Acciones -->
+        @if (hasActions()) {
+          <div class="px-6 py-4 border-t border-ink-border flex justify-end gap-3">
+            <ng-content select="[slot=actions]" />
+          </div>
+        }
+      </div>
+    </div>

@@ -1,110 +1,117 @@
-import { Component, inject, signal } from "@angular/core";
-import { ThemeService } from "../../core/services/theme.service";
-import { TauriBridgeService } from "../../core/services/tauri-bridge.service";
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { TranslocoService, TranslocoPipe } from '@jsverse/transloco';
+import { ThemeService } from '../../core/services/theme.service';
+import { ProjectService } from '../../core/services/project.service';
+import { TauriBridgeService } from '../../core/services/tauri-bridge.service';
+import { NewProjectModalComponent } from './new-project-modal.component';
+import { InkButtonComponent } from '../../shared/components/ink-button.component';
+
+interface RecentProject {
+  name: string;
+  basePath: string;
+  openedAt: string;
+}
 
 @Component({
-  selector: "app-project-manager",
+  selector: 'app-project-manager',
   standalone: true,
-  template: `
-    <div
-      class="flex flex-col items-center justify-center h-screen bg-ink-bg gap-4"
-    >
-      <h1 class="text-ink-text text-3xl font-serif tracking-wide">Inkwell</h1>
-
-      <div class="flex flex-col gap-2 w-80">
-        <button
-          (click)="testCreateStructure()"
-          class="px-4 py-2 rounded bg-ink-surface text-ink-text text-sm border border-ink-border hover:border-ink-accent transition-colors"
-        >
-          Test: Crear estructura de proyecto
-        </button>
-
-        <button
-          (click)="testWriteAndRead()"
-          class="px-4 py-2 rounded bg-ink-surface text-ink-text text-sm border border-ink-border hover:border-ink-accent transition-colors"
-        >
-          Test: Escribir y leer JSON
-        </button>
-
-        <button
-          (click)="testListFiles()"
-          class="px-4 py-2 rounded bg-ink-surface text-ink-text text-sm border border-ink-border hover:border-ink-accent transition-colors"
-        >
-          Test: Listar archivos
-        </button>
-
-        <button
-          (click)="testDeleteFile()"
-          class="px-4 py-2 rounded bg-ink-surface text-ink-text text-sm border border-ink-border hover:border-ink-accent transition-colors"
-        >
-          Test: Eliminar archivo
-        </button>
-
-        <button
-          (click)="theme.toggle()"
-          class="px-4 py-2 rounded bg-ink-surface text-ink-subtle text-sm border border-ink-border hover:border-ink-border transition-colors"
-        >
-          Tema: {{ theme.theme() }}
-        </button>
-      </div>
-
-      @if (output()) {
-        <pre
-          class="mt-4 p-4 rounded bg-ink-surface text-ink-text text-xs w-80 max-h-48 overflow-auto border border-ink-border"
-          >{{ output() }}</pre
-        >
-      }
-    </div>
-  `,
+  imports: [NewProjectModalComponent, InkButtonComponent, TranslocoPipe],
+  templateUrl: './project-manager.component.html',
 })
-export class ProjectManagerComponent {
-  theme = inject(ThemeService);
-  bridge = inject(TauriBridgeService);
-  output = signal("");
+export class ProjectManagerComponent implements OnInit {
+  theme                  = inject(ThemeService);
+  readonly translocoService = inject(TranslocoService);
+  private projectService = inject(ProjectService);
+  private bridge         = inject(TauriBridgeService);
+  private router         = inject(Router);
 
-  private testPath = "/tmp/inkwell-test";
+  showNewProjectModal = signal(false);
+  opening             = signal(false);
+  openError           = signal<string | null>(null);
+  recentProjects      = signal<RecentProject[]>([]);
 
-  async testCreateStructure() {
-    try {
-      await this.bridge.createProjectStructure(this.testPath);
-      this.output.set(`✓ Estructura creada en ${this.testPath}`);
-    } catch (e) {
-      this.output.set(`✗ Error: ${e}`);
-    }
+  ngOnInit(): void {
+    this.recentProjects.set(this.projectService.getRecentProjects());
   }
 
-  async testWriteAndRead() {
+  // ─── Abrir proyecto ───────────────────────────────────────────────────────
+
+  async openProject(): Promise<void> {
+    this.openError.set(null);
+    const basePath = await this.bridge.openFolderDialog();
+    if (!basePath) return;
+
+    this.opening.set(true);
     try {
-      const filePath = `${this.testPath}/documents/test-doc.json`;
-      const data = JSON.stringify(
-        { id: "test-doc", title: "Prueba", content: {} },
-        null,
-        2,
+      await this.projectService.openProject(basePath);
+      this.projectService.addRecentProject(
+        this.projectService.project()!.name,
+        basePath,
       );
-      await this.bridge.writeJsonFile(filePath, data);
-      const read = await this.bridge.readJsonFile(filePath);
-      this.output.set(`✓ Escrito y leído:\n${read}`);
-    } catch (e) {
-      this.output.set(`✗ Error: ${e}`);
+      this.router.navigate(['/editor']);
+    } catch {
+      this.openError.set(
+        this.translocoService.translate('PM.ERROR_NOT_FOUND')
+      );
+    } finally {
+      this.opening.set(false);
     }
   }
 
-  async testListFiles() {
+  async openRecentProject(project: RecentProject): Promise<void> {
+    this.openError.set(null);
+    this.opening.set(true);
     try {
-      const ids = await this.bridge.listJsonFiles(`${this.testPath}/documents`);
-      this.output.set(`✓ Archivos encontrados: ${JSON.stringify(ids)}`);
-    } catch (e) {
-      this.output.set(`✗ Error: ${e}`);
+      await this.projectService.openProject(project.basePath);
+      this.projectService.addRecentProject(project.name, project.basePath);
+      this.recentProjects.set(this.projectService.getRecentProjects());
+      this.router.navigate(['/editor']);
+    } catch {
+      this.openError.set(
+        this.translocoService.translate('PM.ERROR_OPEN', { name: project.name })
+      );
+      this.projectService.removeRecentProject(project.basePath);
+      this.recentProjects.set(this.projectService.getRecentProjects());
+    } finally {
+      this.opening.set(false);
     }
   }
 
-  async testDeleteFile() {
-    try {
-      const filePath = `${this.testPath}/documents/test-doc.json`;
-      await this.bridge.deleteJsonFile(filePath);
-      this.output.set(`✓ Archivo eliminado`);
-    } catch (e) {
-      this.output.set(`✗ Error: ${e}`);
-    }
+  // ─── Nuevo proyecto ───────────────────────────────────────────────────────
+
+  onProjectCreated(): void {
+    this.showNewProjectModal.set(false);
+    this.recentProjects.set(this.projectService.getRecentProjects());
+    this.router.navigate(['/editor']);
+  }
+
+  // ─── Recientes ────────────────────────────────────────────────────────────
+
+  removeFromRecents(event: MouseEvent, basePath: string): void {
+    event.stopPropagation();
+    this.projectService.removeRecentProject(basePath);
+    this.recentProjects.set(this.projectService.getRecentProjects());
+  }
+
+  // ─── Utils ────────────────────────────────────────────────────────────────
+
+  formatDate(isoString: string): string {
+    const date = new Date(isoString);
+    const now  = new Date();
+    const diff = now.getTime() - date.getTime();
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const locale = this.translocoService.getActiveLang() === 'es' ? 'es-ES' : 'en-US';
+
+    if (days === 0) return this.translocoService.translate('PM.DATE_TODAY');
+    if (days === 1) return this.translocoService.translate('PM.DATE_YESTERDAY');
+    if (days < 30)  return this.translocoService.translate('PM.DATE_DAYS_AGO', { count: days });
+    return date.toLocaleDateString(locale, { day: 'numeric', month: 'short' });
+  }
+
+  toggleLanguage(): void {
+    const next = this.translocoService.getActiveLang() === 'es' ? 'en' : 'es';
+    this.translocoService.setActiveLang(next);
+    localStorage.setItem('inkwell-lang', next);
   }
 }

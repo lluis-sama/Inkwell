@@ -1,4 +1,5 @@
 import { Injectable, inject } from '@angular/core';
+import { TranslocoService } from '@jsverse/transloco';
 import { TauriBridgeService } from './tauri-bridge.service';
 import { ProjectService } from './project.service';
 import { BoardFile, Card, DEFAULT_CARD_COLORS } from '../models/board.model';
@@ -8,6 +9,7 @@ import { boardPath, boardsFolderPath } from '../../shared/utils/project-paths';
 export class BoardService {
   private bridge  = inject(TauriBridgeService);
   private project = inject(ProjectService);
+  private readonly translocoService = inject(TranslocoService);
 
   async loadBoard(id: string): Promise<BoardFile> {
     const basePath = this.requireBasePath();
@@ -83,7 +85,7 @@ export class BoardService {
 
   private requireBasePath(): string {
     const basePath = this.project.basePath();
-    if (!basePath) throw new Error('No hay ningún proyecto abierto');
+    if (!basePath) throw new Error(this.translocoService.translate('COMMON.NO_PROJECT_OPEN'));
     return basePath;
   }
 }

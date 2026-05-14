@@ -1,4 +1,5 @@
 import { Injectable, inject } from '@angular/core';
+import { TranslocoService } from '@jsverse/transloco';
 import { TauriBridgeService } from './tauri-bridge.service';
 import { ProjectService } from './project.service';
 import { DocumentFile, Snapshot, EMPTY_TIPTAP_CONTENT } from '../models/document.model';
@@ -8,6 +9,7 @@ import { documentPath } from '../../shared/utils/project-paths';
 export class DocumentService {
   private bridge  = inject(TauriBridgeService);
   private project = inject(ProjectService);
+  private readonly translocoService = inject(TranslocoService);
 
   async loadDocument(id: string): Promise<DocumentFile> {
     const basePath = this.requireBasePath();
@@ -67,9 +69,9 @@ export class DocumentService {
 
   restoreSnapshot(doc: DocumentFile, snapshotId: string): DocumentFile {
     const snapshot = doc.snapshots.find(s => s.id === snapshotId);
-    if (!snapshot) throw new Error(`Snapshot ${snapshotId} no encontrado`);
+    if (!snapshot) throw new Error(this.translocoService.translate('DOC.SNAPSHOT_NOT_FOUND', { id: snapshotId }));
 
-    const withCurrentSnapshot = this.createSnapshot(doc, 'Antes de restaurar');
+    const withCurrentSnapshot = this.createSnapshot(doc, this.translocoService.translate('DOC.SNAPSHOT_LABEL'));
 
     return {
       ...withCurrentSnapshot,
@@ -86,7 +88,7 @@ export class DocumentService {
 
   private requireBasePath(): string {
     const basePath = this.project.basePath();
-    if (!basePath) throw new Error('No hay ningún proyecto abierto');
+    if (!basePath) throw new Error(this.translocoService.translate('COMMON.NO_PROJECT_OPEN'));
     return basePath;
   }
 }
