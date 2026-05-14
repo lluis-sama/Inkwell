@@ -4,41 +4,137 @@ Aplicación de escritura de largo aliento para escritores. Alternativa a Scriven
 
 ---
 
+## Herramientas de soporte al workflow
+
+### Crit — Revisión de planes
+
+Crit es la herramienta de feedback entre el orquestador y el usuario. Se usa **obligatoriamente** para revisar el plan antes de implementar cualquier spec.
+
+**El flujo con Crit:**
+1. El Planner genera el plan y el orquestador lo escribe en `specs/plans/INK-XX-plan.md`
+2. El orquestador llama a la herramienta `crit` con ese fichero
+3. **El orquestador se detiene completamente.** No implementa nada. No avanza.
+4. El usuario revisa el plan en la UI de Crit, deja comentarios inline y hace click en "Finish Review"
+5. Crit entrega el feedback estructurado al orquestador
+6. Si hay comentarios: invocar `planner` de nuevo con el feedback, regenerar el plan, repetir desde el paso 1
+7. Si no hay comentarios o el usuario aprueba: invocar `implementer`
+
+**Regla crítica: cero código antes de aprobación de Crit.** Si el usuario no ha completado la revisión en Crit, el orquestador no escribe ni una línea de código.
+
+---
+
+### Engram — Memoria persistente entre specs
+
+Engram es el sistema de memoria persistente del proyecto. Su función es que el orquestador no empiece cada spec desde cero, sino con contexto acumulado de las specs anteriores.
+
+**Configuración en `.claude/settings.json`:**
+```json
+{
+  "mcpServers": {
+    "engram": {
+      "command": "engram",
+      "args": ["mcp"]
+    }
+  }
+}
+```
+
+**Protocolo de uso obligatorio:**
+
+| Momento | Herramienta | Qué guardar / buscar |
+|---|---|---|
+| Inicio de cada spec | `mem_search` | Buscar contexto relevante de specs anteriores (p.ej. "angular signals service", "tauri commands") |
+| Inicio de cada spec | `mem_context` | Recuperar el resumen de la sesión anterior si hubo compactación |
+| Tras completar una spec | `mem_save` | Guardar decisiones técnicas, patrones descubiertos, problemas resueltos |
+| Tras completar una spec | `mem_session_summary` | Guardar resumen estructurado (Goal/Discoveries/Accomplished/Files) |
+| Ante cualquier compactación | `mem_context` | Recuperar estado antes de continuar — **obligatorio** |
+
+**Qué merece un `mem_save` en este proyecto:**
+- Decisiones de arquitectura tomadas durante la implementación (p.ej. "interact.js necesita AfterViewInit, no OnInit")
+- Problemas con la integración Tauri + Angular que se resolvieron
+- Patrones de signals o zoneless que funcionaron de una manera específica
+- Cualquier desviación de la spec que fue necesaria y por qué
+- Convenciones que el Implementer aplicó y que no estaban explícitas en la spec
+
+**Patrón de recuperación de contexto (3 capas, mínimo de tokens):**
+```
+1. mem_search "término relevante"    → resultados compactos con IDs
+2. mem_timeline observation_id=N     → contexto cronológico si hace falta
+3. mem_get_observation id=N          → contenido completo solo si es necesario
+```
+
+No cargar todo el contexto de golpe. Buscar primero, profundizar solo en lo relevante.
+
+---
+
 ## Metodología de trabajo: Spec-Driven Development (SDD)
 
-Este proyecto usa SDD. **No escribas código sin una spec activa.**
-
-El flujo obligatorio para cada spec es:
+El flujo completo para cada spec es:
 
 ```
-SPEC → Explorer → Planner → Implementer → Reviewer → Criterios de aceptación
+SPEC → Engram (buscar contexto) → Explorer → Planner → Crit (aprobar plan)
+     → Implementer → Reviewer → Engram (guardar)
 ```
 
-### Cuándo usar cada agente
+### Protocolo paso a paso
 
-| Agente | Cuándo invocarlo |
-|---|---|
-| `explorer` | Al inicio de cada spec, antes de planificar. También cuando necesites entender el estado actual de un fichero o módulo. |
-| `planner` | Tras la exploración, para convertir la spec en un plan de tareas concreto antes de tocar código. |
-| `implementer` | Con el plan aprobado, para escribir o modificar código. Un bloque de implementación por tarea del plan. |
-| `reviewer` | Tras completar la implementación de la spec, para validar contra los criterios de aceptación. |
+**Paso 1 — Recuperar contexto (Engram)**
+```
+mem_search <términos clave de la spec>
+mem_context   ← siempre, por si hubo compactación
+```
 
-### Protocolo por spec
+**Paso 2 — Explorar (Explorer / Haiku)**
+Invocar `explorer` con la spec. Produce el informe de contexto del código actual.
 
-1. **Recibir spec**: El usuario entrega una spec (p.ej. `INK-03`).
-2. **Explorar**: Invocar `explorer` para mapear ficheros existentes relevantes.
-3. **Planificar**: Invocar `planner` con la spec + el contexto de la exploración.
-4. **Implementar**: Invocar `implementer` tarea a tarea según el plan. No pasar a la siguiente tarea hasta que la actual compile.
-5. **Revisar**: Invocar `reviewer` con la spec completa + los ficheros modificados.
-6. **Criterios**: Recorrer los criterios de aceptación de la spec uno a uno. Marcar los que pasan. Reportar los que fallan al usuario antes de continuar.
+**Paso 3 — Planificar (Planner / Sonnet)**
+Invocar `planner` con la spec + informe del Explorer.
+El Planner escribe el plan en `specs/plans/INK-XX-plan.md`.
+
+**Paso 4 — Revisión del plan (Crit) ← BLOQUEO OBLIGATORIO**
+```
+crit specs/plans/INK-XX-plan.md
+```
+**DETENER TODA ACTIVIDAD.** Esperar a que el usuario complete la revisión en Crit.
+
+- Si hay feedback: volver al Paso 3 con los comentarios. Regenerar el plan. Repetir Crit.
+- Si aprobado: continuar al Paso 5.
+
+**Paso 5 — Implementar (Implementer / Sonnet)**
+Invocar `implementer` tarea a tarea según el plan aprobado.
+No pasar a la siguiente tarea hasta que la actual compile sin errores.
+
+**Paso 6 — Revisar (Reviewer / Sonnet)**
+Invocar `reviewer` con la spec + ficheros implementados.
+Si hay criterios fallidos: volver al Paso 5 solo para las tareas fallidas.
+
+**Paso 7 — Persistir memoria (Engram)**
+```
+mem_save      ← decisiones y patrones relevantes descubiertos
+mem_session_summary  ← resumen estructurado de la spec completada
+```
+
+---
+
+### Agentes y modelos
+
+| Agente | Modelo | Cuándo |
+|---|---|---|
+| `explorer` | claude-haiku-4-5-20251001 | Paso 2: leer y mapear código existente |
+| `planner` | claude-sonnet-4-6 | Paso 3: convertir spec en plan de tareas |
+| `implementer` | claude-sonnet-4-6 | Paso 5: escribir código tarea a tarea |
+| `reviewer` | claude-sonnet-4-6 | Paso 6: validar contra criterios de aceptación |
 
 ### Reglas del orquestador
 
-- **No saltarse pasos.** Si la exploración no se ha hecho, no se planifica. Si el plan no existe, no se implementa.
-- **Un agente a la vez.** Esperar a que el agente termine antes de invocar el siguiente.
-- **Si el reviewer reporta fallos**, invocar `implementer` de nuevo solo para las tareas fallidas, luego `reviewer` otra vez.
-- **No mezclar specs.** Completar la spec activa al 100% antes de aceptar la siguiente.
-- **Ante ambigüedad en la spec**, preguntar al usuario antes de planificar. No inferir.
+- **No saltarse pasos.** El orden es: Engram → Explorer → Planner → Crit → Implementer → Reviewer → Engram.
+- **Crit es un bloqueo real.** Ninguna línea de código antes de la aprobación del plan.
+- **Un agente a la vez.** Esperar respuesta completa antes de invocar el siguiente.
+- **Un Implementer por tarea.** No pasar el plan completo al Implementer de golpe.
+- **Si el Reviewer reporta fallos**, volver al Implementer solo para las tareas fallidas, luego Reviewer de nuevo.
+- **No mezclar specs.** Completar y persistir en Engram antes de aceptar la siguiente spec.
+- **Ante ambigüedad en la spec**, preguntar al usuario antes de planificar.
+- **Ante compactación**, llamar a `mem_context` inmediatamente antes de continuar.
 
 ---
 
@@ -60,46 +156,25 @@ SPEC → Explorer → Planner → Implementer → Reviewer → Criterios de acep
 
 ```
 inkwell/
+  CLAUDE.md
+  PREREQUISITES.md
   .claude/
+    settings.json          ← configuración de Engram MCP
     agents/
       explorer.md
       planner.md
       implementer.md
       reviewer.md
-  src-tauri/
-    src/
-      main.rs
-      commands/
-        fs_commands.rs
-    tauri.conf.json
-    Cargo.toml
-  src/
-    app/
-      core/
-        models/
-          project.model.ts
-          document.model.ts
-          board.model.ts
-        services/
-          project.service.ts
-          document.service.ts
-          board.service.ts
-          ai.service.ts
-          tauri-bridge.service.ts
-          theme.service.ts
-      features/
-        project-manager/
-        editor/
-        boards/
-        ai-assistant/
-      shared/
-        components/
-        services/
-        utils/
-    main.ts
-    app.config.ts
-    app.routes.ts
+  specs/
+    INK-01-scaffolding.md
+    ...
+    INK-09-polish.md
+    plans/                 ← planes generados por el Planner para Crit
+      INK-XX-plan.md       ← creado en el Paso 3, revisado en el Paso 4
+  src/                     ← Angular (generado por Tauri CLI)
+  src-tauri/               ← Rust (generado por Tauri CLI)
   package.json
+  pnpm-lock.yaml
   tailwind.config.js
 ```
 
@@ -114,7 +189,7 @@ mi-novela/
   boards/{uuid}.json
 ```
 
-No hay base de datos. Todo son archivos JSON. Esta estructura permite sincronizar con ProtonDrive, Syncthing o cualquier cliente de nube sin integración especial.
+No hay base de datos. Todo son archivos JSON. Diseñado para sincronizar con ProtonDrive, Syncthing o rclone sin integración especial.
 
 ---
 
@@ -235,6 +310,7 @@ Todos en `src-tauri/src/commands/fs_commands.rs`.
 - **Theming**: los componentes usan tokens `--ink-*`. Nunca variables `--ctp-*` directamente.
 - **IDs**: `crypto.randomUUID()`. Sin librerías externas de UUID.
 - **Estilos**: TailwindCSS. Sin estilos globales custom salvo variables CSS base en `styles.css`.
+- **pnpm**: gestor de paquetes del proyecto. Sin npm ni yarn.
 
 ---
 
@@ -244,7 +320,9 @@ Todos en `src-tauri/src/commands/fs_commands.rs`.
 INK-01 → INK-02 → INK-03 → INK-04 → INK-05 → INK-06 → INK-07 → INK-08 → INK-09
 ```
 
-Cada spec es un bloque completo. No comenzar la siguiente hasta que los criterios de aceptación de la actual estén verificados.
+Cada spec es un bloque completo. No comenzar la siguiente hasta que:
+1. Los criterios de aceptación del Reviewer estén verificados
+2. La memoria de Engram esté actualizada con `mem_save` y `mem_session_summary`
 
 ---
 
@@ -253,4 +331,4 @@ Cada spec es un bloque completo. No comenzar la siguiente hasta que los criterio
 - **Sin base de datos.** Si ves código conectando a SQLite u otra DB, es incorrecto.
 - **La API key de Anthropic nunca sale del cliente.** Se guarda en `localStorage` y se envía directamente a `api.anthropic.com`. Sin servidor intermedio.
 - **El proyecto activo siempre pasa por `ProjectService`.** Ningún componente accede a disco directamente.
-- **Compatibilidad de sync**: la estructura de archivos es plana y predecible. Diseñada para ProtonDrive, Syncthing, rclone.
+- **Compatibilidad de sync**: estructura plana y predecible para ProtonDrive, Syncthing, rclone.
