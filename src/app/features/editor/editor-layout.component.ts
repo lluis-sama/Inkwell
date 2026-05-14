@@ -11,11 +11,12 @@ import { BinderComponent } from './binder/binder.component';
 import { TiptapEditorComponent } from './tiptap/tiptap-editor.component';
 import { EditorTopBarComponent, SaveStatus } from './top-bar/editor-top-bar.component';
 import { SnapshotsPanelComponent } from './snapshots/snapshots-panel.component';
+import { InkNavComponent } from '../../shared/components/ink-nav.component';
 
 @Component({
   selector: 'app-editor-layout',
   standalone: true,
-  imports: [BinderComponent, TiptapEditorComponent, EditorTopBarComponent, SnapshotsPanelComponent],
+  imports: [BinderComponent, TiptapEditorComponent, EditorTopBarComponent, SnapshotsPanelComponent, InkNavComponent],
   templateUrl: './editor-layout.component.html',
 })
 export class EditorLayoutComponent implements OnInit, OnDestroy {

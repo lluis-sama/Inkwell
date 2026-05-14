@@ -1,0 +1,31 @@
+<div
+  class="relative w-full h-full overflow-auto bg-ink-bg"
+  style="background-image: radial-gradient(var(--ink-border) 1px, transparent 1px); background-size: 24px 24px;"
+  (contextmenu)="onCanvasRightClick($event)"
+>
+  <div #canvasEl class="relative" style="min-width: 3000px; min-height: 2000px;">
+    @for (card of board().cards; track card.id) {
+      <app-board-card
+        [card]="card"
+        (positionChanged)="onPositionChanged($event)"
+        (editRequested)="editRequested.emit($event)"
+        (deleteRequested)="deleteRequested.emit($event)"
+      />
+    }
+  </div>
+
+  @if (contextMenu()) {
+    <div
+      class="fixed z-50 rounded-lg border border-ink-border bg-ink-surface shadow-xl py-1 min-w-44"
+      [style.left.px]="contextMenu()!.screenX"
+      [style.top.px]="contextMenu()!.screenY"
+    >
+      <button
+        (click)="onAddCard()"
+        class="w-full text-left px-4 py-2 text-sm text-ink-text hover:bg-ink-border transition-colors"
+      >
+        {{ 'BOARDS.CANVAS.ADD_CARD' | transloco }}
+      </button>
+    </div>
+  }
+</div>

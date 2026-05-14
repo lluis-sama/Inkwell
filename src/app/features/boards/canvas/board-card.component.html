@@ -1,0 +1,32 @@
+<div
+  #cardEl
+  class="absolute rounded-lg border border-black/10 shadow-md cursor-grab active:cursor-grabbing select-none flex flex-col overflow-hidden"
+  [style.left.px]="card().x"
+  [style.top.px]="card().y"
+  [style.width.px]="card().width"
+  [style.min-height.px]="card().height"
+  [style.background]="card().color"
+  (dblclick)="editRequested.emit(card())"
+>
+  <!-- Header -->
+  <div class="px-3 pt-3 pb-1">
+    <p class="text-ink-text text-sm font-medium leading-snug break-words">{{ card().title }}</p>
+  </div>
+
+  <!-- Body (conditional) -->
+  @if (card().body) {
+    <div class="px-3 pb-3 flex-1">
+      <p class="text-ink-subtle text-xs leading-relaxed break-words whitespace-pre-wrap">{{ card().body }}</p>
+    </div>
+  }
+
+  <!-- Delete button -->
+  <button
+    (click)="deleteRequested.emit(card().id); $event.stopPropagation()"
+    class="absolute top-1.5 right-1.5 w-5 h-5 rounded flex items-center justify-center text-ink-subtle opacity-0 hover:opacity-100 hover:text-ink-danger hover:bg-black/20 transition-all card-delete"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
+      <path d="M1.293 1.293a1 1 0 0 1 1.414 0L5 3.586l2.293-2.293a1 1 0 1 1 1.414 1.414L6.414 5l2.293 2.293a1 1 0 0 1-1.414 1.414L5 6.414 2.707 8.707a1 1 0 0 1-1.414-1.414L3.586 5 1.293 2.707a1 1 0 0 1 0-1.414z"/>
+    </svg>
+  </button>
+</div>

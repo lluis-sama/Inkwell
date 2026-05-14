@@ -1,11 +1,71 @@
+<div class="flex h-screen bg-ink-bg overflow-hidden">
 
-    <div class="flex flex-col items-center justify-center h-screen bg-ink-bg gap-6">
-      <h1 class="text-ink-text text-3xl font-serif tracking-wide">{{ 'BOARDS.TITLE' | transloco }}</h1>
-      <p class="text-ink-subtle text-sm">{{ 'BOARDS.COMING_SOON' | transloco }}</p>
-      <button
-        (click)="theme.toggle()"
-        class="px-4 py-2 rounded bg-ink-surface text-ink-text text-sm
-               border border-ink-border hover:border-ink-accent transition-colors">
-        Tema: {{ theme.theme() }}
-      </button>
+  <ink-nav />
+
+  <app-board-selector
+    [boards]="boards()"
+    [activeBoard]="activeBoard()"
+    (boardSelected)="selectBoard($event)"
+    (createRequested)="showNewBoardModal.set(true)"
+    (deleteRequested)="deleteBoard($event)"
+  />
+
+  <!-- Área principal -->
+  <div class="flex flex-col flex-1 overflow-hidden">
+
+    <!-- Header -->
+    <div class="flex items-center gap-2 h-11 px-4 border-b border-ink-border bg-ink-panel shrink-0">
+      @if (activeBoard()) {
+        <h2 class="text-ink-text text-sm font-medium">{{ activeBoard()!.title }}</h2>
+        <span class="text-ink-subtle text-xs">· {{ activeBoard()!.cards.length }} {{ 'BOARDS.LAYOUT.CARDS_COUNT_SUFFIX' | transloco }}</span>
+      } @else {
+        <span class="text-ink-subtle text-sm italic">{{ 'BOARDS.LAYOUT.HEADER_EMPTY' | transloco }}</span>
+      }
     </div>
+
+    <!-- Canvas o estado vacío -->
+    @if (activeBoard()) {
+      <app-board-canvas
+        [board]="activeBoard()!"
+        (positionChanged)="onPositionChanged($event)"
+        (cardAdded)="onCardAdded($event)"
+        (editRequested)="editingCard.set($event)"
+        (deleteRequested)="onDeleteCard($event)"
+      />
+    } @else {
+      <div class="flex flex-col items-center justify-center flex-1 gap-4 opacity-40">
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="0.5" y="0.5" width="47" height="47" rx="3.5" stroke="currentColor" stroke-opacity="0.4"/>
+          <line x1="8" y1="0" x2="8" y2="48" stroke="currentColor" stroke-opacity="0.2"/>
+          <line x1="16" y1="0" x2="16" y2="48" stroke="currentColor" stroke-opacity="0.2"/>
+          <line x1="24" y1="0" x2="24" y2="48" stroke="currentColor" stroke-opacity="0.2"/>
+          <line x1="32" y1="0" x2="32" y2="48" stroke="currentColor" stroke-opacity="0.2"/>
+          <line x1="40" y1="0" x2="40" y2="48" stroke="currentColor" stroke-opacity="0.2"/>
+          <line x1="0" y1="8" x2="48" y2="8" stroke="currentColor" stroke-opacity="0.2"/>
+          <line x1="0" y1="16" x2="48" y2="16" stroke="currentColor" stroke-opacity="0.2"/>
+          <line x1="0" y1="24" x2="48" y2="24" stroke="currentColor" stroke-opacity="0.2"/>
+          <line x1="0" y1="32" x2="48" y2="32" stroke="currentColor" stroke-opacity="0.2"/>
+          <line x1="0" y1="40" x2="48" y2="40" stroke="currentColor" stroke-opacity="0.2"/>
+        </svg>
+        <p class="text-ink-subtle text-sm">{{ 'BOARDS.LAYOUT.NO_BOARD_SELECTED' | transloco }}</p>
+      </div>
+    }
+
+  </div>
+
+</div>
+
+@if (showNewBoardModal()) {
+  <app-new-board-modal
+    (created)="onBoardCreated($event)"
+    (cancelled)="showNewBoardModal.set(false)"
+  />
+}
+
+@if (editingCard()) {
+  <app-card-editor-modal
+    [card]="editingCard()!"
+    (saved)="onCardSaved($event)"
+    (cancelled)="editingCard.set(null)"
+  />
+}
