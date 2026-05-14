@@ -1,0 +1,108 @@
+<aside class="flex flex-col h-full w-72 border-l border-ink-border bg-ink-panel shrink-0">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between px-4 py-3 border-b border-ink-border shrink-0">
+    <span class="text-ink-subtle text-xs font-medium uppercase tracking-widest">Historial</span>
+    <button
+      (click)="closed.emit()"
+      class="p-1 rounded text-ink-subtle hover:text-ink-text hover:bg-ink-border transition-colors">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M12.207 4.207a1 1 0 0 0-1.414-1.414L8 5.586 5.207 2.793a1 1 0 0 0-1.414 1.414L6.586 7l-2.793 2.793a1 1 0 1 0 1.414 1.414L8 8.414l2.793 2.793a1 1 0 0 0 1.414-1.414L9.414 7l2.793-2.793z"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Lista vacía -->
+  @if (document().snapshots.length === 0) {
+    <div class="flex flex-col items-center gap-3 mt-10 px-4 opacity-50">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-ink-subtle">
+        <circle cx="12" cy="12" r="10"/>
+        <polyline points="12,6 12,12 16,14"/>
+      </svg>
+      <p class="text-ink-subtle text-xs text-center">
+        Sin snapshots todavía.<br>
+        Usa el botón de la barra superior para guardar una versión.
+      </p>
+    </div>
+  } @else {
+    <!-- Lista de snapshots -->
+    <ul class="flex-1 overflow-y-auto py-2">
+      @for (snapshot of snapshots(); track snapshot.id) {
+        <li class="border-b border-ink-border last:border-0 px-4 py-3">
+          <!-- Fecha -->
+          <p class="text-ink-subtle text-xs mb-1">{{ formatDate(snapshot.createdAt) }}</p>
+
+          <!-- Label: modo lectura (click activa edición) -->
+          @if (editingId() !== snapshot.id) {
+            <button
+              (click)="startEdit(snapshot)"
+              class="mb-2 text-left w-full text-xs transition-colors"
+              [class.text-ink-text]="!!snapshot.label"
+              [class.hover:text-ink-accent]="!!snapshot.label"
+              [class.text-ink-muted]="!snapshot.label"
+              [class.italic]="!snapshot.label"
+              [class.hover:text-ink-subtle]="!snapshot.label"
+              title="Editar etiqueta">
+              {{ snapshot.label || 'Añadir etiqueta...' }}
+            </button>
+          } @else {
+            <!-- Label: modo edición -->
+            <div class="flex items-center gap-1 mb-2">
+              <input
+                class="flex-1 bg-ink-bg border border-ink-accent rounded px-2 py-0.5 text-ink-text text-xs focus:outline-none"
+                [value]="editingLabel()"
+                placeholder="Etiqueta..."
+                maxlength="60"
+                (input)="onLabelInput($event)"
+                (keydown)="onLabelKeydown($event)"
+                (blur)="confirmEdit()" />
+              <button (click)="cancelEdit()" class="text-ink-muted hover:text-ink-subtle text-xs px-1" title="Cancelar">×</button>
+            </div>
+          }
+
+          <!-- Botones: preview / restaurar / eliminar -->
+          <div class="flex items-center gap-2">
+            <button (click)="togglePreview(snapshot.id)" class="text-ink-muted hover:text-ink-subtle text-xs transition-colors">
+              {{ expandedId() === snapshot.id ? 'Ocultar preview' : 'Ver preview' }}
+            </button>
+            <span class="flex-1"></span>
+            <!-- Restaurar -->
+            <button (click)="restore(snapshot.id)" title="Restaurar este snapshot"
+              class="p-1 rounded text-ink-subtle hover:text-ink-accent hover:bg-ink-border transition-colors">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74"/>
+                <polyline points="3,3 3,9 9,9"/>
+              </svg>
+            </button>
+            <!-- Eliminar -->
+            <button (click)="deleteSnapshot(snapshot.id)" title="Eliminar snapshot"
+              class="p-1 rounded text-ink-subtle hover:text-ink-danger hover:bg-ink-border transition-colors">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3,6 5,6 21,6"/>
+                <path d="M19,6l-1,14a2,2,0,0,1-2,2H8a2,2,0,0,1-2-2L5,6"/>
+                <path d="M10,11v6M14,11v6"/>
+                <path d="M9,6V4a1,1,0,0,1,1-1h4a1,1,0,0,1,1,1V6"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Preview expandido -->
+          @if (expandedId() === snapshot.id) {
+            <div class="mt-2 p-3 rounded bg-ink-bg border border-ink-border">
+              <p class="text-ink-subtle text-xs leading-relaxed line-clamp-6">{{ previewText(snapshot) }}</p>
+            </div>
+          }
+
+        </li>
+      }
+    </ul>
+  }
+
+  <!-- Footer -->
+  @if (document().snapshots.length > 0) {
+    <div class="px-4 py-3 border-t border-ink-border shrink-0">
+      <p class="text-ink-muted text-xs">{{ snapshots().length }} de {{ maxSnapshots() }} snapshots</p>
+    </div>
+  }
+
+</aside>

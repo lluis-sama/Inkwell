@@ -78,6 +78,23 @@
     </svg>
   </button>
 
+  <!-- Botón toggle panel snapshots -->
+  <button
+    (click)="snapshotsPanelToggled.emit()"
+    title="Historial de versiones"
+    [disabled]="!documentTitle()"
+    class="p-1.5 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+    [class.text-ink-accent]="showSnapshots()"
+    [class.bg-ink-border]="showSnapshots()"
+    [class.text-ink-subtle]="!showSnapshots()"
+    [class.hover:text-ink-text]="!showSnapshots()"
+    [class.hover:bg-ink-border]="!showSnapshots()">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/>
+      <polyline points="12,6 12,12 16,14"/>
+    </svg>
+  </button>
+
   <!-- Botón modo focus -->
   <button
     (click)="focusToggled.emit()"

@@ -1,0 +1,15 @@
+<div class="fixed bottom-6 left-1/2 -translate-x-1/2 flex flex-col gap-2 z-50 pointer-events-none">
+  @for (toast of toastService.toasts(); track toast.id) {
+    <div
+      class="pointer-events-auto flex items-center gap-3 px-5 py-3 rounded-lg shadow-xl
+             border text-sm font-medium cursor-pointer"
+      [class.bg-ink-success]="toast.type === 'success'"
+      [class.bg-ink-danger]="toast.type === 'error'"
+      [class.text-ink-panel]="true"
+      [class.border-ink-success]="toast.type === 'success'"
+      [class.border-ink-danger]="toast.type === 'error'"
+      (click)="dismiss(toast.id)">
+      {{ toast.message }}
+    </div>
+  }
+</div>

@@ -12,10 +12,13 @@ export class EditorTopBarComponent {
   saveStatus    = input<SaveStatus>('saved');
   focusMode     = input<boolean>(false);
 
-  binderToggled     = output<void>();
-  focusToggled      = output<void>();
-  snapshotRequested = output<void>();
-  titleChanged      = output<string>();
+  showSnapshots = input<boolean>(false);
+
+  binderToggled          = output<void>();
+  focusToggled           = output<void>();
+  snapshotRequested      = output<void>();
+  snapshotsPanelToggled  = output<void>();
+  titleChanged           = output<string>();
 
   onTitleChange(event: Event): void {
     this.titleChanged.emit((event.target as HTMLInputElement).value);

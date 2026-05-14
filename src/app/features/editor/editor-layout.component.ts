@@ -10,23 +10,25 @@ import { TreeNode }        from '../../core/models/project.model';
 import { BinderComponent } from './binder/binder.component';
 import { TiptapEditorComponent } from './tiptap/tiptap-editor.component';
 import { EditorTopBarComponent, SaveStatus } from './top-bar/editor-top-bar.component';
+import { SnapshotsPanelComponent } from './snapshots/snapshots-panel.component';
 
 @Component({
   selector: 'app-editor-layout',
   standalone: true,
-  imports: [BinderComponent, TiptapEditorComponent, EditorTopBarComponent],
+  imports: [BinderComponent, TiptapEditorComponent, EditorTopBarComponent, SnapshotsPanelComponent],
   templateUrl: './editor-layout.component.html',
 })
 export class EditorLayoutComponent implements OnInit, OnDestroy {
-  private projectService  = inject(ProjectService);
-  private docService      = inject(DocumentService);
-  private router          = inject(Router);
+  protected projectService = inject(ProjectService);
+  private docService       = inject(DocumentService);
+  private router           = inject(Router);
 
-  showBinder       = signal(true);
-  focusMode        = signal(false);
-  saveStatus       = signal<SaveStatus>('saved');
-  activeDocumentId = signal<string | null>(null);
-  activeDocument   = signal<DocumentFile | null>(null);
+  showBinder          = signal(true);
+  focusMode           = signal(false);
+  saveStatus          = signal<SaveStatus>('saved');
+  activeDocumentId    = signal<string | null>(null);
+  activeDocument      = signal<DocumentFile | null>(null);
+  showSnapshotsPanel  = signal<boolean>(false);
 
   private isDirty       = false;
   private autosaveTimer: ReturnType<typeof setInterval> | null = null;
@@ -152,5 +154,15 @@ export class EditorLayoutComponent implements OnInit, OnDestroy {
 
   toggleFocusMode(): void {
     this.focusMode.update(v => !v);
+  }
+
+  toggleSnapshotsPanel(): void {
+    this.showSnapshotsPanel.update(v => !v);
+  }
+
+  onDocumentRestoredFromPanel(doc: DocumentFile): void {
+    this.activeDocument.set(doc);
+    this.isDirty = false;
+    this.saveStatus.set('saved');
   }
 }
