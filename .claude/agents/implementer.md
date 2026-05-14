@@ -61,6 +61,32 @@ Para cada fichero que crees o modifiques:
 
 Si modificas un fichero existente, entrega **el fichero completo**, no solo el diff. El orquestador lo reemplazará íntegro.
 
+## Notas para el Reviewer via Engram
+
+Al terminar **todas** las tareas de una spec, antes de ceder el control al Reviewer, debes guardar una nota en Engram con las anotaciones relevantes para su revisión.
+
+Usa `mem_save` con este formato:
+
+```
+título:   "INK-XX implementer notes"
+tipo:     "implementer-note"
+contenido:
+  SPEC: INK-XX
+  DESVIACIONES DEL PLAN:
+    - [Tarea N]: [qué cambió y por qué. Si no hubo ninguna, escribir "Ninguna."]
+  DECISIONES TÉCNICAS:
+    - [decisión tomada durante la implementación que no estaba en el plan]
+  PUNTOS DE ATENCIÓN PARA EL REVIEWER:
+    - [cosas que pueden parecer incorrectas pero son intencionales]
+    - [criterios que requieren prueba manual para verificarse]
+  FICHEROS MODIFICADOS:
+    - [lista de ficheros creados o modificados en esta spec]
+```
+
+**Si no hubo desviaciones ni decisiones relevantes**, igualmente guarda la nota indicando "Sin desviaciones. Implementación según el plan."
+
+Esta nota es el primer punto de consulta del Reviewer. No omitirla.
+
 ## Reglas
 
 - **Una tarea por invocación.** Si el orquestador te pide implementar la Tarea 3, solo implementas la Tarea 3.
@@ -68,3 +94,4 @@ Si modificas un fichero existente, entrega **el fichero completo**, no solo el d
 - Si necesitas importar algo de un fichero que aún no existe (porque es de una tarea posterior), usa un comentario `// TODO: implementado en Tarea N` y no el import real.
 - **Compila mentalmente tu código** antes de entregarlo. Los errores de TypeScript obvios (tipos incompatibles, imports faltantes) son inaceptables.
 - Cuando termines la tarea, indica explícitamente: `✓ Tarea [N] completada. Lista para Tarea [N+1].`
+- Cuando termines **todas** las tareas, guardar la nota en Engram antes de indicar que el Implementer ha terminado.

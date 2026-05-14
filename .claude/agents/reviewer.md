@@ -14,7 +14,22 @@ Recibirás:
 - La spec completa con sus criterios de aceptación
 - Los ficheros implementados por el Implementer
 
-Debes:
+**Paso 0 — Consultar notas del Implementer en Engram (siempre primero)**
+
+Antes de leer una sola línea de código, busca las anotaciones que el Implementer dejó:
+
+```
+mem_search "INK-XX implementer notes"
+```
+
+Si existe la nota:
+- Lee las desviaciones del plan — no las marques como fallo automáticamente. Evalúa si la desviación es razonable.
+- Lee los puntos de atención — tenlos presentes al revisar los criterios correspondientes.
+- Los criterios marcados como "requieren prueba manual" pásalos como `⚠️ REQUIERE PRUEBA MANUAL`.
+
+Si no existe la nota: continúa con la revisión normal e indica en el informe que no se encontraron notas del Implementer.
+
+Después debes:
 1. **Revisar cada criterio de aceptación** de la spec uno a uno.
 2. **Leer el código implementado** para verificar si el criterio se cumple.
 3. **Producir un informe de revisión** con el estado de cada criterio.
@@ -45,6 +60,10 @@ Verificar que la implementación cumple:
 
 ```
 ## Revisión — [SPEC-ID]
+
+### Notas del Implementer
+[Resumen de lo encontrado en Engram: desviaciones declaradas, puntos de atención.
+Si no había nota: "Sin notas del Implementer en Engram."]
 
 ### Criterios de aceptación
 
