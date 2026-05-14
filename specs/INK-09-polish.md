@@ -9,6 +9,7 @@ Spec final de Inkwell. Añade la toolbar de formato al editor, el modal de setti
 ## Scope
 
 **Incluido:**
+
 - Toolbar de formato del editor (negrita, cursiva, headings, listas, blockquote, código, separador)
 - Modal de settings completo (autosave, snapshots, modelo IA, API key, tema)
 - Reordenación del binder por drag & drop (HTML5 nativo)
@@ -46,8 +47,8 @@ ngOnDestroy(): void {
 ### `src/app/features/editor/tiptap/editor-toolbar.component.ts`
 
 ```typescript
-import { Component, input, signal, effect } from '@angular/core';
-import { Editor } from '@tiptap/core';
+import { Component, input, signal, effect } from "@angular/core";
+import { Editor } from "@tiptap/core";
 
 interface ToolbarButton {
   label: string;
@@ -58,7 +59,7 @@ interface ToolbarButton {
 }
 
 @Component({
-  selector: 'app-editor-toolbar',
+  selector: "app-editor-toolbar",
   standalone: true,
   template: `
     @if (editor()) {
@@ -232,24 +233,45 @@ interface ToolbarButton {
       </div>
     }
   `,
-  styles: [`
-    :host { display: block; }
+  styles: [
+    `
+      :host {
+        display: block;
+      }
 
-    .toolbar-btn {
-      display: inline-flex; align-items: center; justify-content: center;
-      min-width: 28px; height: 28px; padding: 0 4px;
-      border-radius: 4px; border: none; background: transparent;
-      color: var(--ink-subtle); cursor: pointer;
-      transition: color 0.15s, background-color 0.15s;
-    }
-    .toolbar-btn:hover { color: var(--ink-text); background: var(--ink-border); }
-    .toolbar-btn.active { color: var(--ink-accent); background: var(--ink-border); }
+      .toolbar-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 28px;
+        height: 28px;
+        padding: 0 4px;
+        border-radius: 4px;
+        border: none;
+        background: transparent;
+        color: var(--ink-subtle);
+        cursor: pointer;
+        transition:
+          color 0.15s,
+          background-color 0.15s;
+      }
+      .toolbar-btn:hover {
+        color: var(--ink-text);
+        background: var(--ink-border);
+      }
+      .toolbar-btn.active {
+        color: var(--ink-accent);
+        background: var(--ink-border);
+      }
 
-    .toolbar-sep {
-      width: 1px; height: 18px;
-      background: var(--ink-border); margin: 0 4px;
-    }
-  `],
+      .toolbar-sep {
+        width: 1px;
+        height: 18px;
+        background: var(--ink-border);
+        margin: 0 4px;
+      }
+    `,
+  ],
 })
 export class EditorToolbarComponent {
   editor = input<Editor | null>(null);
@@ -259,7 +281,7 @@ export class EditorToolbarComponent {
   }
 
   isHeadingActive(level: 1 | 2 | 3): boolean {
-    return this.editor()?.isActive('heading', { level }) ?? false;
+    return this.editor()?.isActive("heading", { level }) ?? false;
   }
 }
 ```
@@ -269,9 +291,11 @@ export class EditorToolbarComponent {
 ```html
 <!-- En el template de TiptapEditorComponent -->
 <div class="tiptap-host h-full flex flex-col">
-  <app-editor-toolbar [editor]="editorReady()"/>
-  <div #editorEl class="flex-1 overflow-y-auto px-16 py-12 focus:outline-none">
-  </div>
+  <app-editor-toolbar [editor]="editorReady()" />
+  <div
+    #editorEl
+    class="flex-1 overflow-y-auto px-16 py-12 focus:outline-none"
+  ></div>
   <!-- pie contador de palabras... -->
 </div>
 ```
@@ -285,41 +309,51 @@ Reemplaza `InkSettingsModalComponent` de INK-08 con una versión completa con se
 ### `src/app/shared/components/ink-settings-modal.component.ts` (reemplazar)
 
 ```typescript
-import { Component, inject, signal, OnInit, output } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { AiService } from '../../core/services/ai.service';
-import { ProjectService } from '../../core/services/project.service';
-import { ThemeService } from '../../core/services/theme.service';
-import { InkModalComponent } from './ink-modal.component';
-import { InkButtonComponent } from './ink-button.component';
+import { Component, inject, signal, OnInit, output } from "@angular/core";
+import { FormsModule } from "@angular/forms";
+import { AiService } from "../../core/services/ai.service";
+import { ProjectService } from "../../core/services/project.service";
+import { ThemeService } from "../../core/services/theme.service";
+import { InkModalComponent } from "./ink-modal.component";
+import { InkButtonComponent } from "./ink-button.component";
 
-type SettingsSection = 'editor' | 'ai' | 'appearance';
+type SettingsSection = "editor" | "ai" | "appearance";
 
 const AI_MODELS = [
-  { id: 'claude-sonnet-4-20250514', label: 'Claude Sonnet 4 (recomendado)' },
-  { id: 'claude-opus-4-20250514',   label: 'Claude Opus 4 (más capaz, más lento)' },
-  { id: 'claude-haiku-4-5-20251001', label: 'Claude Haiku 4.5 (más rápido)' },
+  { id: "claude-sonnet-4-20250514", label: "Claude Sonnet 4 (recomendado)" },
+  {
+    id: "claude-opus-4-20250514",
+    label: "Claude Opus 4 (más capaz, más lento)",
+  },
+  { id: "claude-haiku-4-5-20251001", label: "Claude Haiku 4.5 (más rápido)" },
 ];
 
 @Component({
-  selector: 'ink-settings-modal',
+  selector: "ink-settings-modal",
   standalone: true,
   imports: [InkModalComponent, InkButtonComponent, FormsModule],
   template: `
-    <ink-modal title="Configuración" [hasActions]="false" (closed)="closed.emit()">
-
+    <ink-modal
+      title="Configuración"
+      [hasActions]="false"
+      (closed)="closed.emit()"
+    >
       <div class="flex gap-0 -mx-6 -mt-5">
-
         <!-- Sidebar de secciones -->
-        <div class="flex flex-col w-36 border-r border-ink-border pt-2 pb-4 shrink-0">
+        <div
+          class="flex flex-col w-36 border-r border-ink-border pt-2 pb-4 shrink-0"
+        >
           @for (s of sections; track s.id) {
             <button
               (click)="activeSection.set(s.id)"
               class="flex items-center gap-2.5 px-4 py-2.5 text-xs
                      transition-colors text-left"
-              [class]="activeSection() === s.id
-                ? 'bg-ink-surface text-ink-text font-medium border-r-2 border-ink-accent'
-                : 'text-ink-subtle hover:text-ink-text hover:bg-ink-surface'">
+              [class]="
+                activeSection() === s.id
+                  ? 'bg-ink-surface text-ink-text font-medium border-r-2 border-ink-accent'
+                  : 'text-ink-subtle hover:text-ink-text hover:bg-ink-surface'
+              "
+            >
               {{ s.label }}
             </button>
           }
@@ -327,20 +361,21 @@ const AI_MODELS = [
 
         <!-- Contenido de la sección -->
         <div class="flex-1 px-6 py-4 min-h-64">
-
           <!-- Editor -->
-          @if (activeSection() === 'editor' && projectService.isLoaded()) {
+          @if (activeSection() === "editor" && projectService.isLoaded()) {
             <div class="flex flex-col gap-5">
-
               <div class="flex flex-col gap-1.5">
-                <label class="text-ink-subtle text-xs font-medium uppercase tracking-wide">
+                <label
+                  class="text-ink-subtle text-xs font-medium uppercase tracking-wide"
+                >
                   Autoguardado
                 </label>
                 <select
                   [(ngModel)]="autosaveInterval"
                   class="w-full px-3 py-2 rounded bg-ink-bg border border-ink-border
                          text-ink-text text-sm focus:outline-none
-                         focus:border-ink-accent transition-colors">
+                         focus:border-ink-accent transition-colors"
+                >
                   <option [ngValue]="0">Desactivado</option>
                   <option [ngValue]="15">Cada 15 segundos</option>
                   <option [ngValue]="30">Cada 30 segundos (por defecto)</option>
@@ -350,14 +385,17 @@ const AI_MODELS = [
               </div>
 
               <div class="flex flex-col gap-1.5">
-                <label class="text-ink-subtle text-xs font-medium uppercase tracking-wide">
+                <label
+                  class="text-ink-subtle text-xs font-medium uppercase tracking-wide"
+                >
                   Máximo de snapshots por documento
                 </label>
                 <select
                   [(ngModel)]="maxSnapshots"
                   class="w-full px-3 py-2 rounded bg-ink-bg border border-ink-border
                          text-ink-text text-sm focus:outline-none
-                         focus:border-ink-accent transition-colors">
+                         focus:border-ink-accent transition-colors"
+                >
                   <option [ngValue]="5">5 snapshots</option>
                   <option [ngValue]="10">10 snapshots (por defecto)</option>
                   <option [ngValue]="20">20 snapshots</option>
@@ -371,22 +409,22 @@ const AI_MODELS = [
               <ink-button variant="primary" (clicked)="saveEditorSettings()">
                 Guardar cambios
               </ink-button>
-
             </div>
           }
 
-          @if (activeSection() === 'editor' && !projectService.isLoaded()) {
+          @if (activeSection() === "editor" && !projectService.isLoaded()) {
             <p class="text-ink-subtle text-sm mt-4">
               Abre un proyecto para configurar las opciones del editor.
             </p>
           }
 
           <!-- IA -->
-          @if (activeSection() === 'ai') {
+          @if (activeSection() === "ai") {
             <div class="flex flex-col gap-5">
-
               <div class="flex flex-col gap-1.5">
-                <label class="text-ink-subtle text-xs font-medium uppercase tracking-wide">
+                <label
+                  class="text-ink-subtle text-xs font-medium uppercase tracking-wide"
+                >
                   Anthropic API Key
                 </label>
                 <input
@@ -395,18 +433,24 @@ const AI_MODELS = [
                   placeholder="sk-ant-..."
                   class="w-full px-3 py-2 rounded bg-ink-bg border border-ink-border
                          text-ink-text text-sm placeholder:text-ink-muted font-mono
-                         focus:outline-none focus:border-ink-accent transition-colors"/>
+                         focus:outline-none focus:border-ink-accent transition-colors"
+                />
                 <p class="text-ink-muted text-xs leading-relaxed">
-                  Guardada únicamente en este dispositivo (localStorage). Nunca se
-                  envía a ningún servidor propio; solo a api.anthropic.com.
+                  Guardada únicamente en este dispositivo (localStorage). Nunca
+                  se envía a ningún servidor propio; solo a api.anthropic.com.
                 </p>
                 @if (aiService.hasApiKey()) {
-                  <div class="flex items-center justify-between px-3 py-1.5 rounded
-                              bg-ink-bg border border-ink-success/30 mt-1">
-                    <span class="text-ink-success text-xs">✓ API key configurada</span>
+                  <div
+                    class="flex items-center justify-between px-3 py-1.5 rounded
+                              bg-ink-bg border border-ink-success/30 mt-1"
+                  >
+                    <span class="text-ink-success text-xs"
+                      >✓ API key configurada</span
+                    >
                     <button
                       (click)="clearApiKey()"
-                      class="text-ink-subtle text-xs hover:text-ink-danger transition-colors">
+                      class="text-ink-subtle text-xs hover:text-ink-danger transition-colors"
+                    >
                       Eliminar
                     </button>
                   </div>
@@ -414,14 +458,17 @@ const AI_MODELS = [
               </div>
 
               <div class="flex flex-col gap-1.5">
-                <label class="text-ink-subtle text-xs font-medium uppercase tracking-wide">
+                <label
+                  class="text-ink-subtle text-xs font-medium uppercase tracking-wide"
+                >
                   Modelo
                 </label>
                 <select
                   [(ngModel)]="selectedModel"
                   class="w-full px-3 py-2 rounded bg-ink-bg border border-ink-border
                          text-ink-text text-sm focus:outline-none
-                         focus:border-ink-accent transition-colors">
+                         focus:border-ink-accent transition-colors"
+                >
                   @for (model of aiModels; track model.id) {
                     <option [value]="model.id">{{ model.label }}</option>
                   }
@@ -431,19 +478,20 @@ const AI_MODELS = [
               <ink-button
                 variant="primary"
                 [disabled]="!apiKeyInput.trim() && !aiService.hasApiKey()"
-                (clicked)="saveAiSettings()">
+                (clicked)="saveAiSettings()"
+              >
                 Guardar cambios
               </ink-button>
-
             </div>
           }
 
           <!-- Apariencia -->
-          @if (activeSection() === 'appearance') {
+          @if (activeSection() === "appearance") {
             <div class="flex flex-col gap-5">
-
               <div class="flex flex-col gap-2">
-                <label class="text-ink-subtle text-xs font-medium uppercase tracking-wide">
+                <label
+                  class="text-ink-subtle text-xs font-medium uppercase tracking-wide"
+                >
                   Tema
                 </label>
                 <div class="flex gap-3">
@@ -452,22 +500,37 @@ const AI_MODELS = [
                       (click)="themeService.setTheme(t.id)"
                       class="flex flex-col items-center gap-2 p-3 rounded-lg border-2
                              transition-all"
-                      [class]="themeService.theme() === t.id
-                        ? 'border-ink-accent bg-ink-surface'
-                        : 'border-ink-border hover:border-ink-muted'">
+                      [class]="
+                        themeService.theme() === t.id
+                          ? 'border-ink-accent bg-ink-surface'
+                          : 'border-ink-border hover:border-ink-muted'
+                      "
+                    >
                       <!-- Preview del tema -->
                       <div
-                        class="w-16 h-10 rounded border border-black/10 overflow-hidden">
+                        class="w-16 h-10 rounded border border-black/10 overflow-hidden"
+                      >
                         <div class="h-3 w-full" [style.background]="t.bg"></div>
-                        <div class="h-7 w-full flex gap-1 p-1"
-                             [style.background]="t.surface">
-                          <div class="w-3 rounded-sm" [style.background]="t.accent"
-                               style="opacity: 0.7"></div>
+                        <div
+                          class="h-7 w-full flex gap-1 p-1"
+                          [style.background]="t.surface"
+                        >
+                          <div
+                            class="w-3 rounded-sm"
+                            [style.background]="t.accent"
+                            style="opacity: 0.7"
+                          ></div>
                           <div class="flex-1 flex flex-col gap-0.5 pt-0.5">
-                            <div class="h-1 w-full rounded" [style.background]="t.text"
-                                 style="opacity: 0.5"></div>
-                            <div class="h-1 w-3/4 rounded" [style.background]="t.text"
-                                 style="opacity: 0.3"></div>
+                            <div
+                              class="h-1 w-full rounded"
+                              [style.background]="t.text"
+                              style="opacity: 0.5"
+                            ></div>
+                            <div
+                              class="h-1 w-3/4 rounded"
+                              [style.background]="t.text"
+                              style="opacity: 0.3"
+                            ></div>
                           </div>
                         </div>
                       </div>
@@ -476,49 +539,54 @@ const AI_MODELS = [
                   }
                 </div>
               </div>
-
             </div>
           }
-
         </div>
       </div>
-
     </ink-modal>
   `,
 })
 export class InkSettingsModalComponent implements OnInit {
-  aiService      = inject(AiService);
+  aiService = inject(AiService);
   projectService = inject(ProjectService);
-  themeService   = inject(ThemeService);
+  themeService = inject(ThemeService);
 
   closed = output<void>();
 
-  activeSection = signal<SettingsSection>('editor');
+  activeSection = signal<SettingsSection>("editor");
 
   // Editor settings
   autosaveInterval = 30;
-  maxSnapshots     = 10;
+  maxSnapshots = 10;
 
   // AI settings
-  apiKeyInput   = '';
-  selectedModel = 'claude-sonnet-4-20250514';
+  apiKeyInput = "";
+  selectedModel = "claude-sonnet-4-20250514";
 
   readonly sections = [
-    { id: 'editor' as SettingsSection,     label: 'Editor' },
-    { id: 'ai' as SettingsSection,         label: 'Asistente IA' },
-    { id: 'appearance' as SettingsSection, label: 'Apariencia' },
+    { id: "editor" as SettingsSection, label: "Editor" },
+    { id: "ai" as SettingsSection, label: "Asistente IA" },
+    { id: "appearance" as SettingsSection, label: "Apariencia" },
   ];
 
   readonly aiModels = AI_MODELS;
 
   readonly themes = [
     {
-      id: 'dark' as const, label: 'Mocha (oscuro)',
-      bg: '#1e1e2e', surface: '#181825', accent: '#cba6f7', text: '#cdd6f4',
+      id: "dark" as const,
+      label: "Mocha (oscuro)",
+      bg: "#1e1e2e",
+      surface: "#181825",
+      accent: "#cba6f7",
+      text: "#cdd6f4",
     },
     {
-      id: 'light' as const, label: 'Latte (claro)',
-      bg: '#eff1f5', surface: '#e6e9ef', accent: '#8839ef', text: '#4c4f69',
+      id: "light" as const,
+      label: "Latte (claro)",
+      bg: "#eff1f5",
+      surface: "#e6e9ef",
+      accent: "#8839ef",
+      text: "#4c4f69",
     },
   ];
 
@@ -526,15 +594,15 @@ export class InkSettingsModalComponent implements OnInit {
     const settings = this.projectService.project()?.settings;
     if (settings) {
       this.autosaveInterval = settings.autosaveInterval;
-      this.maxSnapshots     = settings.maxSnapshots;
-      this.selectedModel    = settings.aiModel;
+      this.maxSnapshots = settings.maxSnapshots;
+      this.selectedModel = settings.aiModel;
     }
   }
 
   async saveEditorSettings(): Promise<void> {
     await this.projectService.updateSettings({
       autosaveInterval: this.autosaveInterval,
-      maxSnapshots:     this.maxSnapshots,
+      maxSnapshots: this.maxSnapshots,
     });
     this.closed.emit();
   }
@@ -549,7 +617,7 @@ export class InkSettingsModalComponent implements OnInit {
 
   clearApiKey(): void {
     this.aiService.clearApiKey();
-    this.apiKeyInput = '';
+    this.apiKeyInput = "";
   }
 }
 ```
@@ -567,14 +635,18 @@ showSettings = signal(false);
 
 ```html
 <!-- Botón settings -->
-<button
-  (click)="showSettings.set(true)"
-  title="Configuración"
-  class="nav-icon">
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-       stroke="currentColor" stroke-width="2">
-    <circle cx="12" cy="12" r="3"/>
-    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06
+<button (click)="showSettings.set(true)" title="Configuración" class="nav-icon">
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+  >
+    <circle cx="12" cy="12" r="3" />
+    <path
+      d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06
              a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09
              A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83
              -2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0
@@ -582,13 +654,14 @@ showSettings = signal(false);
              0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3
              a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06
              -.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0
-             0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+             0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"
+    />
   </svg>
 </button>
 
 <!-- Modal settings -->
 @if (showSettings()) {
-  <ink-settings-modal (closed)="showSettings.set(false)"/>
+<ink-settings-modal (closed)="showSettings.set(false)" />
 }
 ```
 
@@ -613,16 +686,23 @@ closeProject(): void {
 ```html
 <!-- Añadir debajo del logo, antes de los botones de ruta -->
 @if (projectService.isLoaded()) {
-  <button
-    (click)="closeProject()"
-    title="Cerrar proyecto y volver al inicio"
-    class="nav-icon">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-         stroke="currentColor" stroke-width="2">
-      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-      <polyline points="9,22 9,12 15,12 15,22"/>
-    </svg>
-  </button>
+<button
+  (click)="closeProject()"
+  title="Cerrar proyecto y volver al inicio"
+  class="nav-icon"
+>
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+  >
+    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+    <polyline points="9,22 9,12 15,12 15,22" />
+  </svg>
+</button>
 }
 ```
 
@@ -646,6 +726,7 @@ pub fn set_window_title(app: AppHandle, title: String) -> Result<(), String> {
 ```
 
 Registrar en `main.rs`:
+
 ```rust
 .invoke_handler(tauri::generate_handler![
     // ... comandos existentes ...
@@ -675,34 +756,121 @@ private updateWindowTitle(): void {
 ```
 
 Llamar a `updateWindowTitle()` en:
+
 - `openDocument()` tras cargar el documento
 - `onTitleChanged()` tras renombrar
 
 ---
 
-## Parte 6: Reordenación del binder (drag & drop HTML5)
+## Parte 6: Drag & drop del binder (reordenar + mover a carpetas)
+
+El drag & drop del binder tiene dos comportamientos según el nodo destino:
+
+- **Soltar sobre un documento** → reordena: el nodo arrastrado se coloca inmediatamente después del documento destino, al mismo nivel.
+- **Soltar sobre una carpeta** → mueve dentro: el nodo arrastrado se convierte en hijo de esa carpeta.
+
+El feedback visual distingue ambos casos claramente durante el arrastre.
+
+---
 
 ### Modificar `BinderNodeComponent`
 
-Añadir atributos `draggable` y los eventos de drag:
+**Nuevos outputs y signals:**
 
 ```typescript
-// Nuevos outputs
-dragStarted = output<string>();   // emite el id del nodo
-draggedOver = output<string>();   // emite el id del nodo destino
-dropped     = output<{ draggedId: string; targetId: string }>();
+// Outputs para propagar eventos al BinderComponent
+dragStarted = output<string>();
+dropped = output<DropEvent>();
+
+// Signal local para feedback visual
+isDragOver = signal(false);
+isDragOverInner = signal(false); // hover sobre zona "dentro de carpeta"
 ```
 
+**Tipo del evento de drop:**
+
+```typescript
+// Añadir en un fichero de modelos compartido o en binder-node.component.ts
+export interface DropEvent {
+  draggedId: string;
+  targetId: string;
+  position: "after" | "inside"; // 'inside' solo válido si el destino es carpeta
+}
+```
+
+**Template — la fila del nodo:**
+
 ```html
-<!-- En la fila del nodo, añadir: -->
 <div
   ...
   draggable="true"
-  (dragstart)="dragStarted.emit(node().id)"
-  (dragover)="$event.preventDefault(); draggedOver.emit(node().id)"
-  (drop)="$event.preventDefault(); dropped.emit({ draggedId: draggedId, targetId: node().id })"
-  [class.drag-over]="isDragTarget()">
+  (dragstart)="onDragStart($event)"
+  (dragend)="isDragOver.set(false); isDragOverInner.set(false)"
+  (dragover)="onDragOver($event)"
+  (dragleave)="isDragOver.set(false); isDragOverInner.set(false)"
+  (drop)="onDrop($event)"
+  [class.ring-1]="isDragOver()"
+  [class.ring-ink-accent]="isDragOver()"
+  [class.bg-ink-accent]="isDragOverInner()"
+  [class.bg-opacity-10]="isDragOverInner()"
+>
+  <!-- Zona de drop "dentro de la carpeta": franja inferior visible solo en carpetas -->
+  @if (node().type === 'folder') {
+  <div
+    class="absolute bottom-0 left-0 right-0 h-1.5 rounded-b
+             transition-colors"
+    [class.bg-ink-accent]="isDragOverInner()"
+    [class.opacity-60]="isDragOverInner()"
+  ></div>
+  } ...resto del contenido...
+</div>
 ```
+
+**Lógica del componente:**
+
+```typescript
+onDragStart(event: DragEvent): void {
+  event.dataTransfer!.effectAllowed = 'move';
+  event.dataTransfer!.setData('text/plain', this.node().id);
+  this.dragStarted.emit(this.node().id);
+}
+
+onDragOver(event: DragEvent): void {
+  event.preventDefault();
+  event.stopPropagation();
+  event.dataTransfer!.dropEffect = 'move';
+
+  if (this.node().type === 'folder') {
+    // Zona inferior 40% → "soltar dentro"; zona superior 60% → "soltar después"
+    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    const relY  = (event.clientY - rect.top) / rect.height;
+    this.isDragOverInner.set(relY > 0.6);
+    this.isDragOver.set(relY <= 0.6);
+  } else {
+    this.isDragOver.set(true);
+    this.isDragOverInner.set(false);
+  }
+}
+
+onDrop(event: DragEvent): void {
+  event.preventDefault();
+  event.stopPropagation();
+
+  const draggedId = event.dataTransfer!.getData('text/plain');
+  if (!draggedId || draggedId === this.node().id) return;
+
+  const position: 'after' | 'inside' =
+    this.node().type === 'folder' && this.isDragOverInner()
+      ? 'inside'
+      : 'after';
+
+  this.dropped.emit({ draggedId, targetId: this.node().id, position });
+  this.isDragOver.set(false);
+  this.isDragOverInner.set(false);
+}
+```
+
+---
 
 ### Modificar `BinderComponent`
 
@@ -713,40 +881,89 @@ onDragStart(id: string): void {
   this.draggedNodeId.set(id);
 }
 
-onDrop(event: { draggedId: string; targetId: string }): void {
+onDrop(event: DropEvent): void {
   if (event.draggedId === event.targetId) return;
-  this.moveDraggedNode(event.draggedId, event.targetId);
+  this.applyDrop(event);
   this.draggedNodeId.set(null);
 }
 
-private async moveDraggedNode(draggedId: string, targetId: string): Promise<void> {
+private async applyDrop(event: DropEvent): Promise<void> {
   const project = this.projectService.project();
   if (!project) return;
 
-  // Extraer el nodo arrastrado del árbol
-  const dragged = findNode(project.tree, draggedId);
+  const dragged = findNode(project.tree, event.draggedId);
   if (!dragged) return;
 
-  // Construir el nuevo árbol: eliminar el nodo de su posición actual
-  // e insertarlo después del nodo destino
-  const treeWithoutDragged = deleteNode(project.tree, draggedId);
-  const newTree = insertAfter(treeWithoutDragged, targetId, dragged);
+  // No permitir mover una carpeta dentro de uno de sus propios descendientes
+  if (event.position === 'inside' && isDescendant(project.tree, event.draggedId, event.targetId)) {
+    return;
+  }
+
+  const treeWithoutDragged = deleteNode(project.tree, event.draggedId);
+
+  const newTree = event.position === 'inside'
+    ? insertInside(treeWithoutDragged, event.targetId, dragged)
+    : insertAfter(treeWithoutDragged, event.targetId, dragged);
 
   await this.projectService.updateTree(newTree);
 }
 ```
 
-**Añadir la función pura `insertAfter`** en `project.service.ts`:
+---
+
+### Funciones puras en `project.service.ts`
+
+Añadir junto a las funciones `insertNode`, `deleteNode` y `renameNode` existentes:
 
 ```typescript
-// Insertar nodo inmediatamente después del nodo con id targetId (en el mismo nivel)
-function insertAfter(tree: TreeNode[], targetId: string, node: TreeNode): TreeNode[] {
+// Insertar nodo inmediatamente después del nodo con targetId (mismo nivel)
+function insertAfter(
+  tree: TreeNode[],
+  targetId: string,
+  node: TreeNode,
+): TreeNode[] {
   const result: TreeNode[] = [];
   for (const n of tree) {
     result.push({ ...n, children: insertAfter(n.children, targetId, node) });
     if (n.id === targetId) result.push(node);
   }
   return result;
+}
+
+// Insertar nodo como primer hijo de la carpeta con targetId
+function insertInside(
+  tree: TreeNode[],
+  targetId: string,
+  node: TreeNode,
+): TreeNode[] {
+  return tree.map((n) => {
+    if (n.id === targetId) {
+      return { ...n, children: [node, ...n.children] };
+    }
+    return { ...n, children: insertInside(n.children, targetId, node) };
+  });
+}
+
+// Verificar si ancestorId es antecesor de nodeId en el árbol
+// (para evitar mover una carpeta dentro de sí misma)
+function isDescendant(
+  tree: TreeNode[],
+  ancestorId: string,
+  nodeId: string,
+): boolean {
+  const ancestor = findNode(tree, ancestorId);
+  if (!ancestor) return false;
+  return findNode(ancestor.children, nodeId) !== null;
+}
+
+// Buscar un nodo por ID en el árbol (recursivo)
+function findNode(tree: TreeNode[], id: string): TreeNode | null {
+  for (const n of tree) {
+    if (n.id === id) return n;
+    const found = findNode(n.children, id);
+    if (found) return found;
+  }
+  return null;
 }
 ```
 
@@ -787,6 +1004,7 @@ export class AppComponent implements OnInit {
 ## Criterios de aceptación
 
 **Toolbar del editor:**
+
 - [ ] La toolbar aparece entre la top-bar y el área de texto
 - [ ] H1, H2, H3 aplican/quitan el heading correspondiente y se resaltan cuando están activos
 - [ ] Negrita, cursiva y tachado funcionan y muestran su estado activo
@@ -798,6 +1016,7 @@ export class AppComponent implements OnInit {
 - [ ] La toolbar no aparece en modo focus
 
 **Settings:**
+
 - [ ] El botón de settings en `InkNavComponent` abre el modal
 - [ ] Sección "Editor": cambiar y guardar autosave e intervalo actualiza `project.json`
 - [ ] Sección "Editor": sin proyecto abierto muestra mensaje informativo
@@ -806,16 +1025,24 @@ export class AppComponent implements OnInit {
 - [ ] Sección "Apariencia": los dos previews de tema son visuales y el click aplica el tema
 
 **Ventana Tauri:**
+
 - [ ] El título de la ventana muestra `Documento — Proyecto` al abrir un documento
 - [ ] El título se actualiza al renombrar el documento
 - [ ] Sin documento abierto, el título muestra solo el nombre del proyecto
 
 **Binder drag & drop:**
-- [ ] Arrastrar un documento y soltarlo sobre otro lo reposiciona en el árbol
-- [ ] El nodo destino muestra algún indicador visual durante el arrastre
-- [ ] La posición nueva persiste en `project.json`
+
+- [ ] Arrastrar un nodo y soltarlo sobre un **documento** lo reposiciona inmediatamente después, al mismo nivel
+- [ ] Arrastrar un nodo y soltarlo en la **zona inferior de una carpeta** lo mueve dentro de ella como primer hijo
+- [ ] Durante el arrastre sobre un documento: resaltado con borde (`ring-ink-accent`)
+- [ ] Durante el arrastre sobre la zona inferior de una carpeta: fondo tintado en accent
+- [ ] No es posible mover una carpeta dentro de uno de sus propios descendientes (se ignora el drop)
+- [ ] Arrastrar un nodo sobre sí mismo no produce ningún cambio
+- [ ] La nueva posición persiste en `project.json`
+- [ ] Funciona con documentos dentro de carpetas anidadas a cualquier profundidad
 
 **Navegación:**
+
 - [ ] `Alt+1` navega a `/editor` desde cualquier vista
 - [ ] `Alt+2` navega a `/boards` desde cualquier vista
 - [ ] El botón de casa en la nav cierra el proyecto y vuelve a `/`
