@@ -95,6 +95,26 @@
     </svg>
   </button>
 
+  <!-- Separador -->
+  <div class="w-px h-5 bg-ink-border shrink-0"></div>
+
+  <!-- Botón toggle panel IA -->
+  <button
+    (click)="aiPanelToggled.emit()"
+    title="Asistente IA (Ctrl+Shift+A)"
+    class="p-1.5 rounded transition-colors"
+    [class.text-ink-accent]="showAiPanel()"
+    [class.bg-ink-border]="showAiPanel()"
+    [class.text-ink-subtle]="!showAiPanel()"
+    [class.hover:text-ink-text]="!showAiPanel()"
+    [class.hover:bg-ink-border]="!showAiPanel()">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      <path d="M8 9h8M8 13h5" stroke-linecap="round"/>
+    </svg>
+  </button>
+
   <!-- Botón modo focus -->
   <button
     (click)="focusToggled.emit()"

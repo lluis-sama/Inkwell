@@ -1,5 +1,5 @@
 import {
-  Component, inject, signal,
+  Component, inject, signal, ViewChild,
   OnInit, OnDestroy, HostListener,
 } from '@angular/core';
 import { Router } from '@angular/router';
@@ -11,15 +11,18 @@ import { BinderComponent } from './binder/binder.component';
 import { TiptapEditorComponent } from './tiptap/tiptap-editor.component';
 import { EditorTopBarComponent, SaveStatus } from './top-bar/editor-top-bar.component';
 import { SnapshotsPanelComponent } from './snapshots/snapshots-panel.component';
+import { AiAssistantPanelComponent } from './ai-assistant/ai-assistant-panel.component';
 import { InkNavComponent } from '../../shared/components/ink-nav.component';
 
 @Component({
   selector: 'app-editor-layout',
   standalone: true,
-  imports: [BinderComponent, TiptapEditorComponent, EditorTopBarComponent, SnapshotsPanelComponent, InkNavComponent],
+  imports: [BinderComponent, TiptapEditorComponent, EditorTopBarComponent, SnapshotsPanelComponent, AiAssistantPanelComponent, InkNavComponent],
   templateUrl: './editor-layout.component.html',
 })
 export class EditorLayoutComponent implements OnInit, OnDestroy {
+  @ViewChild(TiptapEditorComponent) tiptapEditor?: TiptapEditorComponent;
+
   protected projectService = inject(ProjectService);
   private docService       = inject(DocumentService);
   private router           = inject(Router);
@@ -30,6 +33,7 @@ export class EditorLayoutComponent implements OnInit, OnDestroy {
   activeDocumentId    = signal<string | null>(null);
   activeDocument      = signal<DocumentFile | null>(null);
   showSnapshotsPanel  = signal<boolean>(false);
+  showAiPanel         = signal(false);
 
   private isDirty       = false;
   private autosaveTimer: ReturnType<typeof setInterval> | null = null;
@@ -147,6 +151,10 @@ export class EditorLayoutComponent implements OnInit, OnDestroy {
       event.preventDefault();
       this.saveCurrentDocument();
     }
+    if (event.ctrlKey && event.shiftKey && event.key === 'A') {
+      event.preventDefault();
+      this.toggleAiPanel();
+    }
   }
 
   toggleBinder(): void {
@@ -158,7 +166,21 @@ export class EditorLayoutComponent implements OnInit, OnDestroy {
   }
 
   toggleSnapshotsPanel(): void {
+    if (!this.showSnapshotsPanel()) {
+      this.showAiPanel.set(false);
+    }
     this.showSnapshotsPanel.update(v => !v);
+  }
+
+  toggleAiPanel(): void {
+    if (!this.showAiPanel()) {
+      this.showSnapshotsPanel.set(false);
+    }
+    this.showAiPanel.update(v => !v);
+  }
+
+  onInsertIntoEditor(text: string): void {
+    this.tiptapEditor?.insertAtCursor(text);
   }
 
   onDocumentRestoredFromPanel(doc: DocumentFile): void {

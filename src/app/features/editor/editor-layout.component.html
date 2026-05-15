@@ -15,10 +15,12 @@
         [saveStatus]="saveStatus()"
         [focusMode]="focusMode()"
         [showSnapshots]="showSnapshotsPanel()"
+        [showAiPanel]="showAiPanel()"
         (binderToggled)="toggleBinder()"
         (focusToggled)="toggleFocusMode()"
         (snapshotRequested)="createSnapshot()"
         (snapshotsPanelToggled)="toggleSnapshotsPanel()"
+        (aiPanelToggled)="toggleAiPanel()"
         (titleChanged)="onTitleChanged($event)"/>
     }
 
@@ -75,17 +77,35 @@
         }
       </div>
 
-      <!-- Panel snapshots -->
-      @if (showSnapshotsPanel() && !focusMode() && activeDocument()) {
+      <!-- Panel derecho: IA / Snapshots / Franja colapsada -->
+      @if (showAiPanel() && !focusMode()) {
+        <!-- Panel IA -->
+        <app-ai-assistant-panel
+          [activeDocument]="activeDocument()"
+          (insertIntoEditor)="onInsertIntoEditor($event)"
+          (closed)="showAiPanel.set(false)"/>
+      } @else if (showSnapshotsPanel() && activeDocument() && !focusMode()) {
+        <!-- Panel de Snapshots -->
         <app-snapshots-panel
           [document]="activeDocument()!"
           [maxSnapshots]="projectService.project()?.settings?.maxSnapshots ?? 10"
           (closed)="toggleSnapshotsPanel()"
           (documentChanged)="onDocumentRestoredFromPanel($event)" />
-      } @else if (!focusMode()) {
-        <!-- Franja IA (placeholder hasta INK-08) -->
-        <div class="w-8 shrink-0 border-l border-ink-border bg-ink-panel flex items-center justify-center">
-          <span class="text-ink-muted text-xs [writing-mode:vertical-lr] rotate-180 select-none">IA</span>
+      } @else if (!showSnapshotsPanel() && !showAiPanel() && !focusMode()) {
+        <!-- Franja mínima cuando ningún panel está abierto -->
+        <div class="w-8 shrink-0 border-l border-ink-border bg-ink-panel
+                    flex flex-col items-center pt-3 gap-3">
+          <!-- Botón IA colapsado -->
+          <button
+            (click)="showAiPanel.set(true)"
+            title="Abrir asistente IA (Ctrl+Shift+A)"
+            class="p-1.5 rounded text-ink-muted hover:text-ink-accent
+                   hover:bg-ink-border transition-colors">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+          </button>
         </div>
       }
     </div>

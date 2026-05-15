@@ -127,4 +127,13 @@ export class TiptapEditorComponent implements AfterViewInit, OnChanges, OnDestro
     if (this.debounceTimer) clearTimeout(this.debounceTimer);
     this.editor?.destroy();
   }
+
+  insertAtCursor(text: string): void {
+    if (!this.editor) return;
+    this.editor
+      .chain()
+      .focus()
+      .insertContent(text)
+      .run();
+  }
 }

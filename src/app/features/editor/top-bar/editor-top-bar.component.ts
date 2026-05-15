@@ -13,11 +13,13 @@ export class EditorTopBarComponent {
   focusMode     = input<boolean>(false);
 
   showSnapshots = input<boolean>(false);
+  showAiPanel   = input<boolean>(false);
 
   binderToggled          = output<void>();
   focusToggled           = output<void>();
   snapshotRequested      = output<void>();
   snapshotsPanelToggled  = output<void>();
+  aiPanelToggled         = output<void>();
   titleChanged           = output<string>();
 
   onTitleChange(event: Event): void {
