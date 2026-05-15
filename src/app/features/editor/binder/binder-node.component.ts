@@ -10,6 +10,12 @@ export interface NodeContextEvent {
   y: number;
 }
 
+export interface DropEvent {
+  draggedId: string;
+  targetId: string;
+  position: 'after' | 'inside';
+}
+
 @Component({
   selector: 'app-binder-node',
   standalone: true,
@@ -28,10 +34,14 @@ export class BinderNodeComponent {
   contextMenu  = output<NodeContextEvent>();
   renamed      = output<{ id: string; title: string }>();
   renameCancel = output<void>();
+  dragStarted  = output<string>();
+  dropped      = output<DropEvent>();
 
-  expanded = signal<boolean>(true);
-  isActive = computed(() => this.activeId() === this.node().id);
-  renaming = computed(() => this.renamingId() === this.node().id);
+  expanded       = signal<boolean>(true);
+  isActive       = computed(() => this.activeId() === this.node().id);
+  renaming       = computed(() => this.renamingId() === this.node().id);
+  isDragOver     = signal(false);
+  isDragOverInner = signal(false);
 
   constructor() {
     // Auto-focus the rename input when it appears
@@ -60,5 +70,40 @@ export class BinderNodeComponent {
     const title = inputEl.value.trim();
     if (title) this.renamed.emit({ id: this.node().id, title });
     else this.renameCancel.emit();
+  }
+
+  onDragStart(event: DragEvent): void {
+    event.dataTransfer!.effectAllowed = 'move';
+    event.dataTransfer!.setData('text/plain', this.node().id);
+    this.dragStarted.emit(this.node().id);
+  }
+
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    event.dataTransfer!.dropEffect = 'move';
+    if (this.node().type === 'folder') {
+      const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+      const relY = (event.clientY - rect.top) / rect.height;
+      this.isDragOverInner.set(relY > 0.6);
+      this.isDragOver.set(relY <= 0.6);
+    } else {
+      this.isDragOver.set(true);
+      this.isDragOverInner.set(false);
+    }
+  }
+
+  onDrop(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    const draggedId = event.dataTransfer!.getData('text/plain');
+    if (!draggedId || draggedId === this.node().id) return;
+    const position: 'after' | 'inside' =
+      this.node().type === 'folder' && this.isDragOverInner()
+        ? 'inside'
+        : 'after';
+    this.dropped.emit({ draggedId, targetId: this.node().id, position });
+    this.isDragOver.set(false);
+    this.isDragOverInner.set(false);
   }
 }

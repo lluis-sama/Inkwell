@@ -1,4 +1,7 @@
 <div class="tiptap-host h-full flex flex-col">
+  @if (!focusMode()) {
+    <app-editor-toolbar [editor]="editorReady()" />
+  }
   <div
     #editorEl
     class="flex-1 overflow-y-auto px-16 py-12 focus:outline-none">

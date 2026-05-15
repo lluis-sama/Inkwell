@@ -1,6 +1,6 @@
 use std::fs;
 use std::path::Path;
-use tauri::AppHandle;
+use tauri::{AppHandle, Manager};
 use tauri_plugin_dialog::{DialogExt, FilePath};
 use tokio::sync::oneshot;
 
@@ -96,4 +96,15 @@ pub fn create_project_structure(base_path: String) -> Result<(), String> {
         .map_err(|e| format!("Error creando boards/: {}", e))?;
 
     Ok(())
+}
+
+// ─── Ventana ─────────────────────────────────────────────────────────────────
+
+/// Actualiza el título de la ventana principal.
+#[tauri::command]
+pub fn set_window_title(app: AppHandle, title: String) -> Result<(), String> {
+    app.get_webview_window("main")
+       .ok_or("Ventana no encontrada".to_string())?
+       .set_title(&title)
+       .map_err(|e| e.to_string())
 }

@@ -139,7 +139,7 @@ function insertNode(tree: TreeNode[], parentId: string, node: TreeNode): TreeNod
   });
 }
 
-function deleteNode(tree: TreeNode[], id: string): TreeNode[] {
+export function deleteNode(tree: TreeNode[], id: string): TreeNode[] {
   return tree
     .filter(n => n.id !== id)
     .map(n => ({ ...n, children: deleteNode(n.children, id) }));
@@ -150,4 +150,37 @@ function renameNode(tree: TreeNode[], id: string, title: string): TreeNode[] {
     if (n.id === id) return { ...n, title };
     return { ...n, children: renameNode(n.children, id, title) };
   });
+}
+
+export function findNode(tree: TreeNode[], id: string): TreeNode | null {
+  for (const n of tree) {
+    if (n.id === id) return n;
+    const found = findNode(n.children, id);
+    if (found) return found;
+  }
+  return null;
+}
+
+export function insertAfter(tree: TreeNode[], targetId: string, node: TreeNode): TreeNode[] {
+  const result: TreeNode[] = [];
+  for (const n of tree) {
+    result.push({ ...n, children: insertAfter(n.children, targetId, node) });
+    if (n.id === targetId) result.push(node);
+  }
+  return result;
+}
+
+export function insertInside(tree: TreeNode[], targetId: string, node: TreeNode): TreeNode[] {
+  return tree.map(n => {
+    if (n.id === targetId) {
+      return { ...n, children: [node, ...n.children] };
+    }
+    return { ...n, children: insertInside(n.children, targetId, node) };
+  });
+}
+
+export function isDescendant(tree: TreeNode[], ancestorId: string, nodeId: string): boolean {
+  const ancestor = findNode(tree, ancestorId);
+  if (!ancestor) return false;
+  return findNode(ancestor.children, nodeId) !== null;
 }

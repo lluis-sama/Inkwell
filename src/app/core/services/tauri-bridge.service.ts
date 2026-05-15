@@ -31,4 +31,8 @@ export class TauriBridgeService {
   createProjectStructure(basePath: string): Promise<void> {
     return invoke<void>('create_project_structure', { basePath });
   }
+
+  setWindowTitle(title: string): Promise<void> {
+    return invoke<void>('set_window_title', { title });
+  }
 }

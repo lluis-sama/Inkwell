@@ -1,16 +1,33 @@
 <div>
   <!-- Fila del nodo -->
   <div
-    class="group flex items-center gap-1.5 px-2 py-1.5 rounded cursor-pointer select-none transition-colors text-sm"
+    class="group relative flex items-center gap-1.5 px-2 py-1.5 rounded cursor-pointer select-none transition-colors text-sm"
     [style.paddingLeft.px]="depth() * 12 + 8"
     [class]="
       isActive()
         ? 'bg-ink-surface text-ink-text'
         : 'text-ink-subtle hover:bg-ink-surface hover:text-ink-text'
     "
+    [class.ring-1]="isDragOver()"
+    [class.ring-ink-accent]="isDragOver()"
+    [class.bg-ink-accent]="isDragOverInner()"
+    [class.bg-opacity-10]="isDragOverInner()"
+    draggable="true"
     (click)="onRowClick()"
     (contextmenu)="onContextMenu($event)"
+    (dragstart)="onDragStart($event)"
+    (dragend)="isDragOver.set(false); isDragOverInner.set(false)"
+    (dragover)="onDragOver($event)"
+    (dragleave)="isDragOver.set(false); isDragOverInner.set(false)"
+    (drop)="onDrop($event)"
   >
+    <!-- Franja indicadora de drop inside (solo carpetas) -->
+    @if (node().type === 'folder') {
+      <div class="absolute bottom-0 left-0 right-0 h-1.5 rounded-b transition-colors"
+           [class.bg-ink-accent]="isDragOverInner()"
+           [class.opacity-60]="isDragOverInner()"></div>
+    }
+
     <!-- Chevron (solo en carpetas) -->
     <span class="w-4 h-4 flex items-center justify-center shrink-0">
       @if (node().type === "folder") {
@@ -95,6 +112,8 @@
         (contextMenu)="contextMenu.emit($event)"
         (renamed)="renamed.emit($event)"
         (renameCancel)="renameCancel.emit()"
+        (dragStarted)="dragStarted.emit($event)"
+        (dropped)="dropped.emit($event)"
       />
     }
   }

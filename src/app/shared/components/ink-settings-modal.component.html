@@ -1,0 +1,186 @@
+<ink-modal title="Configuración" [hasActions]="false" (closed)="closed.emit()">
+  <div class="flex gap-0 -mx-6 -mt-5">
+
+    <!-- Sidebar de secciones -->
+    <div class="flex flex-col w-36 border-r border-ink-border pt-2 pb-4 shrink-0">
+      @for (s of sections; track s.id) {
+        <button
+          (click)="activeSection.set(s.id)"
+          class="flex items-center gap-2.5 px-4 py-2.5 text-xs transition-colors text-left"
+          [class]="
+            activeSection() === s.id
+              ? 'bg-ink-surface text-ink-text font-medium border-r-2 border-ink-accent'
+              : 'text-ink-subtle hover:text-ink-text hover:bg-ink-surface'
+          ">
+          {{ s.label }}
+        </button>
+      }
+    </div>
+
+    <!-- Contenido de la sección -->
+    <div class="flex-1 px-6 py-4 min-h-64">
+
+      <!-- Editor: con proyecto abierto -->
+      @if (activeSection() === 'editor' && projectService.isLoaded()) {
+        <div class="flex flex-col gap-5">
+
+          <div class="flex flex-col gap-1.5">
+            <label class="text-ink-subtle text-xs font-medium uppercase tracking-wide">
+              Autoguardado
+            </label>
+            <select
+              [(ngModel)]="autosaveInterval"
+              class="w-full px-3 py-2 rounded bg-ink-bg border border-ink-border
+                     text-ink-text text-sm focus:outline-none
+                     focus:border-ink-accent transition-colors">
+              <option [ngValue]="0">Desactivado</option>
+              <option [ngValue]="15">Cada 15 segundos</option>
+              <option [ngValue]="30">Cada 30 segundos (por defecto)</option>
+              <option [ngValue]="60">Cada minuto</option>
+              <option [ngValue]="300">Cada 5 minutos</option>
+            </select>
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label class="text-ink-subtle text-xs font-medium uppercase tracking-wide">
+              Máximo de snapshots por documento
+            </label>
+            <select
+              [(ngModel)]="maxSnapshots"
+              class="w-full px-3 py-2 rounded bg-ink-bg border border-ink-border
+                     text-ink-text text-sm focus:outline-none
+                     focus:border-ink-accent transition-colors">
+              <option [ngValue]="5">5 snapshots</option>
+              <option [ngValue]="10">10 snapshots (por defecto)</option>
+              <option [ngValue]="20">20 snapshots</option>
+              <option [ngValue]="50">50 snapshots</option>
+            </select>
+            <p class="text-ink-muted text-xs">
+              Al superar el límite se elimina el más antiguo (FIFO).
+            </p>
+          </div>
+
+          <ink-button variant="primary" (clicked)="saveEditorSettings()">
+            Guardar cambios
+          </ink-button>
+
+        </div>
+      }
+
+      <!-- Editor: sin proyecto abierto -->
+      @if (activeSection() === 'editor' && !projectService.isLoaded()) {
+        <p class="text-ink-subtle text-sm mt-4">
+          Abre un proyecto para configurar las opciones del editor.
+        </p>
+      }
+
+      <!-- IA -->
+      @if (activeSection() === 'ai') {
+        <div class="flex flex-col gap-5">
+
+          <div class="flex flex-col gap-1.5">
+            <label class="text-ink-subtle text-xs font-medium uppercase tracking-wide">
+              Anthropic API Key
+            </label>
+            <input
+              [(ngModel)]="apiKeyInput"
+              type="password"
+              placeholder="sk-ant-..."
+              class="w-full px-3 py-2 rounded bg-ink-bg border border-ink-border
+                     text-ink-text text-sm placeholder:text-ink-muted font-mono
+                     focus:outline-none focus:border-ink-accent transition-colors"/>
+            <p class="text-ink-muted text-xs leading-relaxed">
+              Guardada únicamente en este dispositivo (localStorage). Nunca
+              se envía a ningún servidor propio; solo a api.anthropic.com.
+            </p>
+            @if (aiService.hasApiKey()) {
+              <div class="flex items-center justify-between px-3 py-1.5 rounded
+                          bg-ink-bg border border-ink-success/30 mt-1">
+                <span class="text-ink-success text-xs">&#x2713; API key configurada</span>
+                <button
+                  (click)="clearApiKey()"
+                  class="text-ink-subtle text-xs hover:text-ink-danger transition-colors">
+                  Eliminar
+                </button>
+              </div>
+            }
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label class="text-ink-subtle text-xs font-medium uppercase tracking-wide">
+              Modelo
+            </label>
+            <select
+              [(ngModel)]="selectedModel"
+              class="w-full px-3 py-2 rounded bg-ink-bg border border-ink-border
+                     text-ink-text text-sm focus:outline-none
+                     focus:border-ink-accent transition-colors">
+              @for (model of aiModels; track model.id) {
+                <option [value]="model.id">{{ model.label }}</option>
+              }
+            </select>
+          </div>
+
+          <ink-button
+            variant="primary"
+            [disabled]="!apiKeyInput.trim() && !aiService.hasApiKey()"
+            (clicked)="saveAiSettings()">
+            Guardar cambios
+          </ink-button>
+
+        </div>
+      }
+
+      <!-- Apariencia -->
+      @if (activeSection() === 'appearance') {
+        <div class="flex flex-col gap-5">
+
+          <div class="flex flex-col gap-2">
+            <label class="text-ink-subtle text-xs font-medium uppercase tracking-wide">
+              Tema
+            </label>
+            <div class="flex gap-3">
+              @for (t of themes; track t.id) {
+                <button
+                  (click)="themeService.setTheme(t.id)"
+                  class="flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all"
+                  [class]="
+                    themeService.theme() === t.id
+                      ? 'border-ink-accent bg-ink-surface'
+                      : 'border-ink-border hover:border-ink-muted'
+                  ">
+                  <!-- Preview del tema -->
+                  <div class="w-16 h-10 rounded border border-black/10 overflow-hidden">
+                    <div class="h-3 w-full" [style.background]="t.bg"></div>
+                    <div class="h-7 w-full flex gap-1 p-1" [style.background]="t.surface">
+                      <div
+                        class="w-3 rounded-sm"
+                        [style.background]="t.accent"
+                        style="opacity: 0.7">
+                      </div>
+                      <div class="flex-1 flex flex-col gap-0.5 pt-0.5">
+                        <div
+                          class="h-1 w-full rounded"
+                          [style.background]="t.text"
+                          style="opacity: 0.5">
+                        </div>
+                        <div
+                          class="h-1 w-3/4 rounded"
+                          [style.background]="t.text"
+                          style="opacity: 0.3">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <span class="text-ink-text text-xs">{{ t.label }}</span>
+                </button>
+              }
+            </div>
+          </div>
+
+        </div>
+      }
+
+    </div>
+  </div>
+</ink-modal>

@@ -57,7 +57,9 @@
           (nodeClicked)="documentOpened.emit($event)"
           (contextMenu)="onContextMenu($event)"
           (renamed)="onRenamed($event)"
-          (renameCancel)="renamingId.set(null)"/>
+          (renameCancel)="renamingId.set(null)"
+          (dragStarted)="onDragStart($event)"
+          (dropped)="onDrop($event)"/>
       }
     }
   </div>

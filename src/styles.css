@@ -27,6 +27,7 @@
 /* ─── Catppuccin Mocha (dark) ─── */
 :root,
 [data-theme="dark"] {
+  color-scheme: dark;
   --ctp-base:      #1e1e2e;
   --ctp-mantle:    #181825;
   --ctp-crust:     #11111b;
@@ -50,6 +51,7 @@
 
 /* ─── Catppuccin Latte (light) ─── */
 [data-theme="light"] {
+  color-scheme: light;
   --ctp-base:      #eff1f5;
   --ctp-mantle:    #e6e9ef;
   --ctp-crust:     #dce0e8;

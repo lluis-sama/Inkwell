@@ -1,8 +1,8 @@
 import { Component, inject, input, output, signal, computed } from '@angular/core';
 import { TreeNode } from '../../../core/models/project.model';
-import { ProjectService } from '../../../core/services/project.service';
+import { ProjectService, findNode, deleteNode, insertAfter, insertInside, isDescendant } from '../../../core/services/project.service';
 import { DocumentService } from '../../../core/services/document.service';
-import { BinderNodeComponent, NodeContextEvent } from './binder-node.component';
+import { BinderNodeComponent, NodeContextEvent, DropEvent } from './binder-node.component';
 import { BinderContextMenuComponent, ContextMenuAction } from './binder-context-menu.component';
 
 @Component({
@@ -24,8 +24,9 @@ export class BinderComponent {
   documentOpened = output<TreeNode>();
   nodeRenamed    = output<{ id: string; title: string }>();
 
-  renamingId  = signal<string | null>(null);
-  contextMenu = signal<NodeContextEvent | null>(null);
+  renamingId    = signal<string | null>(null);
+  contextMenu   = signal<NodeContextEvent | null>(null);
+  draggedNodeId = signal<string | null>(null);
 
   contextActions = computed<ContextMenuAction[]>(() => {
     const node = this.contextMenu()?.node;
@@ -45,6 +46,31 @@ export class BinderComponent {
     actions.push({ label: 'Eliminar', action: 'delete', danger: true });
     return actions;
   });
+
+  onDragStart(id: string): void {
+    this.draggedNodeId.set(id);
+  }
+
+  onDrop(event: DropEvent): void {
+    if (event.draggedId === event.targetId) return;
+    this.applyDrop(event);
+    this.draggedNodeId.set(null);
+  }
+
+  private async applyDrop(event: DropEvent): Promise<void> {
+    const project = this.projectService.project();
+    if (!project) return;
+    const dragged = findNode(project.tree, event.draggedId);
+    if (!dragged) return;
+    if (event.position === 'inside' && isDescendant(project.tree, event.draggedId, event.targetId)) {
+      return;
+    }
+    const treeWithoutDragged = deleteNode(project.tree, event.draggedId);
+    const newTree = event.position === 'inside'
+      ? insertInside(treeWithoutDragged, event.targetId, dragged)
+      : insertAfter(treeWithoutDragged, event.targetId, dragged);
+    await this.projectService.updateTree(newTree);
+  }
 
   onContextMenu(event: NodeContextEvent): void {
     this.contextMenu.set(event);

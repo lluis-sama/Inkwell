@@ -13,6 +13,7 @@ import { EditorTopBarComponent, SaveStatus } from './top-bar/editor-top-bar.comp
 import { SnapshotsPanelComponent } from './snapshots/snapshots-panel.component';
 import { AiAssistantPanelComponent } from './ai-assistant/ai-assistant-panel.component';
 import { InkNavComponent } from '../../shared/components/ink-nav.component';
+import { TauriBridgeService } from '../../core/services/tauri-bridge.service';
 
 @Component({
   selector: 'app-editor-layout',
@@ -26,6 +27,7 @@ export class EditorLayoutComponent implements OnInit, OnDestroy {
   protected projectService = inject(ProjectService);
   private docService       = inject(DocumentService);
   private router           = inject(Router);
+  private bridge           = inject(TauriBridgeService);
 
   showBinder          = signal(true);
   focusMode           = signal(false);
@@ -65,6 +67,7 @@ export class EditorLayoutComponent implements OnInit, OnDestroy {
       this.activeDocument.set(doc);
       this.isDirty = false;
       this.saveStatus.set('saved');
+      this.updateWindowTitle();
     } catch (e) {
       console.error('Error cargando documento:', e);
     }
@@ -89,6 +92,7 @@ export class EditorLayoutComponent implements OnInit, OnDestroy {
     await this.projectService.renameNode(this.activeDocument()!.id, title.trim());
     this.isDirty = true;
     this.saveStatus.set('unsaved');
+    this.updateWindowTitle();
   }
 
   async createSnapshot(): Promise<void> {
@@ -118,6 +122,13 @@ export class EditorLayoutComponent implements OnInit, OnDestroy {
       clearInterval(this.autosaveTimer);
       this.autosaveTimer = null;
     }
+  }
+
+  private updateWindowTitle(): void {
+    const project = this.projectService.project()?.name ?? 'Inkwell';
+    const doc = this.activeDocument()?.title;
+    const title = doc ? `${doc} — ${project}` : project;
+    this.bridge.setWindowTitle(title).catch(() => {});
   }
 
   private async saveCurrentDocument(): Promise<void> {

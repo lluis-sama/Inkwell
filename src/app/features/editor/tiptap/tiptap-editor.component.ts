@@ -7,10 +7,12 @@ import { Editor } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import CharacterCount from '@tiptap/extension-character-count';
+import { EditorToolbarComponent } from './editor-toolbar.component';
 
 @Component({
   selector: 'app-tiptap-editor',
   standalone: true,
+  imports: [EditorToolbarComponent],
   templateUrl: './tiptap-editor.component.html',
   styles: [`
     :host { display: flex; flex-direction: column; height: 100%; }
@@ -83,12 +85,14 @@ export class TiptapEditorComponent implements AfterViewInit, OnChanges, OnDestro
   content     = input<object>({ type: 'doc', content: [{ type: 'paragraph' }] });
   editable    = input<boolean>(true);
   placeholder = input<string>('Empieza a escribir...');
+  focusMode   = input<boolean>(false);
 
   contentChanged = output<object>();
 
   private editor: Editor | null = null;
   private debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
+  readonly editorReady = signal<Editor | null>(null);
   wordCount = signal<number>(0);
   charCount = signal<number>(0);
 
@@ -102,7 +106,10 @@ export class TiptapEditorComponent implements AfterViewInit, OnChanges, OnDestro
       ],
       content: this.content(),
       editable: this.editable(),
-      onUpdate: ({ editor }) => {
+    });
+    this.editorReady.set(this.editor);
+
+    this.editor.on('update', ({ editor }) => {
         this.wordCount.set(editor.storage['characterCount'].words());
         this.charCount.set(editor.storage['characterCount'].characters());
 
@@ -110,7 +117,6 @@ export class TiptapEditorComponent implements AfterViewInit, OnChanges, OnDestro
         this.debounceTimer = setTimeout(() => {
           this.contentChanged.emit(editor.getJSON());
         }, 300);
-      },
     });
   }
 
@@ -125,6 +131,7 @@ export class TiptapEditorComponent implements AfterViewInit, OnChanges, OnDestro
 
   ngOnDestroy(): void {
     if (this.debounceTimer) clearTimeout(this.debounceTimer);
+    this.editorReady.set(null);
     this.editor?.destroy();
   }
 

@@ -1,12 +1,14 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterLink, Router } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { ThemeService } from '../../core/services/theme.service';
+import { ProjectService } from '../../core/services/project.service';
+import { InkSettingsModalComponent } from './ink-settings-modal.component';
 
 @Component({
   selector: 'ink-nav',
   standalone: true,
-  imports: [RouterLink, TranslocoPipe],
+  imports: [RouterLink, TranslocoPipe, InkSettingsModalComponent],
   templateUrl: './ink-nav.component.html',
   styles: [`
     :host { display: flex; height: 100%; }
@@ -17,9 +19,17 @@ import { ThemeService } from '../../core/services/theme.service';
 })
 export class InkNavComponent {
   protected theme = inject(ThemeService);
+  protected projectService = inject(ProjectService);
   private router = inject(Router);
+
+  showSettings = signal(false);
 
   isRoute(path: string): boolean {
     return this.router.url.startsWith(path);
+  }
+
+  closeProject(): void {
+    this.projectService.closeProject();
+    this.router.navigate(['/']);
   }
 }

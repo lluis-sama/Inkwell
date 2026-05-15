@@ -43,6 +43,7 @@
         @if (activeDocument()) {
           <app-tiptap-editor
             [content]="activeDocument()!.content"
+            [focusMode]="focusMode()"
             (contentChanged)="onContentChanged($event)"/>
         } @else {
           <!-- Estado vacío -->
