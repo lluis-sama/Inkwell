@@ -20,6 +20,7 @@ export class EditorTopBarComponent {
   snapshotRequested      = output<void>();
   snapshotsPanelToggled  = output<void>();
   aiPanelToggled         = output<void>();
+  exportRequested        = output<void>();
   titleChanged           = output<string>();
 
   onTitleChange(event: Event): void {

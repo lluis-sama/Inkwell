@@ -15,6 +15,9 @@ pub fn run() {
             commands::fs_commands::delete_json_file,
             commands::fs_commands::create_project_structure,
             commands::fs_commands::set_window_title,
+            commands::fs_commands::open_print_window,
+            commands::fs_commands::save_file_dialog,
+            commands::fs_commands::write_binary_file,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

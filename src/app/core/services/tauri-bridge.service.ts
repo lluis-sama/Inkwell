@@ -35,4 +35,19 @@ export class TauriBridgeService {
   setWindowTitle(title: string): Promise<void> {
     return invoke<void>('set_window_title', { title });
   }
+
+  openPrintWindow(html: string): Promise<void> {
+    return invoke<void>('open_print_window', { html });
+  }
+
+  saveFileDialog(defaultName: string, extension: string): Promise<string | null> {
+    return invoke<string | null>('save_file_dialog', { defaultName, extension });
+  }
+
+  writeBinaryFile(path: string, data: ArrayBuffer): Promise<void> {
+    return invoke<void>('write_binary_file', {
+      path,
+      data: Array.from(new Uint8Array(data)),
+    });
+  }
 }

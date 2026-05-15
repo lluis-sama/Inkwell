@@ -14,11 +14,12 @@ import { SnapshotsPanelComponent } from './snapshots/snapshots-panel.component';
 import { AiAssistantPanelComponent } from './ai-assistant/ai-assistant-panel.component';
 import { InkNavComponent } from '../../shared/components/ink-nav.component';
 import { TauriBridgeService } from '../../core/services/tauri-bridge.service';
+import { ExportModalComponent } from '../export/export-modal.component';
 
 @Component({
   selector: 'app-editor-layout',
   standalone: true,
-  imports: [BinderComponent, TiptapEditorComponent, EditorTopBarComponent, SnapshotsPanelComponent, AiAssistantPanelComponent, InkNavComponent],
+  imports: [BinderComponent, TiptapEditorComponent, EditorTopBarComponent, SnapshotsPanelComponent, AiAssistantPanelComponent, InkNavComponent, ExportModalComponent],
   templateUrl: './editor-layout.component.html',
 })
 export class EditorLayoutComponent implements OnInit, OnDestroy {
@@ -36,6 +37,7 @@ export class EditorLayoutComponent implements OnInit, OnDestroy {
   activeDocument      = signal<DocumentFile | null>(null);
   showSnapshotsPanel  = signal<boolean>(false);
   showAiPanel         = signal(false);
+  showExportModal     = signal(false);
 
   private isDirty       = false;
   private autosaveTimer: ReturnType<typeof setInterval> | null = null;

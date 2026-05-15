@@ -31,7 +31,8 @@
                 "output": "assets"
               }
             ],
-            "styles": ["src/styles.css"]
+            "styles": ["src/styles.css"],
+            "allowedCommonJsDependencies": ["epub-gen-memory"]
           },
           "configurations": {
             "production": {

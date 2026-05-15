@@ -21,6 +21,7 @@
         (snapshotRequested)="createSnapshot()"
         (snapshotsPanelToggled)="toggleSnapshotsPanel()"
         (aiPanelToggled)="toggleAiPanel()"
+        (exportRequested)="showExportModal.set(true)"
         (titleChanged)="onTitleChanged($event)"/>
     }
 
@@ -112,4 +113,8 @@
     </div>
 
   </div>
+
+  @if (showExportModal()) {
+    <app-export-modal (closed)="showExportModal.set(false)"/>
+  }
 </div>
