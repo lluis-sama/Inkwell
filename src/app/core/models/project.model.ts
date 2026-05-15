@@ -1,3 +1,17 @@
+export interface AuthorProfile {
+  legalName: string;
+  penName?: string;
+  email: string;
+  phone?: string;
+  address?: string;
+  agentName?: string;
+  agentContact?: string;
+  genre: string;
+  language: string;
+  copyrightYear: number;
+  publisher?: string;
+}
+
 export interface Project {
   id: string;
   name: string;
@@ -6,6 +20,8 @@ export interface Project {
   updatedAt: string;
   tree: TreeNode[];
   settings: ProjectSettings;
+  wordCountCache: Record<string, number>;
+  authorProfile?: AuthorProfile;
 }
 
 export interface TreeNode {

@@ -3,3 +3,4 @@ export * from './theme.service';
 export * from './project.service';
 export * from './document.service';
 export * from './board.service';
+export * from './search.service';

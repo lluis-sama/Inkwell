@@ -1,0 +1,48 @@
+<ink-modal [title]="'SYNOPSIS.TITLE' | transloco: { title: document().title }" (closed)="closed.emit()">
+  <div class="flex flex-col gap-4">
+    <p class="text-ink-subtle text-xs leading-relaxed">
+      {{ 'SYNOPSIS.DESCRIPTION' | transloco }}
+    </p>
+    <div class="flex flex-col gap-2">
+      <textarea
+        [value]="synopsisText()"
+        (input)="synopsisText.set($any($event.target).value.slice(0, 500))"
+        [placeholder]="'SYNOPSIS.PLACEHOLDER' | transloco"
+        rows="5"
+        class="w-full px-3 py-2 rounded bg-ink-bg border border-ink-border
+               text-ink-text text-sm placeholder:text-ink-muted resize-none
+               focus:outline-none focus:border-ink-accent transition-colors">
+      </textarea>
+      <div class="flex items-center justify-between">
+        <span class="text-ink-muted text-xs">{{ charCount() }} / 500</span>
+        @if (canGenerateAi()) {
+          <button
+            (click)="generateWithAi()"
+            [disabled]="generating()"
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium
+                   border border-ink-accent text-ink-accent
+                   hover:bg-ink-accent hover:text-ink-panel transition-colors
+                   disabled:opacity-40 disabled:cursor-not-allowed">
+            @if (generating()) {
+              <span class="inline-block w-3 h-3 border border-current
+                           border-t-transparent rounded-full animate-spin"></span>
+            } @else {
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2">
+                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                <path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>
+              </svg>
+            }
+            {{ generating() ? ('SYNOPSIS.GENERATING' | transloco) : ('SYNOPSIS.GENERATE_AI' | transloco) }}
+          </button>
+        } @else if (!ai.hasApiKey()) {
+          <span class="text-ink-muted text-xs">{{ 'SYNOPSIS.API_KEY_REQUIRED' | transloco }}</span>
+        }
+      </div>
+    </div>
+  </div>
+  <ng-container slot="actions">
+    <ink-button variant="ghost" (clicked)="closed.emit()">{{ 'SYNOPSIS.CANCEL' | transloco }}</ink-button>
+    <ink-button variant="primary" [loading]="saving()" (clicked)="save()">{{ 'SYNOPSIS.SAVE' | transloco }}</ink-button>
+  </ng-container>
+</ink-modal>

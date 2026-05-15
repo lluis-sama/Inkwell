@@ -1,6 +1,7 @@
 export interface DocumentFile {
   id: string;
   title: string;
+  synopsis?: string;
   content: object;
   snapshots: Snapshot[];
   createdAt: string;

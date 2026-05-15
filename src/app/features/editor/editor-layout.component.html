@@ -34,7 +34,8 @@
           <app-binder
             [activeId]="activeDocumentId()"
             (documentOpened)="openDocument($event)"
-            (nodeRenamed)="onNodeRenamed($event)"/>
+            (nodeRenamed)="onNodeRenamed($event)"
+            (synopsisRequested)="onSynopsisRequested($event)"/>
         </div>
       }
 
@@ -116,5 +117,12 @@
 
   @if (showExportModal()) {
     <app-export-modal (closed)="showExportModal.set(false)"/>
+  }
+
+  @if (synopsisDocument()) {
+    <app-synopsis-modal
+      [document]="synopsisDocument()!"
+      (saved)="onSynopsisSaved($event)"
+      (closed)="closeSynopsisModal()"/>
   }
 </div>

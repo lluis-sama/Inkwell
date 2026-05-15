@@ -41,28 +41,42 @@
     </div>
   </div>
 
-  <!-- Árbol de documentos -->
-  <div class="flex-1 overflow-y-auto py-2 px-1">
-    @if ((projectService.project()?.tree ?? []).length === 0) {
-      <p class="text-ink-subtle text-xs text-center mt-8 px-4 leading-relaxed">
-        Sin documentos todavía.<br>Crea uno con el botón +
-      </p>
+  <!-- Árbol de documentos o búsqueda -->
+  <div class="flex-1 overflow-hidden">
+    @if (showSearch()) {
+      <app-binder-search
+        (documentSelected)="onSearchDocumentSelected($event)"
+        (closed)="showSearch.set(false)"/>
     } @else {
-      @for (node of projectService.project()!.tree; track node.id) {
-        <app-binder-node
-          [node]="node"
-          [depth]="0"
-          [activeId]="activeId()"
-          [renamingId]="renamingId()"
-          (nodeClicked)="documentOpened.emit($event)"
-          (contextMenu)="onContextMenu($event)"
-          (renamed)="onRenamed($event)"
-          (renameCancel)="renamingId.set(null)"
-          (dragStarted)="onDragStart($event)"
-          (dropped)="onDrop($event)"/>
-      }
+      <div class="h-full overflow-y-auto py-2 px-1">
+        @if ((projectService.project()?.tree ?? []).length === 0) {
+          <p class="text-ink-subtle text-xs text-center mt-8 px-4 leading-relaxed">
+            Sin documentos todavía.<br>Crea uno con el botón +
+          </p>
+        } @else {
+          @for (node of projectService.project()!.tree; track node.id) {
+            <app-binder-node
+              [node]="node"
+              [depth]="0"
+              [activeId]="activeId()"
+              [renamingId]="renamingId()"
+              (nodeClicked)="documentOpened.emit($event)"
+              (contextMenu)="onContextMenu($event)"
+              (renamed)="onRenamed($event)"
+              (renameCancel)="renamingId.set(null)"
+              (dragStarted)="onDragStart($event)"
+              (dropped)="onDrop($event)"
+              (synopsisRequested)="onSynopsisRequested($event)"/>
+          }
+        }
+      </div>
     }
   </div>
+
+  <!-- Footer siempre visible -->
+  <app-binder-footer
+    [searchActive]="showSearch()"
+    (searchToggled)="onSearchToggled()"/>
 </div>
 
 <!-- Menú contextual -->

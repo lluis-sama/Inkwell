@@ -1,0 +1,141 @@
+<ink-modal [title]="'AUTHOR_PROFILE.TITLE' | transloco" (closed)="closed.emit()">
+  <div class="grid grid-cols-2 gap-x-4 gap-y-3">
+    <!-- Nombre legal -->
+    <div class="flex flex-col gap-1">
+      <label class="field-label">{{ 'AUTHOR_PROFILE.LEGAL_NAME_LABEL' | transloco }}</label>
+      <input
+        class="field-input"
+        type="text"
+        [placeholder]="'AUTHOR_PROFILE.LEGAL_NAME_PLACEHOLDER' | transloco"
+        [(ngModel)]="legalName"
+      />
+    </div>
+
+    <!-- Nombre de pluma -->
+    <div class="flex flex-col gap-1">
+      <label class="field-label">{{ 'AUTHOR_PROFILE.PEN_NAME_LABEL' | transloco }}</label>
+      <input
+        class="field-input"
+        type="text"
+        [placeholder]="'AUTHOR_PROFILE.PEN_NAME_PLACEHOLDER' | transloco"
+        [(ngModel)]="penName"
+      />
+    </div>
+
+    <!-- Email -->
+    <div class="flex flex-col gap-1">
+      <label class="field-label">{{ 'AUTHOR_PROFILE.EMAIL_LABEL' | transloco }}</label>
+      <input
+        class="field-input"
+        type="email"
+        [placeholder]="'AUTHOR_PROFILE.EMAIL_PLACEHOLDER' | transloco"
+        [(ngModel)]="email"
+      />
+    </div>
+
+    <!-- Teléfono -->
+    <div class="flex flex-col gap-1">
+      <label class="field-label">{{ 'AUTHOR_PROFILE.PHONE_LABEL' | transloco }}</label>
+      <input
+        class="field-input"
+        type="text"
+        [placeholder]="'AUTHOR_PROFILE.PHONE_PLACEHOLDER' | transloco"
+        [(ngModel)]="phone"
+      />
+    </div>
+
+    <!-- Dirección -->
+    <div class="flex flex-col gap-1 col-span-2">
+      <label class="field-label">{{ 'AUTHOR_PROFILE.ADDRESS_LABEL' | transloco }}</label>
+      <input
+        class="field-input"
+        type="text"
+        [placeholder]="'AUTHOR_PROFILE.ADDRESS_PLACEHOLDER' | transloco"
+        [(ngModel)]="address"
+      />
+    </div>
+
+    <!-- Agente literario -->
+    <div class="flex flex-col gap-1">
+      <label class="field-label">{{ 'AUTHOR_PROFILE.AGENT_LABEL' | transloco }}</label>
+      <input
+        class="field-input"
+        type="text"
+        [placeholder]="'AUTHOR_PROFILE.AGENT_PLACEHOLDER' | transloco"
+        [(ngModel)]="agentName"
+      />
+    </div>
+
+    <!-- Contacto del agente -->
+    <div class="flex flex-col gap-1">
+      <label class="field-label">{{ 'AUTHOR_PROFILE.AGENT_LABEL' | transloco }}</label>
+      <input
+        class="field-input"
+        type="text"
+        [placeholder]="'AUTHOR_PROFILE.AGENT_PLACEHOLDER' | transloco"
+        [(ngModel)]="agentContact"
+      />
+    </div>
+
+    <!-- Género -->
+    <div class="flex flex-col gap-1">
+      <label class="field-label">{{ 'AUTHOR_PROFILE.GENRE_LABEL' | transloco }}</label>
+      <input
+        class="field-input"
+        type="text"
+        [placeholder]="'AUTHOR_PROFILE.GENRE_PLACEHOLDER' | transloco"
+        [(ngModel)]="genre"
+      />
+    </div>
+
+    <!-- Editorial -->
+    <div class="flex flex-col gap-1">
+      <label class="field-label">{{ 'AUTHOR_PROFILE.PUBLISHER_LABEL' | transloco }}</label>
+      <input
+        class="field-input"
+        type="text"
+        [placeholder]="'AUTHOR_PROFILE.PUBLISHER_PLACEHOLDER' | transloco"
+        [(ngModel)]="publisher"
+      />
+    </div>
+
+    <!-- Idioma -->
+    <div class="flex flex-col gap-1">
+      <label class="field-label">{{ 'AUTHOR_PROFILE.LANGUAGE_LABEL' | transloco }}</label>
+      <select class="field-input" [(ngModel)]="language">
+        <option value="es">{{ 'AUTHOR_PROFILE.LANG_ES' | transloco }}</option>
+        <option value="en">{{ 'AUTHOR_PROFILE.LANG_EN' | transloco }}</option>
+        <option value="ca">{{ 'AUTHOR_PROFILE.LANG_CA' | transloco }}</option>
+        <option value="gl">{{ 'AUTHOR_PROFILE.LANG_GL' | transloco }}</option>
+        <option value="eu">{{ 'AUTHOR_PROFILE.LANG_EU' | transloco }}</option>
+        <option value="fr">{{ 'AUTHOR_PROFILE.LANG_FR' | transloco }}</option>
+        <option value="de">{{ 'AUTHOR_PROFILE.LANG_DE' | transloco }}</option>
+        <option value="it">{{ 'AUTHOR_PROFILE.LANG_IT' | transloco }}</option>
+        <option value="pt">{{ 'AUTHOR_PROFILE.LANG_PT' | transloco }}</option>
+      </select>
+    </div>
+
+    <!-- Año de copyright -->
+    <div class="flex flex-col gap-1">
+      <label class="field-label">{{ 'AUTHOR_PROFILE.COPYRIGHT_YEAR_LABEL' | transloco }}</label>
+      <input
+        class="field-input"
+        type="number"
+        [(ngModel)]="copyrightYear"
+      />
+    </div>
+  </div>
+
+  <div slot="actions">
+    <ink-button variant="ghost" (clicked)="closed.emit()"
+      >{{ 'AUTHOR_PROFILE.CANCEL' | transloco }}</ink-button
+    >
+    <ink-button
+      variant="primary"
+      [disabled]="!canSave()"
+      [loading]="saving()"
+      (clicked)="save()"
+      >{{ 'AUTHOR_PROFILE.SAVE' | transloco }}</ink-button
+    >
+  </div>
+</ink-modal>

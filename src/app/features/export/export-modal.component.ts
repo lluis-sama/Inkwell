@@ -123,6 +123,25 @@ export class ExportModalComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     await this.loadFlatDocuments();
     this.selectedIds.set(this.flatDocuments().map(d => d.id));
+
+    const profile = this.projectService.project()?.authorProfile;
+    if (profile) {
+      const current = this.metadata();
+      this.metadata.set({
+        ...current,
+        legalName:    profile.legalName    || current.legalName,
+        penName:      profile.penName      ?? current.penName,
+        email:        profile.email        || current.email,
+        phone:        profile.phone        ?? current.phone,
+        address:      profile.address      ?? current.address,
+        agentName:    profile.agentName    ?? current.agentName,
+        agentContact: profile.agentContact ?? current.agentContact,
+        genre:        profile.genre        || current.genre,
+        language:     profile.language     || current.language,
+        copyrightYear: profile.copyrightYear || current.copyrightYear,
+        publisher:    profile.publisher    ?? current.publisher,
+      });
+    }
   }
 
   goBack(): void {

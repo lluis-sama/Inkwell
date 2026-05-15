@@ -15,15 +15,17 @@ import { AiAssistantPanelComponent } from './ai-assistant/ai-assistant-panel.com
 import { InkNavComponent } from '../../shared/components/ink-nav.component';
 import { TauriBridgeService } from '../../core/services/tauri-bridge.service';
 import { ExportModalComponent } from '../export/export-modal.component';
+import { SynopsisModalComponent } from './synopsis/synopsis-modal.component';
 
 @Component({
   selector: 'app-editor-layout',
   standalone: true,
-  imports: [BinderComponent, TiptapEditorComponent, EditorTopBarComponent, SnapshotsPanelComponent, AiAssistantPanelComponent, InkNavComponent, ExportModalComponent],
+  imports: [BinderComponent, TiptapEditorComponent, EditorTopBarComponent, SnapshotsPanelComponent, AiAssistantPanelComponent, InkNavComponent, ExportModalComponent, SynopsisModalComponent],
   templateUrl: './editor-layout.component.html',
 })
 export class EditorLayoutComponent implements OnInit, OnDestroy {
   @ViewChild(TiptapEditorComponent) tiptapEditor?: TiptapEditorComponent;
+  @ViewChild(BinderComponent) binder?: BinderComponent;
 
   protected projectService = inject(ProjectService);
   private docService       = inject(DocumentService);
@@ -38,6 +40,7 @@ export class EditorLayoutComponent implements OnInit, OnDestroy {
   showSnapshotsPanel  = signal<boolean>(false);
   showAiPanel         = signal(false);
   showExportModal     = signal(false);
+  synopsisDocument    = signal<DocumentFile | null>(null);
 
   private isDirty       = false;
   private autosaveTimer: ReturnType<typeof setInterval> | null = null;
@@ -156,6 +159,10 @@ export class EditorLayoutComponent implements OnInit, OnDestroy {
       event.preventDefault();
       this.showBinder.update(v => !v);
     }
+    if (event.ctrlKey && !event.shiftKey && event.key === 'f') {
+      event.preventDefault();
+      this.binder?.showSearch.update(v => !v);
+    }
     if (event.ctrlKey && event.shiftKey && event.key === 'F') {
       event.preventDefault();
       this.toggleFocusMode();
@@ -168,6 +175,22 @@ export class EditorLayoutComponent implements OnInit, OnDestroy {
       event.preventDefault();
       this.toggleAiPanel();
     }
+  }
+
+  async onSynopsisRequested(node: TreeNode): Promise<void> {
+    const doc = await this.docService.loadDocument(node.id);
+    this.synopsisDocument.set(doc);
+  }
+
+  onSynopsisSaved(doc: DocumentFile): void {
+    if (this.activeDocument()?.id === doc.id) {
+      this.activeDocument.set(doc);
+    }
+    this.synopsisDocument.set(null);
+  }
+
+  closeSynopsisModal(): void {
+    this.synopsisDocument.set(null);
   }
 
   toggleBinder(): void {

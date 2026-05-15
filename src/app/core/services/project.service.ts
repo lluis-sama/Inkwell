@@ -1,6 +1,6 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { TauriBridgeService } from './tauri-bridge.service';
-import { Project, TreeNode, DEFAULT_PROJECT_SETTINGS } from '../models/project.model';
+import { Project, TreeNode, DEFAULT_PROJECT_SETTINGS, AuthorProfile } from '../models/project.model';
 import { projectJsonPath } from '../../shared/utils/project-paths';
 
 @Injectable({ providedIn: 'root' })
@@ -10,10 +10,17 @@ export class ProjectService {
   readonly project   = signal<Project | null>(null);
   readonly basePath  = signal<string | null>(null);
   readonly isLoaded  = computed(() => this.project() !== null);
+  readonly totalWordCount = computed(() => {
+    const cache = this.project()?.wordCountCache ?? {};
+    return Object.values(cache).reduce((sum, n) => sum + n, 0);
+  });
 
   async openProject(basePath: string): Promise<void> {
     const raw = await this.bridge.readJsonFile(projectJsonPath(basePath));
     const project: Project = JSON.parse(raw);
+    if (project.wordCountCache === undefined) {
+      project.wordCountCache = {};
+    }
     this.basePath.set(basePath);
     this.project.set(project);
   }
@@ -29,6 +36,7 @@ export class ProjectService {
       updatedAt: new Date().toISOString(),
       tree: [],
       settings: { ...DEFAULT_PROJECT_SETTINGS },
+      wordCountCache: {},
     };
 
     await this.bridge.writeJsonFile(
@@ -102,6 +110,33 @@ export class ProjectService {
       p ? { ...p, settings: { ...p.settings, ...settings } } : p
     );
     await this.save();
+  }
+
+  async updateWordCountCache(documentId: string, wordCount: number): Promise<void> {
+    this.project.update(p =>
+      p ? { ...p, wordCountCache: { ...p.wordCountCache, [documentId]: wordCount } } : p
+    );
+    await this.saveProjectOnly();
+  }
+
+  async updateAuthorProfile(profile: AuthorProfile): Promise<void> {
+    this.project.update(p =>
+      p ? { ...p, authorProfile: profile } : p
+    );
+    await this.saveProjectOnly();
+  }
+
+  private async saveProjectOnly(): Promise<void> {
+    const project = this.project();
+    const basePath = this.basePath();
+    if (!project || !basePath) return;
+
+    const updated = { ...project, updatedAt: new Date().toISOString() };
+    await this.bridge.writeJsonFile(
+      projectJsonPath(basePath),
+      JSON.stringify(updated, null, 2),
+    );
+    this.project.set(updated);
   }
 
   closeProject(): void {

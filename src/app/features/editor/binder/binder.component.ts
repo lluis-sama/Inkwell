@@ -4,11 +4,13 @@ import { ProjectService, findNode, deleteNode, insertAfter, insertInside, isDesc
 import { DocumentService } from '../../../core/services/document.service';
 import { BinderNodeComponent, NodeContextEvent, DropEvent } from './binder-node.component';
 import { BinderContextMenuComponent, ContextMenuAction } from './binder-context-menu.component';
+import { BinderFooterComponent } from './binder-footer.component';
+import { BinderSearchComponent } from './binder-search.component';
 
 @Component({
   selector: 'app-binder',
   standalone: true,
-  imports: [BinderNodeComponent, BinderContextMenuComponent],
+  imports: [BinderNodeComponent, BinderContextMenuComponent, BinderFooterComponent, BinderSearchComponent],
   templateUrl: './binder.component.html',
   host: {
     '(document:click)': 'closeContextMenu()',
@@ -21,12 +23,14 @@ export class BinderComponent {
 
   activeId = input<string | null>(null);
 
-  documentOpened = output<TreeNode>();
-  nodeRenamed    = output<{ id: string; title: string }>();
+  documentOpened    = output<TreeNode>();
+  nodeRenamed       = output<{ id: string; title: string }>();
+  synopsisRequested = output<TreeNode>();
 
   renamingId    = signal<string | null>(null);
   contextMenu   = signal<NodeContextEvent | null>(null);
   draggedNodeId = signal<string | null>(null);
+  showSearch    = signal(false);
 
   contextActions = computed<ContextMenuAction[]>(() => {
     const node = this.contextMenu()?.node;
@@ -130,5 +134,23 @@ export class BinderComponent {
         await this.deleteDescendants(node.children);
       }
     }
+  }
+
+  onSearchToggled(): void {
+    this.showSearch.update(v => !v);
+  }
+
+  onSearchDocumentSelected(id: string): void {
+    this.showSearch.set(false);
+    const project = this.projectService.project();
+    if (!project) return;
+    const node = findNode(project.tree, id);
+    if (node) {
+      this.documentOpened.emit(node);
+    }
+  }
+
+  onSynopsisRequested(node: TreeNode): void {
+    this.synopsisRequested.emit(node);
   }
 }

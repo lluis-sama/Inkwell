@@ -2,13 +2,16 @@ import { Injectable, inject } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
 import { TauriBridgeService } from './tauri-bridge.service';
 import { ProjectService } from './project.service';
+import { SearchService } from './search.service';
 import { DocumentFile, Snapshot, EMPTY_TIPTAP_CONTENT } from '../models/document.model';
 import { documentPath } from '../../shared/utils/project-paths';
+import { tiptapToText } from '../../shared/utils/tiptap-to-text';
 
 @Injectable({ providedIn: 'root' })
 export class DocumentService {
-  private bridge  = inject(TauriBridgeService);
-  private project = inject(ProjectService);
+  private bridge         = inject(TauriBridgeService);
+  private project        = inject(ProjectService);
+  private searchService  = inject(SearchService);
   private readonly translocoService = inject(TranslocoService);
 
   async loadDocument(id: string): Promise<DocumentFile> {
@@ -24,7 +27,13 @@ export class DocumentService {
       documentPath(basePath, updated.id),
       JSON.stringify(updated, null, 2),
     );
+    this.project.updateWordCountCache(updated.id, this.countWords(updated)).catch(() => {});
+    this.searchService.invalidate(updated.id);
     return updated;
+  }
+
+  private countWords(doc: DocumentFile): number {
+    return tiptapToText(doc.content).trim().split(/\s+/).filter(w => w.length > 0).length;
   }
 
   async createDocument(title: string, parentId: string | null = null): Promise<DocumentFile> {

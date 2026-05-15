@@ -98,6 +98,20 @@
     } @else {
       <span class="flex-1 truncate">{{ node().title }}</span>
     }
+
+    <!-- Botón lápiz (solo documentos, visible en hover) -->
+    @if (node().type === 'document') {
+      <button
+        class="opacity-0 group-hover:opacity-100 flex items-center justify-center w-5 h-5 rounded hover:bg-ink-surface transition-opacity shrink-0"
+        (click)="onSynopsisRequested($event)"
+        [title]="'BINDER.NODE.EDIT_SYNOPSIS' | transloco"
+      >
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+        </svg>
+      </button>
+    }
   </div>
 
   <!-- Hijos (si carpeta expandida) -->
@@ -114,6 +128,7 @@
         (renameCancel)="renameCancel.emit()"
         (dragStarted)="dragStarted.emit($event)"
         (dropped)="dropped.emit($event)"
+        (synopsisRequested)="synopsisRequested.emit($event)"
       />
     }
   }

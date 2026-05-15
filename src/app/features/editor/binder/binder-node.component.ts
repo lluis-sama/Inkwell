@@ -2,6 +2,7 @@ import {
   Component, input, output, signal, computed,
   ViewChild, ElementRef, effect,
 } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { TreeNode } from '../../../core/models/project.model';
 
 export interface NodeContextEvent {
@@ -19,7 +20,7 @@ export interface DropEvent {
 @Component({
   selector: 'app-binder-node',
   standalone: true,
-  imports: [BinderNodeComponent],
+  imports: [BinderNodeComponent, TranslocoPipe],
   templateUrl: './binder-node.component.html',
 })
 export class BinderNodeComponent {
@@ -30,12 +31,13 @@ export class BinderNodeComponent {
   activeId   = input<string | null>(null);
   renamingId = input<string | null>(null);
 
-  nodeClicked  = output<TreeNode>();
-  contextMenu  = output<NodeContextEvent>();
-  renamed      = output<{ id: string; title: string }>();
-  renameCancel = output<void>();
-  dragStarted  = output<string>();
-  dropped      = output<DropEvent>();
+  nodeClicked       = output<TreeNode>();
+  contextMenu       = output<NodeContextEvent>();
+  renamed           = output<{ id: string; title: string }>();
+  renameCancel      = output<void>();
+  dragStarted       = output<string>();
+  dropped           = output<DropEvent>();
+  synopsisRequested = output<TreeNode>();
 
   expanded       = signal<boolean>(true);
   isActive       = computed(() => this.activeId() === this.node().id);
@@ -70,6 +72,11 @@ export class BinderNodeComponent {
     const title = inputEl.value.trim();
     if (title) this.renamed.emit({ id: this.node().id, title });
     else this.renameCancel.emit();
+  }
+
+  onSynopsisRequested(event: MouseEvent): void {
+    event.stopPropagation();
+    this.synopsisRequested.emit(this.node());
   }
 
   onDragStart(event: DragEvent): void {
