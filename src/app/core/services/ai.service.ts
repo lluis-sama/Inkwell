@@ -1,6 +1,7 @@
 import { Injectable, signal } from '@angular/core';
+import { fetch } from '@tauri-apps/plugin-http';
 
-export type AiMode = 'analyze' | 'review' | 'brainstorm';
+export type AiMode = 'analyze' | 'review' | 'brainstorm' | 'synopsis';
 
 export interface AiMessage {
   role: 'user' | 'assistant';
@@ -25,6 +26,12 @@ Tu función es ayudar a explorar ideas: tramas, personajes, mundos, conflictos,
 giros narrativos, motivaciones, y cualquier elemento de la historia.
 Responde siempre en el mismo idioma en que te hablen.
 Sé generoso con las ideas, propón variantes y haz preguntas que abran posibilidades.`,
+
+  synopsis: `Eres un asistente especializado en generar sinopsis de capítulos literarios.
+Tu función es producir sinopsis concisas (2-3 frases) que capturen los eventos principales,
+el arco emocional y las consecuencias narrativas del texto proporcionado.
+Responde ÚNICAMENTE con la sinopsis, sin introducción, título, ni explicación adicional.
+Responde siempre en el mismo idioma que el texto que se te proporcione.`,
 };
 
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
@@ -60,17 +67,20 @@ export class AiService {
   ): AsyncGenerator<string> {
     if (!this.hasApiKey()) throw new Error('API key no configurada');
 
+    const key = this.apiKey();
+
     // Inyectar contexto en el primer mensaje de usuario si existe
     const messagesWithContext = this.injectContext(messages, context);
 
+    const headers = new Headers();
+    headers.set('content-type', 'application/json');
+    headers.set('x-api-key', key);
+    headers.set('anthropic-version', '2023-06-01');
+    headers.set('anthropic-dangerous-direct-browser-access', 'true');
+
     const response = await fetch(ANTHROPIC_API_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type':                    'application/json',
-        'x-api-key':                        this.apiKey(),
-        'anthropic-version':               '2023-06-01',
-        'anthropic-dangerous-allow-browser': 'true',
-      },
+      headers,
       body: JSON.stringify({
         model:      MODEL,
         max_tokens: 2048,

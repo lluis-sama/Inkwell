@@ -14,12 +14,14 @@ const MODE_LABELS: Record<AiMode, string> = {
   analyze:    'Analizar escena',
   review:     'Revisar texto',
   brainstorm: 'Brainstorm',
+  synopsis:   'Sinopsis',
 };
 
 const MODE_PLACEHOLDERS: Record<AiMode, string> = {
   analyze:    '¿Qué quieres que analice de esta escena?',
   review:     '¿Qué aspectos del texto quieres revisar?',
   brainstorm: '¿Sobre qué quieres explorar ideas?',
+  synopsis:   '',
 };
 
 @Component({
@@ -260,6 +262,7 @@ export class AiAssistantPanelComponent implements AfterViewChecked {
     analyze:    'Analiza la estructura, ritmo y eficacia narrativa de la escena activa.',
     review:     'Revisa gramática, estilo y coherencia del texto.',
     brainstorm: 'Explora ideas de trama, personajes y mundo de forma libre.',
+    synopsis:   'Genera una sinopsis automática del capítulo.',
   };
 
   private shouldScrollToBottom = false;

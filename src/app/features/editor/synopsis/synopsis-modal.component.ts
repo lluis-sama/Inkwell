@@ -47,16 +47,10 @@ export class SynopsisModalComponent implements OnInit {
     this.generating.set(true);
     try {
       const docText = tiptapToText(this.document().content);
-      const userMessage =
-        `Genera una sinopsis concisa de 2-3 frases para el capítulo proporcionado.` +
-        ` Captura los eventos principales, el arco emocional y las consecuencias narrativas.` +
-        ` Responde ÚNICAMENTE con la sinopsis, sin introducción ni explicación.` +
-        ` Capítulo: "${this.document().title}"`;
-
       let full = '';
       for await (const chunk of this.ai.streamMessage(
-        [{ role: 'user', content: userMessage }],
-        'analyze',
+        [{ role: 'user', content: `Capítulo: "${this.document().title}"` }],
+        'synopsis',
         docText,
       )) {
         full += chunk;

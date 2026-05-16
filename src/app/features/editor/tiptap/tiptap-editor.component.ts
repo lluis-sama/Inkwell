@@ -130,6 +130,7 @@ export class TiptapEditorComponent
 
   private editor: Editor | null = null;
   private debounceTimer: ReturnType<typeof setTimeout> | null = null;
+  private lastEmittedContent = '';
 
   readonly editorReady = signal<Editor | null>(null);
   wordCount = signal<number>(0);
@@ -154,14 +155,19 @@ export class TiptapEditorComponent
 
       if (this.debounceTimer) clearTimeout(this.debounceTimer);
       this.debounceTimer = setTimeout(() => {
-        this.contentChanged.emit(editor.getJSON());
+        const json = editor.getJSON();
+        this.lastEmittedContent = JSON.stringify(json);
+        this.contentChanged.emit(json);
       }, 300);
     });
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes["content"] && this.editor && !changes["content"].firstChange) {
-      this.editor.commands.setContent(changes["content"].currentValue);
+      const incoming = JSON.stringify(changes["content"].currentValue);
+      if (incoming !== this.lastEmittedContent) {
+        this.editor.commands.setContent(changes["content"].currentValue);
+      }
     }
     if (changes["editable"] && this.editor) {
       this.editor.setEditable(changes["editable"].currentValue);

@@ -1,5 +1,6 @@
 @if (editor()) {
-  <div class="flex items-center gap-0.5 px-3 py-1.5 border-b border-ink-border bg-ink-panel flex-wrap shrink-0">
+  <div class="flex items-center gap-0.5 px-3 py-1.5 border-b border-ink-border bg-ink-panel flex-wrap shrink-0"
+       (mousedown)="$event.preventDefault()">
 
     <!-- Headings -->
     @for (level of [1, 2, 3]; track level) {
