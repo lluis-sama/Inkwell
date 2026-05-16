@@ -29,7 +29,7 @@
         [board]="activeBoard()!"
         (positionChanged)="onPositionChanged($event)"
         (cardAdded)="onCardAdded($event)"
-        (editRequested)="editingCard.set($event)"
+        (editRequested)="onEditRequested($event)"
         (deleteRequested)="onDeleteCard($event)"
       />
     } @else {
@@ -65,7 +65,8 @@
 @if (editingCard()) {
   <app-card-editor-modal
     [card]="editingCard()!"
+    [isNew]="isNewCard()"
     (saved)="onCardSaved($event)"
-    (cancelled)="editingCard.set(null)"
+    (cancelled)="onCardEditCancelled()"
   />
 }

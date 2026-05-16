@@ -5,7 +5,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
 import { ProjectService } from '../../core/services/project.service';
 import { BoardService } from '../../core/services/board.service';
 import { ToastService } from '../../shared/services/toast.service';
-import { BoardFile, Card } from '../../core/models/board.model';
+import { BoardFile, Card, CardType } from '../../core/models/board.model';
 
 import { InkNavComponent } from '../../shared/components/ink-nav.component';
 import { BoardSelectorComponent } from './board-selector/board-selector.component';
@@ -32,10 +32,11 @@ export class BoardsLayoutComponent implements OnInit {
   private toast          = inject(ToastService);
   private router         = inject(Router);
 
-  boards           = signal<BoardFile[]>([]);
-  activeBoard      = signal<BoardFile | null>(null);
+  boards            = signal<BoardFile[]>([]);
+  activeBoard       = signal<BoardFile | null>(null);
   showNewBoardModal = signal(false);
-  editingCard      = signal<Card | null>(null);
+  editingCard       = signal<Card | null>(null);
+  isNewCard         = signal(false);
 
   async ngOnInit(): Promise<void> {
     if (!this.projectService.isLoaded()) {
@@ -77,11 +78,23 @@ export class BoardsLayoutComponent implements OnInit {
     }
   }
 
-  async onCardAdded(position: { x: number; y: number }): Promise<void> {
+  async onCardAdded(event: { x: number; y: number; type: CardType }): Promise<void> {
     const board = this.activeBoard();
     if (!board) return;
-    const updated = this.boardService.addCard(board, position);
+    const updated = this.boardService.addCard(board, { x: event.x, y: event.y }, event.type);
     await this.persistBoard(updated);
+    const currentBoard = this.activeBoard();
+    if (!currentBoard) return;
+    const newCard = currentBoard.cards[currentBoard.cards.length - 1];
+    if (newCard) {
+      this.editingCard.set(newCard);
+      this.isNewCard.set(true);
+    }
+  }
+
+  onEditRequested(card: Card): void {
+    this.isNewCard.set(false);
+    this.editingCard.set(card);
   }
 
   async onCardSaved(card: Card): Promise<void> {
@@ -89,6 +102,18 @@ export class BoardsLayoutComponent implements OnInit {
     if (!board) return;
     const updated = this.boardService.updateCard(board, card);
     await this.persistBoard(updated);
+    this.isNewCard.set(false);
+    this.editingCard.set(null);
+  }
+
+  async onCardEditCancelled(): Promise<void> {
+    if (this.isNewCard()) {
+      const card = this.editingCard();
+      if (card) {
+        await this.onDeleteCard(card.id);
+      }
+    }
+    this.isNewCard.set(false);
     this.editingCard.set(null);
   }
 

@@ -1,12 +1,11 @@
 import { Component, ElementRef, ViewChild, input, output, signal } from '@angular/core';
-import { TranslocoPipe } from '@jsverse/transloco';
-import { BoardFile, Card } from '../../../core/models/board.model';
+import { BoardFile, Card, CardType, CARD_TYPE_LABELS, CARD_TYPE_ICONS } from '../../../core/models/board.model';
 import { BoardCardComponent } from './board-card.component';
 
 @Component({
   selector: 'app-board-canvas',
   standalone: true,
-  imports: [BoardCardComponent, TranslocoPipe],
+  imports: [BoardCardComponent],
   templateUrl: './board-canvas.component.html',
   host: {
     '(document:click)': 'contextMenu.set(null)',
@@ -19,8 +18,12 @@ export class BoardCanvasComponent {
 
   board = input.required<BoardFile>();
 
+  readonly cardTypes: CardType[] = ['character', 'note', 'research', 'other'];
+  readonly typeLabels = CARD_TYPE_LABELS;
+  readonly typeIcons = CARD_TYPE_ICONS;
+
   positionChanged = output<{ id: string; x: number; y: number }>();
-  cardAdded = output<{ x: number; y: number }>();
+  cardAdded = output<{ x: number; y: number; type: CardType }>();
   editRequested = output<Card>();
   deleteRequested = output<string>();
 
@@ -44,11 +47,11 @@ export class BoardCanvasComponent {
     });
   }
 
-  onAddCard(): void {
+  onAddCard(type: CardType): void {
     const pos = this.contextMenu();
     this.contextMenu.set(null);
     if (pos) {
-      this.cardAdded.emit({ x: pos.canvasX, y: pos.canvasY });
+      this.cardAdded.emit({ x: pos.canvasX, y: pos.canvasY, type });
     }
   }
 

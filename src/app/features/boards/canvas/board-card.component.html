@@ -8,6 +8,16 @@
   [style.background]="card().color"
   (dblclick)="editRequested.emit(card())"
 >
+  <!-- Type indicator -->
+  <div class="flex items-center gap-1.5 px-3 pt-2.5 pb-0">
+    <span class="text-xs opacity-70">{{ typeIcon(card().type) }}</span>
+    @if (card().type === 'character' && chapterCount() > 0) {
+      <span class="ml-auto text-xs opacity-60 font-mono">
+        {{ chapterCount() }} cap.
+      </span>
+    }
+  </div>
+
   <!-- Header -->
   <div class="px-3 pt-3 pb-1">
     <p class="text-ink-text text-sm font-medium leading-snug break-words">{{ card().title }}</p>

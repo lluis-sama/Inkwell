@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
 import { TauriBridgeService } from './tauri-bridge.service';
 import { ProjectService } from './project.service';
-import { BoardFile, Card, DEFAULT_CARD_COLORS } from '../models/board.model';
+import { BoardFile, Card, CardType, DEFAULT_COLORS_BY_TYPE } from '../models/board.model';
 import { boardPath, boardsFolderPath } from '../../shared/utils/project-paths';
 
 @Injectable({ providedIn: 'root' })
@@ -14,7 +14,9 @@ export class BoardService {
   async loadBoard(id: string): Promise<BoardFile> {
     const basePath = this.requireBasePath();
     const raw = await this.bridge.readJsonFile(boardPath(basePath, id));
-    return JSON.parse(raw) as BoardFile;
+    const board = JSON.parse(raw) as BoardFile;
+    board.cards = board.cards.map(c => ({ ...c, type: c.type ?? 'note' }));
+    return board;
   }
 
   async saveBoard(board: BoardFile): Promise<BoardFile> {
@@ -51,15 +53,17 @@ export class BoardService {
   addCard(
     board: BoardFile,
     position: { x: number; y: number },
+    type: CardType = 'note',
     title = 'Nueva tarjeta',
   ): BoardFile {
-    const color = DEFAULT_CARD_COLORS[board.cards.length % DEFAULT_CARD_COLORS.length];
+    const color = DEFAULT_COLORS_BY_TYPE[type];
 
     const card: Card = {
       id: crypto.randomUUID(),
       title,
       body: '',
       color,
+      type,
       x: position.x,
       y: position.y,
       width: 220,

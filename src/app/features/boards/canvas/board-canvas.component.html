@@ -20,12 +20,19 @@
       [style.left.px]="contextMenu()!.screenX"
       [style.top.px]="contextMenu()!.screenY"
     >
-      <button
-        (click)="onAddCard()"
-        class="w-full text-left px-4 py-2 text-sm text-ink-text hover:bg-ink-border transition-colors"
-      >
-        {{ 'BOARDS.CANVAS.ADD_CARD' | transloco }}
-      </button>
+      <div class="px-3 py-1.5 text-ink-subtle text-xs font-medium uppercase tracking-wide">
+        Nueva tarjeta
+      </div>
+
+      @for (type of cardTypes; track type) {
+        <button
+          (click)="onAddCard(type)"
+          class="w-full flex items-center gap-2.5 text-left px-4 py-2
+                 text-sm text-ink-text hover:bg-ink-border transition-colors">
+          <span>{{ typeIcons[type] }}</span>
+          {{ typeLabels[type] }}
+        </button>
+      }
     </div>
   }
 </div>

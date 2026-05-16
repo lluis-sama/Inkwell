@@ -1,58 +1,165 @@
-<ink-modal [title]="'BOARDS.CARD_EDITOR_MODAL.TITLE' | transloco" (closed)="cancelled.emit()">
+<ink-modal [title]="isNew() ? 'Nueva tarjeta' : 'Editar tarjeta'"
+           (closed)="cancelled.emit()">
+
   <div class="flex flex-col gap-4">
 
-    <!-- Título de la tarjeta -->
+    <!-- Selector de tipo -->
     <div class="flex flex-col gap-1.5">
-      <label class="text-ink-subtle text-xs font-medium uppercase tracking-wide">
-        {{ 'BOARDS.CARD_EDITOR_MODAL.TITLE_LABEL' | transloco }}
+      <label class="field-label">Tipo</label>
+      <div class="flex gap-2">
+        @for (type of cardTypes; track type) {
+          <button
+            (click)="onTypeChange(type)"
+            class="flex-1 flex flex-col items-center gap-1 py-2 px-1 rounded-lg
+                   border-2 transition-all text-xs"
+            [class]="editType() === type
+              ? 'border-ink-accent bg-ink-surface text-ink-text'
+              : 'border-ink-border text-ink-subtle hover:border-ink-muted'">
+            <span class="text-base">{{ typeIcons[type] }}</span>
+            <span>{{ typeLabels[type] }}</span>
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Título -->
+    <div class="flex flex-col gap-1.5">
+      <label class="field-label">
+        {{ editType() === 'character' ? 'Nombre del personaje *' : 'Título' }}
       </label>
       <input
         [(ngModel)]="editTitle"
-        [placeholder]="'BOARDS.CARD_EDITOR_MODAL.TITLE_PLACEHOLDER' | transloco"
+        [placeholder]="editType() === 'character' ? 'Elena Vidal' : 'Título de la tarjeta'"
         maxlength="100"
-        class="w-full px-3 py-2 rounded bg-ink-bg border border-ink-border text-ink-text text-sm placeholder:text-ink-muted focus:outline-none focus:border-ink-accent transition-colors"
-      />
+        class="field-input"/>
     </div>
 
-    <!-- Cuerpo de la tarjeta -->
+    <!-- Cuerpo -->
     <div class="flex flex-col gap-1.5">
-      <label class="text-ink-subtle text-xs font-medium uppercase tracking-wide">
-        {{ 'BOARDS.CARD_EDITOR_MODAL.BODY_LABEL' | transloco }}
+      <label class="field-label">
+        {{ editType() === 'character' ? 'Descripción / notas del personaje' : 'Contenido' }}
       </label>
       <textarea
         [(ngModel)]="editBody"
-        [placeholder]="'BOARDS.CARD_EDITOR_MODAL.BODY_PLACEHOLDER' | transloco"
-        rows="6"
-        class="w-full px-3 py-2 rounded bg-ink-bg border border-ink-border text-ink-text text-sm placeholder:text-ink-muted focus:outline-none focus:border-ink-accent transition-colors resize-none"
-      ></textarea>
+        [placeholder]="editType() === 'character'
+          ? 'Protagonista. 34 años. Detective privada...'
+          : 'Escribe aquí tus notas, ideas...'"
+        rows="4"
+        class="field-input resize-none">
+      </textarea>
     </div>
 
-    <!-- Selector de color -->
-    <div class="flex flex-col gap-1.5">
-      <label class="text-ink-subtle text-xs font-medium uppercase tracking-wide">
-        {{ 'BOARDS.CARD_EDITOR_MODAL.COLOR_LABEL' | transloco }}
-      </label>
-      <div class="flex gap-2">
-        @for (color of colors; track color) {
+    <!-- Sección de personaje (solo si type === 'character') -->
+    @if (editType() === 'character') {
+      <div class="flex flex-col gap-3 pt-1 border-t border-ink-border">
+
+        <!-- Aliases -->
+        <div class="flex flex-col gap-1.5">
+          <label class="field-label">
+            Nombres alternativos / apodos
+            <span class="normal-case font-normal">(separados por coma)</span>
+          </label>
+          <input
+            [(ngModel)]="aliasesInput"
+            placeholder="Elena, Eli, Detective Vidal"
+            class="field-input"/>
+          <p class="text-ink-muted text-xs">
+            Se usarán todos en la búsqueda de apariciones.
+          </p>
+        </div>
+
+        <!-- Apariciones en capítulos -->
+        <div class="flex flex-col gap-2">
+          <div class="flex items-center justify-between">
+            <label class="field-label">Aparece en</label>
+            <button
+              (click)="scanChapters()"
+              [disabled]="!editTitle.trim() || scanning()"
+              class="flex items-center gap-1.5 text-xs text-ink-accent
+                     hover:underline disabled:opacity-40
+                     disabled:cursor-not-allowed transition-colors">
+              @if (scanning()) {
+                <span class="inline-block w-3 h-3 border border-current
+                             border-t-transparent rounded-full animate-spin"></span>
+                Escaneando...
+              } @else {
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"/>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                Buscar apariciones
+              }
+            </button>
+          </div>
+
+          @if (scanResults().length > 0) {
+            <div class="text-ink-muted text-xs mb-1">
+              Resultados del último escaneo.
+              Desmarca los capítulos donde el personaje no aparece realmente.
+            </div>
+          }
+
+          <!-- Lista de todos los documentos del proyecto, con checkboxes -->
+          <div class="max-h-40 overflow-y-auto flex flex-col gap-1">
+            @if (allDocuments().length === 0) {
+              <p class="text-ink-muted text-xs">
+                El proyecto no tiene documentos todavía.
+              </p>
+            }
+            @for (doc of allDocuments(); track doc.id) {
+              <label class="flex items-center gap-2 cursor-pointer
+                            hover:bg-ink-surface rounded px-2 py-1 transition-colors">
+                <input
+                  type="checkbox"
+                  [checked]="selectedChapterIds().includes(doc.id)"
+                  (change)="toggleChapter(doc.id)"
+                  class="accent-ink-accent w-3 h-3 shrink-0"/>
+                <span class="text-ink-text text-xs flex-1 truncate">{{ doc.title }}</span>
+                @if (scanCountFor(doc.id) > 0) {
+                  <span class="text-ink-subtle text-xs shrink-0">
+                    {{ scanCountFor(doc.id) }}×
+                  </span>
+                }
+              </label>
+            }
+          </div>
+
+          <p class="text-ink-muted text-xs leading-relaxed">
+            La búsqueda automática usa el nombre del personaje como palabra completa.
+            Ajusta manualmente si hay falsos positivos o nombres no detectados.
+          </p>
+        </div>
+      </div>
+    }
+
+    <!-- Color -->
+    <div class="flex flex-col gap-2">
+      <label class="field-label">Color</label>
+      <div class="flex gap-2 flex-wrap">
+        @for (color of availableColors; track color) {
           <button
             (click)="editColor = color"
-            [style.background]="color"
             class="w-7 h-7 rounded-full border-2 transition-all"
-            [class]="editColor === color ? 'border-ink-accent scale-110' : 'border-transparent hover:scale-105'"
-          ></button>
+            [style.background]="color"
+            [class]="editColor === color
+              ? 'border-ink-accent scale-110'
+              : 'border-transparent hover:scale-105'">
+          </button>
         }
       </div>
     </div>
 
   </div>
 
-  <!-- Acciones -->
   <ng-container slot="actions">
-    <ink-button variant="ghost" (clicked)="cancelled.emit()">
-      {{ 'BOARDS.CARD_EDITOR_MODAL.CANCEL' | transloco }}
-    </ink-button>
-    <ink-button variant="primary" (clicked)="save()">
-      {{ 'BOARDS.CARD_EDITOR_MODAL.SAVE' | transloco }}
+    <ink-button variant="ghost" (clicked)="cancelled.emit()">Cancelar</ink-button>
+    <ink-button
+      variant="primary"
+      [disabled]="!canSave()"
+      (clicked)="save()">
+      {{ isNew() ? 'Crear tarjeta' : 'Guardar' }}
     </ink-button>
   </ng-container>
+
 </ink-modal>

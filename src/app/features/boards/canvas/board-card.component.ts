@@ -1,6 +1,6 @@
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild, input, output } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild, computed, input, output } from '@angular/core';
 import interact from 'interactjs';
-import { Card } from '../../../core/models/board.model';
+import { Card, CardType, CARD_TYPE_ICONS } from '../../../core/models/board.model';
 
 @Component({
   selector: 'app-board-card',
@@ -26,6 +26,16 @@ export class BoardCardComponent implements OnInit, OnDestroy {
   positionChanged = output<{ id: string; x: number; y: number }>();
   editRequested = output<Card>();
   deleteRequested = output<string>();
+
+  readonly typeIcons = CARD_TYPE_ICONS;
+
+  chapterCount = computed(() =>
+    this.card().characterData?.appearsInChapters.length ?? 0
+  );
+
+  typeIcon(type: CardType | undefined): string {
+    return CARD_TYPE_ICONS[type ?? 'note'];
+  }
 
   private interactable: ReturnType<typeof interact> | null = null;
 
