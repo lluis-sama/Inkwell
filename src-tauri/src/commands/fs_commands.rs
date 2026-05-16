@@ -158,3 +158,98 @@ pub fn write_binary_file(path: String, data: Vec<u8>) -> Result<(), String> {
     file.write_all(&data)
         .map_err(|e| format!("Error escribiendo {}: {}", path, e))
 }
+
+// ─── Importación ─────────────────────────────────────────────────────────────
+
+/// Abre un diálogo de selección de archivos con filtro por extensión.
+/// Retorna un Vec vacío si el usuario cancela.
+#[tauri::command]
+pub async fn open_files_dialog(
+    app: tauri::AppHandle,
+    extensions: Vec<String>,
+    multiple: bool,
+) -> Vec<String> {
+    let ext_refs: Vec<&str> = extensions.iter().map(|s| s.as_str()).collect();
+
+    if multiple {
+        let (tx, rx) = oneshot::channel::<Option<Vec<FilePath>>>();
+        app.dialog()
+            .file()
+            .add_filter("Documentos", &ext_refs)
+            .pick_files(move |result| { let _ = tx.send(result); });
+        match rx.await {
+            Ok(Some(paths)) => paths.into_iter().filter_map(|p| {
+                if let FilePath::Path(path) = p {
+                    Some(path.to_string_lossy().to_string())
+                } else {
+                    None
+                }
+            }).collect(),
+            _ => vec![],
+        }
+    } else {
+        let (tx, rx) = oneshot::channel::<Option<FilePath>>();
+        app.dialog()
+            .file()
+            .add_filter("Documentos", &ext_refs)
+            .pick_file(move |result| { let _ = tx.send(result); });
+        match rx.await {
+            Ok(Some(FilePath::Path(p))) => vec![p.to_string_lossy().to_string()],
+            _ => vec![],
+        }
+    }
+}
+
+/// Lee el contenido binario de un archivo en disco.
+#[tauri::command]
+pub fn read_file_bytes(path: String) -> Result<Vec<u8>, String> {
+    std::fs::read(&path).map_err(|e| format!("Error leyendo {}: {}", path, e))
+}
+
+/// Convierte un archivo ODT a DOCX usando LibreOffice CLI y retorna la ruta del DOCX temporal.
+/// Retorna error descriptivo si LibreOffice no está instalado.
+#[tauri::command]
+pub fn convert_odt_to_docx(path: String) -> Result<String, String> {
+    use std::process::Command;
+
+    // Verificar que LibreOffice está disponible antes de intentar la conversión
+    let version_check = Command::new("soffice").arg("--version").output();
+    match version_check {
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+            return Err(
+                "LibreOffice no está instalado o no está en el PATH. \
+                 Instala LibreOffice para importar archivos ODT."
+                    .to_string(),
+            );
+        }
+        Err(e) => return Err(format!("Error verificando LibreOffice: {}", e)),
+        Ok(_) => {}
+    }
+
+    let input_path = Path::new(&path);
+    let stem = input_path
+        .file_stem()
+        .ok_or_else(|| "Nombre de archivo inválido".to_string())?
+        .to_string_lossy();
+    let temp_dir = std::env::temp_dir();
+    let output_path = temp_dir.join(format!("{}.docx", stem));
+
+    let result = Command::new("soffice")
+        .args([
+            "--headless",
+            "--convert-to",
+            "docx",
+            &path,
+            "--outdir",
+            temp_dir.to_str().unwrap_or("/tmp"),
+        ])
+        .output()
+        .map_err(|e| format!("Error ejecutando LibreOffice: {}", e))?;
+
+    if !result.status.success() {
+        let stderr = String::from_utf8_lossy(&result.stderr);
+        return Err(format!("LibreOffice no pudo convertir el archivo: {}", stderr));
+    }
+
+    Ok(output_path.to_string_lossy().to_string())
+}

@@ -50,4 +50,16 @@ export class TauriBridgeService {
       data: Array.from(new Uint8Array(data)),
     });
   }
+
+  openFilesDialog(extensions: string[], multiple = false): Promise<string[]> {
+    return invoke<string[]>('open_files_dialog', { extensions, multiple });
+  }
+
+  readFileBytes(path: string): Promise<number[]> {
+    return invoke<number[]>('read_file_bytes', { path });
+  }
+
+  convertOdtToDocx(path: string): Promise<string> {
+    return invoke<string>('convert_odt_to_docx', { path });
+  }
 }

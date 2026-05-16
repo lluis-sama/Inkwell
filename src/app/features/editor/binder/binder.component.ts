@@ -2,6 +2,8 @@ import { Component, inject, input, output, signal, computed } from '@angular/cor
 import { TreeNode } from '../../../core/models/project.model';
 import { ProjectService, findNode, deleteNode, insertAfter, insertInside, isDescendant } from '../../../core/services/project.service';
 import { DocumentService } from '../../../core/services/document.service';
+import { ImportService } from '../../../core/services/import.service';
+import { ToastService } from '../../../shared/services/toast.service';
 import { BinderNodeComponent, NodeContextEvent, DropEvent } from './binder-node.component';
 import { BinderContextMenuComponent, ContextMenuAction } from './binder-context-menu.component';
 import { BinderFooterComponent } from './binder-footer.component';
@@ -18,8 +20,10 @@ import { BinderSearchComponent } from './binder-search.component';
   },
 })
 export class BinderComponent {
-  projectService  = inject(ProjectService);
-  private docService = inject(DocumentService);
+  projectService      = inject(ProjectService);
+  private docService  = inject(DocumentService);
+  private importService = inject(ImportService);
+  private toast         = inject(ToastService);
 
   activeId = input<string | null>(null);
 
@@ -31,6 +35,7 @@ export class BinderComponent {
   contextMenu   = signal<NodeContextEvent | null>(null);
   draggedNodeId = signal<string | null>(null);
   showSearch    = signal(false);
+  importing     = signal(false);
 
   contextActions = computed<ContextMenuAction[]>(() => {
     const node = this.contextMenu()?.node;
@@ -152,5 +157,37 @@ export class BinderComponent {
 
   onSynopsisRequested(node: TreeNode): void {
     this.synopsisRequested.emit(node);
+  }
+
+  async importDocuments(): Promise<void> {
+    this.importing.set(true);
+    try {
+      const results = await this.importService.openAndImport(null);
+      if (results.length === 0) return;
+
+      const allWarnings = results.flatMap(r => r.warnings);
+      if (allWarnings.length > 0) {
+        this.toast.success(
+          `Importado con advertencias: ${allWarnings.join('; ')}`
+        );
+      } else {
+        this.toast.success(
+          results.length === 1
+            ? `"${results[0].title}" importado correctamente.`
+            : `${results.length} documentos importados correctamente.`
+        );
+      }
+
+      const first = results[0];
+      const node: TreeNode = {
+        id: first.documentId,
+        title: first.title,
+        type: 'document',
+        children: [],
+      };
+      this.documentOpened.emit(node);
+    } finally {
+      this.importing.set(false);
+    }
   }
 }

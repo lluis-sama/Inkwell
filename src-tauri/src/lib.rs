@@ -19,6 +19,9 @@ pub fn run() {
             commands::fs_commands::open_print_window,
             commands::fs_commands::save_file_dialog,
             commands::fs_commands::write_binary_file,
+            commands::fs_commands::open_files_dialog,
+            commands::fs_commands::read_file_bytes,
+            commands::fs_commands::convert_odt_to_docx,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
