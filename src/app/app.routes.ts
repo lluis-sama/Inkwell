@@ -19,4 +19,10 @@ export const routes: Routes = [
       import('./features/boards/boards-layout.component')
         .then(m => m.BoardsLayoutComponent),
   },
+  {
+    path: 'narrative',
+    loadComponent: () =>
+      import('./features/narrative/narrative-layout.component')
+        .then(m => m.NarrativeLayoutComponent),
+  },
 ];

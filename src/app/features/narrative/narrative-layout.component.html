@@ -1,0 +1,77 @@
+<div class="flex h-screen bg-ink-bg overflow-hidden">
+  <ink-nav />
+
+  <div class="flex flex-col flex-1 overflow-hidden">
+    <!-- Top bar -->
+    <header class="flex items-center justify-between h-11 px-6 border-b border-ink-border bg-ink-panel shrink-0">
+      <span class="text-ink-text text-sm font-medium">
+        Vista narrativa
+        @if (projectService.isLoaded()) {
+          <span class="text-ink-subtle"> — {{ projectService.project()!.name }}</span>
+        }
+      </span>
+
+      <!-- Column controls -->
+      <div class="flex items-center gap-1">
+        <button
+          type="button"
+          class="p-1.5 rounded text-xs font-mono transition-colors"
+          [class]="columns() === 2 ? 'bg-ink-border text-ink-accent' : 'text-ink-subtle hover:text-ink-text hover:bg-ink-surface'"
+          (click)="columns.set(2)"
+        >2</button>
+        <button
+          type="button"
+          class="p-1.5 rounded text-xs font-mono transition-colors"
+          [class]="columns() === 3 ? 'bg-ink-border text-ink-accent' : 'text-ink-subtle hover:text-ink-text hover:bg-ink-surface'"
+          (click)="columns.set(3)"
+        >3</button>
+        <button
+          type="button"
+          class="p-1.5 rounded text-xs font-mono transition-colors"
+          [class]="columns() === 4 ? 'bg-ink-border text-ink-accent' : 'text-ink-subtle hover:text-ink-text hover:bg-ink-surface'"
+          (click)="columns.set(4)"
+        >4</button>
+      </div>
+    </header>
+
+    <!-- Cards area -->
+    <div class="flex-1 overflow-y-auto px-6 py-6">
+      @if (loading()) {
+        <div class="flex items-center justify-center h-full">
+          <span class="text-ink-subtle text-sm">Cargando...</span>
+        </div>
+      } @else if (error()) {
+        <p class="text-red-400 text-sm">{{ error() }}</p>
+      } @else if (cards().length === 0) {
+        <div class="flex items-center justify-center h-full">
+          <p class="text-ink-subtle text-sm">El proyecto no tiene documentos todavía.</p>
+        </div>
+      } @else {
+        <div class="flex flex-col gap-2">
+          @for (group of groupedItems(); track group.sectionTitle ?? '__root__') {
+            @if (group.sectionTitle !== null) {
+              <div class="flex items-center gap-3 my-4">
+                <h2 class="text-ink-text text-sm font-semibold">{{ group.sectionTitle }}</h2>
+                <div class="flex-1 h-px bg-ink-border"></div>
+              </div>
+            }
+            @if (group.cards.length > 0) {
+              <div
+                class="grid gap-4"
+                [style.grid-template-columns]="'repeat(' + columns() + ', minmax(0, 1fr))'"
+              >
+                @for (card of group.cards; track card.id) {
+                  <app-narrative-card
+                    [card]="card"
+                    (synopsisChanged)="onSynopsisChanged(card, $event)"
+                    (openInEditor)="onOpenInEditor(card)"
+                  />
+                }
+              </div>
+            }
+          }
+        </div>
+      }
+    </div>
+  </div>
+</div>

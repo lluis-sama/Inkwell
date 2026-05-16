@@ -29,6 +29,9 @@ export class AppComponent implements OnInit {
     } else if (event.altKey && event.key === '2') {
       event.preventDefault();
       this.router.navigate(['/boards']);
+    } else if (event.altKey && event.key === '3') {
+      event.preventDefault();
+      this.router.navigate(['/narrative']);
     } else if (
       event.key === '?' &&
       !['INPUT', 'TEXTAREA'].includes((event.target as HTMLElement).tagName)

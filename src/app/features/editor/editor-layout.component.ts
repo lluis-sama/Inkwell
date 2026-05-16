@@ -2,7 +2,8 @@ import {
   Component, inject, signal, computed, ViewChild,
   OnInit, OnDestroy, HostListener,
 } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
+import { findNode } from '../../core/services/project.service';
 import { ProjectService }  from '../../core/services/project.service';
 import { DocumentService } from '../../core/services/document.service';
 import { DocumentFile }    from '../../core/models/document.model';
@@ -31,6 +32,7 @@ export class EditorLayoutComponent implements OnInit, OnDestroy {
   protected projectService = inject(ProjectService);
   private docService       = inject(DocumentService);
   private router           = inject(Router);
+  private route            = inject(ActivatedRoute);
   private bridge           = inject(TauriBridgeService);
   private toast            = inject(ToastService);
 
@@ -64,12 +66,18 @@ export class EditorLayoutComponent implements OnInit, OnDestroy {
   private docCachedWordCount    = 0;  // cached word count of current doc when opened
   private accumulatedSessionWords = 0; // words accumulated from previous saves/doc switches
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     if (!this.projectService.isLoaded()) {
       this.router.navigate(['/']);
       return;
     }
     this.startAutosave();
+
+    const docId = this.route.snapshot.queryParams['doc'] as string | undefined;
+    if (docId) {
+      const node = findNode(this.projectService.project()!.tree, docId);
+      if (node) await this.openDocument(node);
+    }
   }
 
   ngOnDestroy(): void {

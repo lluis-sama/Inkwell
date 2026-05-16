@@ -4,7 +4,18 @@
       "mcp__plugin_engram_engram__mem_search",
       "Skill(crit:crit)",
       "Bash(where crit *)",
-      "Bash(npx crit *)"
+      "Bash(npx crit *)",
+      "mcp__plugin_engram_engram__mem_context",
+      "Bash(xargs basename -a)",
+      "mcp__plugin_engram_engram__mem_save",
+      "mcp__plugin_engram_engram__mem_judge",
+      "Bash(crit *)",
+      "Bash(npx tsc *)",
+      "Bash(New-Item -ItemType Directory -Force \"C:\\\\Users\\\\wolfs\\\\dev\\\\inkwell\\\\src\\\\app\\\\features\\\\narrative\")",
+      "Bash(Out-Null)",
+      "Bash(Write-Output \"Directory created\")",
+      "Bash(npx ng *)",
+      "mcp__plugin_engram_engram__mem_session_summary"
     ]
   }
 }

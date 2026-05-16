@@ -1,0 +1,67 @@
+<div
+  class="group flex flex-col overflow-hidden rounded-lg border border-ink-border bg-ink-surface transition-all cursor-pointer hover:border-ink-accent"
+  (click)="openInEditor.emit()"
+>
+  <!-- Header: título + word count -->
+  <div
+    class="flex items-baseline justify-between gap-2 px-3 pt-3 pb-2"
+    (click)="$event.stopPropagation()"
+  >
+    <h3 class="text-ink-text text-sm font-medium truncate">{{ card().title }}</h3>
+    <span class="text-ink-muted text-xs font-mono shrink-0">{{ formatWords(card().wordCount) }}</span>
+  </div>
+
+  <!-- Personajes (solo si hay) -->
+  @if (card().characters.length > 0) {
+    <div
+      class="flex flex-wrap gap-1 px-3 pb-2"
+      (click)="$event.stopPropagation()"
+    >
+      @for (name of card().characters; track name) {
+        <span class="border border-ink-border rounded-full px-2 py-0.5 text-xs text-ink-muted">
+          {{ name }}
+        </span>
+      }
+    </div>
+  }
+
+  <!-- Sinopsis -->
+  <div
+    class="px-3 pb-3 flex-1"
+    (click)="startEditing(); $event.stopPropagation()"
+  >
+    @if (!editingSynopsis()) {
+      @if (card().synopsis) {
+        <p class="text-ink-subtle text-xs leading-relaxed line-clamp-4">{{ card().synopsis }}</p>
+      } @else {
+        <p class="text-ink-muted text-xs italic opacity-60 group-hover:opacity-100">
+          Añade una sinopsis…
+        </p>
+      }
+    } @else {
+      <div (click)="$event.stopPropagation()">
+        <textarea
+          class="w-full resize-none rounded border border-ink-border bg-ink-surface text-ink-text text-xs leading-relaxed px-2 py-1 focus:outline-none focus:border-ink-accent"
+          rows="3"
+          [ngModel]="draftSynopsis()"
+          (ngModelChange)="draftSynopsis.set($event)"
+          (click)="$event.stopPropagation()"
+        ></textarea>
+        <div class="flex gap-2 mt-1">
+          <button
+            class="text-xs px-2 py-0.5 rounded bg-ink-accent text-ink-bg hover:opacity-90 transition-opacity"
+            (click)="commitEdit(); $event.stopPropagation()"
+          >
+            Guardar
+          </button>
+          <button
+            class="text-xs px-2 py-0.5 rounded border border-ink-border text-ink-muted hover:text-ink-text transition-colors"
+            (click)="cancelEdit(); $event.stopPropagation()"
+          >
+            Cancelar
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+</div>
