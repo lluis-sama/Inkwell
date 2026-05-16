@@ -94,7 +94,13 @@
   <!-- Footer siempre visible -->
   <app-binder-footer
     [searchActive]="showSearch()"
-    (searchToggled)="onSearchToggled()"/>
+    [sessionGoal]="sessionGoal()"
+    [sessionWordsAdded]="sessionWordsAdded()"
+    [sessionProgress]="sessionProgress()"
+    [sessionGoalReached]="sessionGoalReached()"
+    [totalWordCount]="totalWordCount()"
+    (searchToggled)="onSearchToggled()"
+    (goalChanged)="goalChanged.emit($event)"/>
 </div>
 
 <!-- Menú contextual -->

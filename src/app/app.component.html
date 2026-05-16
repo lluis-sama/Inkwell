@@ -1,2 +1,5 @@
 <router-outlet />
 <app-ink-toast />
+@if (showShortcuts()) {
+  <app-shortcuts-modal (closed)="showShortcuts.set(false)"/>
+}

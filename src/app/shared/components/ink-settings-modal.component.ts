@@ -1,6 +1,7 @@
 import { Component, inject, signal, OnInit, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AiService } from '../../core/services/ai.service';
+import { BackupService } from '../../core/services/backup.service';
 import { ProjectService } from '../../core/services/project.service';
 import { ThemeService } from '../../core/services/theme.service';
 import { InkModalComponent } from './ink-modal.component';
@@ -22,6 +23,7 @@ const AI_MODELS = [
 })
 export class InkSettingsModalComponent implements OnInit {
   aiService = inject(AiService);
+  private backupService = inject(BackupService);
   projectService = inject(ProjectService);
   themeService = inject(ThemeService);
 
@@ -94,5 +96,10 @@ export class InkSettingsModalComponent implements OnInit {
   clearApiKey(): void {
     this.aiService.clearApiKey();
     this.apiKeyInput = '';
+  }
+
+  backup(): void {
+    this.closed.emit();
+    setTimeout(() => this.backupService.createBackup(), 100);
   }
 }

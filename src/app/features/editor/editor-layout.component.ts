@@ -1,5 +1,5 @@
 import {
-  Component, inject, signal, ViewChild,
+  Component, inject, signal, computed, ViewChild,
   OnInit, OnDestroy, HostListener,
 } from '@angular/core';
 import { Router } from '@angular/router';
@@ -14,6 +14,7 @@ import { SnapshotsPanelComponent } from './snapshots/snapshots-panel.component';
 import { AiAssistantPanelComponent } from './ai-assistant/ai-assistant-panel.component';
 import { InkNavComponent } from '../../shared/components/ink-nav.component';
 import { TauriBridgeService } from '../../core/services/tauri-bridge.service';
+import { ToastService } from '../../shared/services/toast.service';
 import { ExportModalComponent } from '../export/export-modal.component';
 import { SynopsisModalComponent } from './synopsis/synopsis-modal.component';
 
@@ -31,6 +32,7 @@ export class EditorLayoutComponent implements OnInit, OnDestroy {
   private docService       = inject(DocumentService);
   private router           = inject(Router);
   private bridge           = inject(TauriBridgeService);
+  private toast            = inject(ToastService);
 
   showBinder          = signal(true);
   focusMode           = signal(false);
@@ -42,8 +44,25 @@ export class EditorLayoutComponent implements OnInit, OnDestroy {
   showExportModal     = signal(false);
   synopsisDocument    = signal<DocumentFile | null>(null);
 
+  sessionGoal        = signal<number>(0);
+  sessionWordsAdded  = signal<number>(0);
+  sessionBaseCount   = signal<number>(0);
+  typewriterMode     = signal(false);
+
+  sessionProgress = computed(() => {
+    const goal = this.sessionGoal();
+    if (goal === 0) return 0;
+    return Math.min(100, Math.round((this.sessionWordsAdded() / goal) * 100));
+  });
+
+  sessionGoalReached = computed(() =>
+    this.sessionGoal() > 0 && this.sessionWordsAdded() >= this.sessionGoal()
+  );
+
   private isDirty       = false;
   private autosaveTimer: ReturnType<typeof setInterval> | null = null;
+  private docCachedWordCount    = 0;  // cached word count of current doc when opened
+  private accumulatedSessionWords = 0; // words accumulated from previous saves/doc switches
 
   ngOnInit(): void {
     if (!this.projectService.isLoaded()) {
@@ -70,6 +89,10 @@ export class EditorLayoutComponent implements OnInit, OnDestroy {
       const doc = await this.docService.loadDocument(node.id);
       this.activeDocumentId.set(doc.id);
       this.activeDocument.set(doc);
+      if (this.sessionBaseCount() === 0) {
+        this.sessionBaseCount.set(this.projectService.totalWordCount());
+      }
+      this.docCachedWordCount = this.projectService.project()?.wordCountCache?.[doc.id] ?? 0;
       this.isDirty = false;
       this.saveStatus.set('saved');
       this.updateWindowTitle();
@@ -83,6 +106,16 @@ export class EditorLayoutComponent implements OnInit, OnDestroy {
     this.activeDocument.update(doc => doc ? { ...doc, content } : doc);
     this.isDirty = true;
     this.saveStatus.set('unsaved');
+
+    if (this.sessionGoal() > 0 && this.sessionBaseCount() > 0) {
+      const prevReached = this.sessionGoalReached();
+      const editorWords = this.tiptapEditor?.wordCount() ?? 0;
+      const delta = Math.max(0, editorWords - this.docCachedWordCount);
+      this.sessionWordsAdded.set(this.accumulatedSessionWords + delta);
+      if (!prevReached && this.sessionGoalReached()) {
+        this.toast.success(`¡Objetivo de ${this.sessionGoal()} palabras alcanzado hoy! 🎉`);
+      }
+    }
   }
 
   onNodeRenamed(event: { id: string; title: string }): void {
@@ -146,6 +179,12 @@ export class EditorLayoutComponent implements OnInit, OnDestroy {
       this.activeDocument.set(saved);
       this.isDirty = false;
       this.saveStatus.set('saved');
+      // Freeze accumulated words at the current editor count after save
+      const editorWords = this.tiptapEditor?.wordCount() ?? 0;
+      const delta = Math.max(0, editorWords - this.docCachedWordCount);
+      this.accumulatedSessionWords += delta;
+      this.docCachedWordCount = editorWords;
+      this.sessionWordsAdded.set(this.accumulatedSessionWords);
     } catch {
       this.saveStatus.set('error');
     }

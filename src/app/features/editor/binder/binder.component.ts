@@ -27,9 +27,16 @@ export class BinderComponent {
 
   activeId = input<string | null>(null);
 
+  sessionGoal        = input<number>(0);
+  sessionWordsAdded  = input<number>(0);
+  sessionProgress    = input<number>(0);
+  sessionGoalReached = input<boolean>(false);
+  totalWordCount     = input<number>(0);
+
   documentOpened    = output<TreeNode>();
   nodeRenamed       = output<{ id: string; title: string }>();
   synopsisRequested = output<TreeNode>();
+  goalChanged       = output<number>();
 
   renamingId    = signal<string | null>(null);
   contextMenu   = signal<NodeContextEvent | null>(null);

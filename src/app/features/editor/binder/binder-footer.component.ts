@@ -1,18 +1,164 @@
-import { Component, computed, inject, input, output } from '@angular/core';
-import { TranslocoPipe } from '@jsverse/transloco';
-import { ProjectService } from '../../../core/services/project.service';
+import { Component, input, output, signal } from '@angular/core';
 
 @Component({
   selector: 'app-binder-footer',
   standalone: true,
-  imports: [TranslocoPipe],
-  templateUrl: './binder-footer.component.html',
+  template: `
+    <div class="flex flex-col border-t border-ink-border bg-ink-panel shrink-0">
+
+      <!-- Barra de progreso de sesión (solo si hay objetivo) -->
+      @if (sessionGoal() > 0) {
+        <div class="h-1 bg-ink-border relative overflow-hidden">
+          <div
+            class="h-full transition-all duration-500"
+            [style.width.%]="sessionProgress()"
+            [class]="sessionGoalReached()
+              ? 'bg-ink-success'
+              : 'bg-ink-accent'">
+          </div>
+        </div>
+      }
+
+      <!-- Fila principal -->
+      <div class="flex items-center justify-between px-3 py-2 gap-2">
+
+        <!-- Recuento total + objetivo de sesión -->
+        <div class="flex flex-col gap-0">
+          <span class="text-ink-subtle text-xs">
+            {{ formatCount(totalWordCount()) }}
+          </span>
+          @if (sessionGoal() > 0) {
+            <span class="text-xs"
+                  [class]="sessionGoalReached() ? 'text-ink-success' : 'text-ink-subtle'">
+              +{{ sessionWordsAdded() }} / {{ sessionGoal() }} hoy
+              @if (sessionGoalReached()) { ✓ }
+            </span>
+          }
+        </div>
+
+        <div class="flex items-center gap-1">
+
+          <!-- Botón definir/editar objetivo -->
+          <div class="relative">
+            <button
+              (click)="showGoalPopover.set(!showGoalPopover())"
+              title="{{ sessionGoal() === 0 ? 'Definir objetivo de hoy' : 'Cambiar objetivo' }}"
+              class="p-1 rounded text-ink-subtle hover:text-ink-text
+                     hover:bg-ink-border transition-colors text-xs"
+              [class.text-ink-accent]="sessionGoal() > 0">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <circle cx="12" cy="12" r="6"/>
+                <circle cx="12" cy="12" r="2"/>
+              </svg>
+            </button>
+
+            <!-- Popover del objetivo -->
+            @if (showGoalPopover()) {
+              <div
+                class="absolute bottom-full mb-2 left-0 w-52 rounded-lg border
+                       border-ink-border bg-ink-surface shadow-xl p-3 z-50">
+                <p class="text-ink-subtle text-xs mb-2">Objetivo de palabras para hoy</p>
+                <div class="flex gap-2">
+                  <input
+                    #goalInput
+                    type="number"
+                    [value]="sessionGoal() || ''"
+                    min="1" max="99999"
+                    placeholder="500"
+                    class="flex-1 px-2 py-1 rounded bg-ink-bg border border-ink-border
+                           text-ink-text text-sm focus:outline-none
+                           focus:border-ink-accent transition-colors"/>
+                  <button
+                    (click)="applyGoal(goalInput.value)"
+                    class="px-3 py-1 rounded bg-ink-accent text-ink-panel
+                           text-xs font-medium hover:opacity-90 transition-opacity">
+                    OK
+                  </button>
+                </div>
+                @if (sessionGoal() > 0) {
+                  <button
+                    (click)="clearGoal()"
+                    class="mt-2 text-ink-subtle text-xs hover:text-ink-danger
+                           transition-colors">
+                    Quitar objetivo
+                  </button>
+                }
+                <!-- Sugerencias rápidas -->
+                <div class="flex gap-2 mt-2">
+                  @for (n of [250, 500, 1000, 2000]; track n) {
+                    <button
+                      (click)="applyGoal(n.toString())"
+                      class="flex-1 py-1 rounded bg-ink-bg border border-ink-border
+                             text-ink-subtle text-xs hover:border-ink-accent
+                             hover:text-ink-text transition-colors">
+                      {{ n }}
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Botón búsqueda -->
+          <button
+            (click)="searchToggled.emit()"
+            title="Buscar en el proyecto (Ctrl+F)"
+            class="p-1 rounded text-ink-subtle hover:text-ink-text
+                   hover:bg-ink-border transition-colors"
+            [class.text-ink-accent]="searchActive()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          </button>
+
+        </div>
+      </div>
+    </div>
+  `,
+  host: {
+    '(document:click)': 'onDocumentClick($event)',
+  },
 })
 export class BinderFooterComponent {
-  private projectService = inject(ProjectService);
-  searchActive = input<boolean>(false);
-  searchToggled = output<void>();
+  // Inputs desde BinderComponent (pasa los valores de EditorLayoutComponent)
+  searchActive       = input<boolean>(false);
+  sessionGoal        = input<number>(0);
+  sessionWordsAdded  = input<number>(0);
+  sessionProgress    = input<number>(0);
+  sessionGoalReached = input<boolean>(false);
+  totalWordCount     = input<number>(0);
 
-  readonly wordCount = computed(() => this.projectService.totalWordCount());
-  readonly wordCountK = computed(() => (this.projectService.totalWordCount() / 1000).toFixed(1).replace('.', ','));
+  // Outputs
+  searchToggled = output<void>();
+  goalChanged   = output<number>();  // 0 = sin objetivo
+
+  showGoalPopover = signal(false);
+
+  applyGoal(value: string): void {
+    const n = parseInt(value, 10);
+    this.goalChanged.emit(isNaN(n) || n <= 0 ? 0 : n);
+    this.showGoalPopover.set(false);
+  }
+
+  clearGoal(): void {
+    this.goalChanged.emit(0);
+    this.showGoalPopover.set(false);
+  }
+
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    if (!target.closest('app-binder-footer')) {
+      this.showGoalPopover.set(false);
+    }
+  }
+
+  formatCount(n: number): string {
+    if (n === 0) return 'Proyecto vacío';
+    if (n < 1000) return `${n} palabras`;
+    return `${(n / 1000).toFixed(1).replace('.', ',')}k palabras`;
+  }
 }

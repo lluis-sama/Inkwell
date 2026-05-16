@@ -125,6 +125,7 @@ export class TiptapEditorComponent
   editable = input<boolean>(true);
   placeholder = input<string>("Empieza a escribir...");
   focusMode = input<boolean>(false);
+  typewriterMode = input<boolean>(false);
 
   contentChanged = output<object>();
 
@@ -153,12 +154,18 @@ export class TiptapEditorComponent
       this.wordCount.set(editor.storage["characterCount"].words());
       this.charCount.set(editor.storage["characterCount"].characters());
 
+      if (this.typewriterMode()) this.centerActiveLine();
+
       if (this.debounceTimer) clearTimeout(this.debounceTimer);
       this.debounceTimer = setTimeout(() => {
         const json = editor.getJSON();
         this.lastEmittedContent = JSON.stringify(json);
         this.contentChanged.emit(json);
       }, 300);
+    });
+
+    this.editor.on("selectionUpdate", () => {
+      if (this.typewriterMode()) this.centerActiveLine();
     });
   }
 
@@ -183,5 +190,19 @@ export class TiptapEditorComponent
   insertAtCursor(text: string): void {
     if (!this.editor) return;
     this.editor.chain().focus().insertContent(text).run();
+  }
+
+  private centerActiveLine(): void {
+    if (!this.editor) return;
+    const { from } = this.editor.state.selection;
+    const coords = this.editor.view.coordsAtPos(from);
+    const container = this.editorEl.nativeElement;
+    const containerRect = container.getBoundingClientRect();
+    const lineCenter = (coords.top + coords.bottom) / 2;
+    const containerCenter = containerRect.top + container.clientHeight / 2;
+    const scrollDelta = lineCenter - containerCenter;
+    if (Math.abs(scrollDelta) > 2) {
+      container.scrollBy({ top: scrollDelta, behavior: 'smooth' });
+    }
   }
 }

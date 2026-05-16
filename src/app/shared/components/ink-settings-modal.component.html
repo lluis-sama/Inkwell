@@ -64,6 +64,15 @@
             Guardar cambios
           </ink-button>
 
+          <div class="pt-2 border-t border-ink-border">
+            <p class="text-ink-subtle text-xs mb-3">
+              Crea una copia de seguridad completa del proyecto como archivo ZIP.
+            </p>
+            <ink-button variant="secondary" [fullWidth]="true" (clicked)="backup()">
+              Crear backup del proyecto
+            </ink-button>
+          </div>
+
         </div>
       }
 

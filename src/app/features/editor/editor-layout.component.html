@@ -14,10 +14,12 @@
         [documentTitle]="activeDocument()?.title ?? null"
         [saveStatus]="saveStatus()"
         [focusMode]="focusMode()"
+        [typewriterMode]="typewriterMode()"
         [showSnapshots]="showSnapshotsPanel()"
         [showAiPanel]="showAiPanel()"
         (binderToggled)="toggleBinder()"
         (focusToggled)="toggleFocusMode()"
+        (typewriterToggled)="typewriterMode.set(!typewriterMode())"
         (snapshotRequested)="createSnapshot()"
         (snapshotsPanelToggled)="toggleSnapshotsPanel()"
         (aiPanelToggled)="toggleAiPanel()"
@@ -33,6 +35,12 @@
         <div class="w-60 shrink-0">
           <app-binder
             [activeId]="activeDocumentId()"
+            [sessionGoal]="sessionGoal()"
+            [sessionWordsAdded]="sessionWordsAdded()"
+            [sessionProgress]="sessionProgress()"
+            [sessionGoalReached]="sessionGoalReached()"
+            [totalWordCount]="projectService.totalWordCount()"
+            (goalChanged)="sessionGoal.set($event)"
             (documentOpened)="openDocument($event)"
             (nodeRenamed)="onNodeRenamed($event)"
             (synopsisRequested)="onSynopsisRequested($event)"/>
@@ -46,6 +54,7 @@
           <app-tiptap-editor
             [content]="activeDocument()!.content"
             [focusMode]="focusMode()"
+            [typewriterMode]="typewriterMode()"
             (contentChanged)="onContentChanged($event)"/>
         } @else {
           <!-- Estado vacío -->

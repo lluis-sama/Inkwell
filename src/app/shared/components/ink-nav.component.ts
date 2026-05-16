@@ -5,11 +5,12 @@ import { ThemeService } from '../../core/services/theme.service';
 import { ProjectService } from '../../core/services/project.service';
 import { InkSettingsModalComponent } from './ink-settings-modal.component';
 import { AuthorProfileModalComponent } from './author-profile-modal.component';
+import { ShortcutsModalComponent } from './shortcuts-modal.component';
 
 @Component({
   selector: 'ink-nav',
   standalone: true,
-  imports: [RouterLink, TranslocoPipe, InkSettingsModalComponent, AuthorProfileModalComponent],
+  imports: [RouterLink, TranslocoPipe, InkSettingsModalComponent, AuthorProfileModalComponent, ShortcutsModalComponent],
   templateUrl: './ink-nav.component.html',
   styles: [`
     :host { display: flex; height: 100%; }
@@ -25,6 +26,7 @@ export class InkNavComponent {
 
   showSettings = signal(false);
   showAuthorProfile = signal(false);
+  showShortcuts = signal(false);
 
   isRoute(path: string): boolean {
     return this.router.url.startsWith(path);
