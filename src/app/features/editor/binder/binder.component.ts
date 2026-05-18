@@ -1,5 +1,5 @@
 import { Component, inject, input, output, signal, computed } from '@angular/core';
-import { TreeNode } from '../../../core/models/project.model';
+import { TreeNode, DocumentStatus } from '../../../core/models/project.model';
 import { ProjectService, findNode, deleteNode, insertAfter, insertInside, isDescendant } from '../../../core/services/project.service';
 import { DocumentService } from '../../../core/services/document.service';
 import { ImportService } from '../../../core/services/import.service';
@@ -52,6 +52,20 @@ export class BinderComponent {
       { label: 'Renombrar', action: 'rename' },
     ];
 
+    if (node.type === 'document') {
+      actions.push(
+        { label: '', action: 'sep1', separator: true },
+        { label: 'Estado', action: 'header-status', disabled: true },
+        { label: '○  Sin estado',   action: 'status:clear' },
+        { label: '○  Por escribir', action: 'status:todo' },
+        { label: '○  Borrador',     action: 'status:draft' },
+        { label: '○  En revisión',  action: 'status:revised' },
+        { label: '●  Finalizado',   action: 'status:final' },
+        { label: '◇  Solo notas',   action: 'status:notes' },
+        { label: '', action: 'sep2', separator: true },
+      );
+    }
+
     if (node.type === 'folder') {
       actions.push(
         { label: 'Nuevo documento aquí', action: 'add-document' },
@@ -100,6 +114,14 @@ export class BinderComponent {
     const node = this.contextMenu()?.node;
     this.closeContextMenu();
     if (!node) return;
+
+    if (action.startsWith('status:')) {
+      const status = action === 'status:clear'
+        ? undefined
+        : action.replace('status:', '') as DocumentStatus;
+      await this.projectService.updateNodeStatus(node.id, status);
+      return;
+    }
 
     if (action === 'rename') {
       this.renamingId.set(node.id);

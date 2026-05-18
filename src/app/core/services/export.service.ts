@@ -4,6 +4,10 @@ import StarterKit from '@tiptap/starter-kit';
 import { TauriBridgeService } from './tauri-bridge.service';
 import { ExportOptions, ExportMetadata } from '../models/export.model';
 import { DocumentFile } from '../models/document.model';
+import {
+  Document, Paragraph, TextRun, HeadingLevel,
+  AlignmentType, Packer,
+} from 'docx';
 // @ts-expect-error — browser bundle, no separate type declarations
 import epub from 'epub-gen-memory/dist/bundle.min.js';
 
@@ -22,6 +26,8 @@ export class ExportService {
 
     if (options.format === 'pdf-manuscript') {
       await this.exportManuscriptPdf(ordered, options.metadata, projectTitle);
+    } else if (options.format === 'docx') {
+      await this.exportDocx(ordered, options.metadata, projectTitle);
     } else {
       await this.exportEpub(ordered, options.metadata, projectTitle);
     }
@@ -283,6 +289,146 @@ ${chaptersHtml}
     await this.bridge.writeBinaryFile(savePath, arrayBuffer);
   }
 
+  private async exportDocx(
+    docs: DocumentFile[],
+    meta: ExportMetadata,
+    title: string,
+  ): Promise<void> {
+    const savePath = await this.bridge.saveFileDialog(`${title}.docx`, 'docx');
+    if (!savePath) return;
+
+    const wordCount = this.countWords(docs);
+    const docxDoc = this.buildDocxDocument(docs, meta, title, wordCount);
+    const blob = await Packer.toBlob(docxDoc);
+    const arrayBuffer = await blob.arrayBuffer();
+
+    await this.bridge.writeBinaryFile(savePath, arrayBuffer);
+  }
+
+  private buildDocxDocument(
+    docs: DocumentFile[],
+    meta: ExportMetadata,
+    title: string,
+    wordCount: number,
+  ): Document {
+    const authorLine = meta.penName ?? meta.legalName;
+    const wordCountFormatted =
+      `~${Math.round(wordCount / 1000) * 1000}`.replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ' palabras';
+
+    const children: Paragraph[] = [];
+
+    // Página de título
+    children.push(
+      new Paragraph({ text: meta.legalName }),
+      new Paragraph({ text: meta.address ?? '' }),
+      new Paragraph({ text: meta.phone ?? '' }),
+      new Paragraph({ text: meta.email }),
+      new Paragraph({ text: '' }),
+      new Paragraph({ text: '' }),
+      new Paragraph({ text: title.toUpperCase(), alignment: AlignmentType.CENTER }),
+      new Paragraph({ text: `by ${authorLine}`, alignment: AlignmentType.CENTER }),
+      new Paragraph({ text: wordCountFormatted, alignment: AlignmentType.CENTER }),
+      new Paragraph({ text: meta.genre, alignment: AlignmentType.CENTER }),
+    );
+
+    // Capítulos
+    for (const doc of docs) {
+      children.push(
+        new Paragraph({
+          text:            doc.title,
+          heading:         HeadingLevel.HEADING_1,
+          alignment:       AlignmentType.CENTER,
+          pageBreakBefore: true,
+        }),
+      );
+      children.push(...this.tiptapToDocxParagraphs(doc.content));
+    }
+
+    children.push(
+      new Paragraph({ text: '' }),
+      new Paragraph({ text: '# # #', alignment: AlignmentType.CENTER }),
+    );
+
+    return new Document({
+      sections: [{
+        properties: {
+          page: {
+            margin: { top: 1440, bottom: 1440, left: 1440, right: 1440 },
+          },
+        },
+        children,
+      }],
+      styles: {
+        default: {
+          document: {
+            run: { font: 'Times New Roman', size: 24 },
+            paragraph: { spacing: { line: 480 } },
+          },
+        },
+      },
+    });
+  }
+
+  private tiptapToDocxParagraphs(content: object): Paragraph[] {
+    const doc = content as { type: string; content?: TipTapNode[] };
+    return (doc.content ?? []).flatMap(node => this.nodeToDocx(node));
+  }
+
+  private nodeToDocx(node: TipTapNode): Paragraph[] {
+    switch (node.type) {
+      case 'paragraph':
+        return [new Paragraph({
+          children: this.inlineToRuns(node.content ?? []),
+          indent: { firstLine: 720 },
+        })];
+
+      case 'heading': {
+        const levels: typeof HeadingLevel[keyof typeof HeadingLevel][] = [
+          HeadingLevel.HEADING_1, HeadingLevel.HEADING_2, HeadingLevel.HEADING_3,
+        ];
+        const level = levels[(node.attrs?.['level'] as number ?? 1) - 1] ?? HeadingLevel.HEADING_1;
+        return [new Paragraph({
+          children: this.inlineToRuns(node.content ?? []),
+          heading:  level,
+          alignment: AlignmentType.CENTER,
+        })];
+      }
+
+      case 'blockquote':
+        return (node.content ?? []).flatMap(child => this.nodeToDocx(child));
+
+      case 'bulletList':
+      case 'orderedList':
+        return (node.content ?? []).flatMap(item =>
+          (item.content ?? []).flatMap(p =>
+            new Paragraph({
+              children: this.inlineToRuns(p.content ?? []),
+              bullet: { level: 0 },
+            })
+          )
+        );
+
+      case 'horizontalRule':
+        return [new Paragraph({ text: '* * *', alignment: AlignmentType.CENTER })];
+
+      default:
+        return [];
+    }
+  }
+
+  private inlineToRuns(nodes: TipTapNode[]): TextRun[] {
+    return nodes.map(n => {
+      if (n.type !== 'text') return new TextRun('');
+      const marks = n.marks ?? [];
+      return new TextRun({
+        text:    n.text ?? '',
+        bold:    marks.some(m => m.type === 'bold'),
+        italics: marks.some(m => m.type === 'italic'),
+        strike:  marks.some(m => m.type === 'strike'),
+      });
+    });
+  }
+
   countWords(docs: DocumentFile[]): number {
     return docs.reduce((total, doc) => {
       const text = generateHTML(doc.content as any, [StarterKit])
@@ -292,4 +438,12 @@ ${chaptersHtml}
       return total + words.length;
     }, 0);
   }
+}
+
+interface TipTapNode {
+  type: string;
+  text?: string;
+  attrs?: Record<string, unknown>;
+  content?: TipTapNode[];
+  marks?: Array<{ type: string }>;
 }

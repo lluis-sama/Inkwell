@@ -4,6 +4,8 @@ export interface ContextMenuAction {
   label: string;
   action: string;
   danger?: boolean;
+  disabled?: boolean;
+  separator?: boolean;
 }
 
 @Component({

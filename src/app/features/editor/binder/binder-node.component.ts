@@ -3,7 +3,7 @@ import {
   ViewChild, ElementRef, effect,
 } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { TreeNode } from '../../../core/models/project.model';
+import { TreeNode, DocumentStatus, DOCUMENT_STATUS_CONFIG } from '../../../core/models/project.model';
 
 export interface NodeContextEvent {
   node: TreeNode;
@@ -72,6 +72,14 @@ export class BinderNodeComponent {
     const title = inputEl.value.trim();
     if (title) this.renamed.emit({ id: this.node().id, title });
     else this.renameCancel.emit();
+  }
+
+  statusColor(status: DocumentStatus): string {
+    return DOCUMENT_STATUS_CONFIG[status]?.color ?? 'transparent';
+  }
+
+  statusLabel(status: DocumentStatus): string {
+    return DOCUMENT_STATUS_CONFIG[status]?.label ?? '';
   }
 
   onSynopsisRequested(event: MouseEvent): void {

@@ -115,6 +115,21 @@
     </svg>
   </button>
 
+  <!-- Botón buscar y reemplazar -->
+  <button
+    (click)="findReplaceToggled.emit()"
+    title="Buscar y reemplazar (Ctrl+H)"
+    class="p-1.5 rounded transition-colors"
+    [class]="showFindReplace()
+      ? 'text-ink-accent bg-ink-border'
+      : 'text-ink-subtle hover:text-ink-text hover:bg-ink-border'">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2">
+      <circle cx="11" cy="11" r="8"/>
+      <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+  </button>
+
   <!-- Botón exportar -->
   <button
     (click)="exportRequested.emit()"

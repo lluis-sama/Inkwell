@@ -15,7 +15,13 @@
       "Bash(Out-Null)",
       "Bash(Write-Output \"Directory created\")",
       "Bash(npx ng *)",
-      "mcp__plugin_engram_engram__mem_session_summary"
+      "mcp__plugin_engram_engram__mem_session_summary",
+      "Bash(pnpm add *)",
+      "Bash(pnpm search *)",
+      "Bash(npm search *)",
+      "Bash(pnpm view *)",
+      "Bash(npm view *)",
+      "Bash(pnpm exec *)"
     ]
   }
 }

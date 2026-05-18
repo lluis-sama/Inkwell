@@ -1,0 +1,115 @@
+<div class="flex flex-col border-b border-ink-border bg-ink-panel px-4 py-2 gap-2 shrink-0">
+
+  <!-- Fila de búsqueda -->
+  <div class="flex items-center gap-2">
+    <div class="flex items-center gap-1.5 flex-1 px-3 py-1.5 rounded
+                bg-ink-bg border border-ink-border
+                focus-within:border-ink-accent transition-colors">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2" class="text-ink-subtle shrink-0">
+        <circle cx="11" cy="11" r="8"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input
+        #searchInput
+        [ngModel]="searchQuery"
+        (ngModelChange)="onQueryChange($event)"
+        placeholder="Buscar..."
+        class="flex-1 bg-transparent text-ink-text text-sm focus:outline-none
+               placeholder:text-ink-muted"/>
+      @if (resultCount().total > 0) {
+        <span class="text-ink-subtle text-xs shrink-0 font-mono">
+          {{ resultCount().current }}/{{ resultCount().total }}
+        </span>
+      } @else if (searchQuery) {
+        <span class="text-ink-danger text-xs shrink-0">Sin resultados</span>
+      }
+    </div>
+
+    <!-- Navegación -->
+    <button (click)="prevRequested.emit()"
+      [disabled]="!searchQuery"
+      title="Anterior"
+      class="p-1.5 rounded text-ink-subtle hover:text-ink-text hover:bg-ink-border
+             transition-colors disabled:opacity-30">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2">
+        <polyline points="18,15 12,9 6,15"/>
+      </svg>
+    </button>
+    <button (click)="nextRequested.emit()"
+      [disabled]="!searchQuery"
+      title="Siguiente"
+      class="p-1.5 rounded text-ink-subtle hover:text-ink-text hover:bg-ink-border
+             transition-colors disabled:opacity-30">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2">
+        <polyline points="6,9 12,15 18,9"/>
+      </svg>
+    </button>
+
+    <!-- Toggle mayúsculas -->
+    <button
+      (click)="toggleCase()"
+      title="Distinguir mayúsculas"
+      class="p-1.5 rounded text-xs font-mono transition-colors"
+      [class]="caseSensitive()
+        ? 'bg-ink-border text-ink-accent'
+        : 'text-ink-subtle hover:text-ink-text hover:bg-ink-border'">
+      Aa
+    </button>
+
+    <!-- Toggle show replace -->
+    <button
+      (click)="toggleShowReplace()"
+      title="Mostrar reemplazo"
+      class="p-1.5 rounded text-ink-subtle hover:text-ink-text
+             hover:bg-ink-border transition-colors text-xs">
+      ±
+    </button>
+
+    <!-- Cerrar -->
+    <button (click)="closed.emit()"
+      class="p-1.5 rounded text-ink-subtle hover:text-ink-text
+             hover:bg-ink-border transition-colors">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M12.207 4.207a1 1 0 0 0-1.414-1.414L8 5.586 5.207
+                 2.793a1 1 0 0 0-1.414 1.414L6.586 7l-2.793 2.793a1
+                 1 0 1 0 1.414 1.414L8 8.414l2.793 2.793a1 1 0 0 0
+                 1.414-1.414L9.414 7l2.793-2.793z"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Fila de reemplazo (opcional) -->
+  @if (showReplace()) {
+    <div class="flex items-center gap-2">
+      <div class="flex items-center gap-1.5 flex-1 px-3 py-1.5 rounded
+                  bg-ink-bg border border-ink-border transition-colors
+                  focus-within:border-ink-accent">
+        <input
+          [(ngModel)]="replaceQuery"
+          placeholder="Reemplazar por..."
+          class="flex-1 bg-transparent text-ink-text text-sm focus:outline-none
+                 placeholder:text-ink-muted"/>
+      </div>
+      <button
+        (click)="replaceRequested.emit(replaceQuery)"
+        [disabled]="!searchQuery"
+        class="px-3 py-1.5 rounded bg-ink-surface border border-ink-border
+               text-ink-text text-xs hover:border-ink-accent transition-colors
+               disabled:opacity-30">
+        Reemplazar
+      </button>
+      <button
+        (click)="replaceAllRequested.emit(replaceQuery)"
+        [disabled]="!searchQuery"
+        class="px-3 py-1.5 rounded bg-ink-surface border border-ink-border
+               text-ink-text text-xs hover:border-ink-accent transition-colors
+               disabled:opacity-30">
+        Todos
+      </button>
+    </div>
+  }
+
+</div>

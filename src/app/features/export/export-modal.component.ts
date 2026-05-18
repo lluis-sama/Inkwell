@@ -183,11 +183,13 @@ export class ExportModalComponent implements OnInit {
         docs,
         this.projectService.project()!.name,
       );
-      this.toast.success(
-        this.selectedFormat() === 'epub'
-          ? 'EPUB guardado correctamente.'
-          : 'Manuscrito abierto. Pulsa "Guardar como PDF / Imprimir" en la ventana.'
-      );
+      if (this.selectedFormat() === 'epub') {
+        this.toast.success('EPUB guardado correctamente.');
+      } else if (this.selectedFormat() === 'docx') {
+        this.toast.success('Documento Word guardado correctamente.');
+      } else {
+        this.toast.success('Manuscrito abierto. Pulsa "Guardar como PDF / Imprimir" en la ventana.');
+      }
       this.closed.emit();
     } catch (e) {
       this.toast.error(`Error al exportar: ${e}`);

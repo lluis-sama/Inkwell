@@ -57,6 +57,27 @@ import { ExportFormat, PageSize } from '../../../core/models/export.model';
             </div>
           </button>
 
+          <button
+            (click)="format.set('docx')"
+            class="flex-1 flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all text-left"
+            [class]="format() === 'docx'
+              ? 'border-ink-accent bg-ink-surface'
+              : 'border-ink-border hover:border-ink-muted'">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="1.5"
+                 [class]="format() === 'docx' ? 'text-ink-accent' : 'text-ink-subtle'">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14,2 14,8 20,8"/>
+              <path d="M8 13h2l1 4 1.5-3 1.5 3 1-4h2" stroke-linecap="round"/>
+            </svg>
+            <div>
+              <p class="text-ink-text text-sm font-medium">Word (DOCX)</p>
+              <p class="text-ink-subtle text-xs mt-0.5">
+                Compatible con Word y<br>LibreOffice Writer.
+              </p>
+            </div>
+          </button>
+
         </div>
       </div>
 

@@ -34,6 +34,7 @@ export class InkSettingsModalComponent implements OnInit {
   // Editor settings
   autosaveInterval = 30;
   maxSnapshots = 10;
+  spellcheck = true;
 
   // AI settings
   apiKeyInput = '';
@@ -72,6 +73,7 @@ export class InkSettingsModalComponent implements OnInit {
       this.autosaveInterval = settings.autosaveInterval;
       this.maxSnapshots = settings.maxSnapshots;
       this.selectedModel = settings.aiModel;
+      this.spellcheck = settings.spellcheck ?? true;
     }
   }
 
@@ -79,6 +81,7 @@ export class InkSettingsModalComponent implements OnInit {
     await this.projectService.updateSettings({
       autosaveInterval: this.autosaveInterval,
       maxSnapshots: this.maxSnapshots,
+      spellcheck: this.spellcheck,
     });
     this.closed.emit();
   }

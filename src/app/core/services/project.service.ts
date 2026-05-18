@@ -1,6 +1,6 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { TauriBridgeService } from './tauri-bridge.service';
-import { Project, TreeNode, DEFAULT_PROJECT_SETTINGS, AuthorProfile } from '../models/project.model';
+import { Project, TreeNode, DEFAULT_PROJECT_SETTINGS, AuthorProfile, DocumentStatus } from '../models/project.model';
 import { projectJsonPath } from '../../shared/utils/project-paths';
 
 @Injectable({ providedIn: 'root' })
@@ -126,6 +126,13 @@ export class ProjectService {
     await this.saveProjectOnly();
   }
 
+  async updateNodeStatus(id: string, status: DocumentStatus | undefined): Promise<void> {
+    this.project.update(p =>
+      p ? { ...p, tree: setNodeStatus(p.tree, id, status) } : p
+    );
+    await this.saveProjectOnly();
+  }
+
   private async saveProjectOnly(): Promise<void> {
     const project = this.project();
     const basePath = this.basePath();
@@ -178,6 +185,13 @@ export function deleteNode(tree: TreeNode[], id: string): TreeNode[] {
   return tree
     .filter(n => n.id !== id)
     .map(n => ({ ...n, children: deleteNode(n.children, id) }));
+}
+
+function setNodeStatus(tree: TreeNode[], id: string, status: DocumentStatus | undefined): TreeNode[] {
+  return tree.map(n => {
+    if (n.id === id) return { ...n, status };
+    return { ...n, children: setNodeStatus(n.children, id, status) };
+  });
 }
 
 function renameNode(tree: TreeNode[], id: string, title: string): TreeNode[] {

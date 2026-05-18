@@ -26,6 +26,8 @@ const SHORTCUTS: ShortcutGroup[] = [
       { keys: ['Ctrl', 'B'],          description: 'Negrita' },
       { keys: ['Ctrl', 'I'],          description: 'Cursiva' },
       { keys: ['Ctrl', 'Shift', 'A'], description: 'Abrir / cerrar asistente IA' },
+      { keys: ['Ctrl', 'H'],          description: 'Buscar y reemplazar en el documento' },
+      { keys: ['Ctrl', 'G'],          description: 'Buscar en el documento' },
     ],
   },
   {

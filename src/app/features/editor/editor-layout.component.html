@@ -17,6 +17,7 @@
         [typewriterMode]="typewriterMode()"
         [showSnapshots]="showSnapshotsPanel()"
         [showAiPanel]="showAiPanel()"
+        [showFindReplace]="showFindReplace()"
         (binderToggled)="toggleBinder()"
         (focusToggled)="toggleFocusMode()"
         (typewriterToggled)="typewriterMode.set(!typewriterMode())"
@@ -24,7 +25,21 @@
         (snapshotsPanelToggled)="toggleSnapshotsPanel()"
         (aiPanelToggled)="toggleAiPanel()"
         (exportRequested)="showExportModal.set(true)"
+        (findReplaceToggled)="showFindReplace.set(!showFindReplace())"
         (titleChanged)="onTitleChanged($event)"/>
+    }
+
+    <!-- Barra de buscar y reemplazar (visible entre top-bar y contenido) -->
+    @if (showFindReplace() && !focusMode()) {
+      <app-find-replace-bar
+        [resultCount]="findReplaceCount()"
+        [openWithReplace]="findReplaceWithReplace()"
+        (queryChanged)="onFindQueryChanged($event)"
+        (nextRequested)="onFindNext()"
+        (prevRequested)="onFindPrev()"
+        (replaceRequested)="onReplace($event)"
+        (replaceAllRequested)="onReplaceAll($event)"
+        (closed)="onFindReplaceClosed()"/>
     }
 
     <!-- Área principal -->
@@ -55,6 +70,7 @@
             [content]="activeDocument()!.content"
             [focusMode]="focusMode()"
             [typewriterMode]="typewriterMode()"
+            [spellcheck]="projectService.project()?.settings?.spellcheck ?? true"
             (contentChanged)="onContentChanged($event)"/>
         } @else {
           <!-- Estado vacío -->

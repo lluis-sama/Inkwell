@@ -13,8 +13,9 @@ export class EditorTopBarComponent {
   focusMode      = input<boolean>(false);
   typewriterMode = input<boolean>(false);
 
-  showSnapshots = input<boolean>(false);
-  showAiPanel   = input<boolean>(false);
+  showSnapshots    = input<boolean>(false);
+  showAiPanel      = input<boolean>(false);
+  showFindReplace  = input<boolean>(false);
 
   binderToggled          = output<void>();
   focusToggled           = output<void>();
@@ -23,6 +24,7 @@ export class EditorTopBarComponent {
   snapshotsPanelToggled  = output<void>();
   aiPanelToggled         = output<void>();
   exportRequested        = output<void>();
+  findReplaceToggled     = output<void>();
   titleChanged           = output<string>();
 
   onTitleChange(event: Event): void {

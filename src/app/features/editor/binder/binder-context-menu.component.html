@@ -4,13 +4,19 @@
   [style.left.px]="x()"
   [style.top.px]="y()">
   @for (item of actions(); track item.action) {
-    <button
-      (click)="actionSelected.emit(item.action)"
-      class="w-full text-left px-4 py-2 text-sm transition-colors"
-      [class]="item.danger
-        ? 'text-ink-danger hover:bg-ink-border'
-        : 'text-ink-text hover:bg-ink-border'">
-      {{ item.label }}
-    </button>
+    @if (item.separator) {
+      <hr class="border-ink-border my-1"/>
+    } @else if (item.disabled) {
+      <div class="px-4 py-1 text-ink-subtle text-xs select-none">{{ item.label }}</div>
+    } @else {
+      <button
+        (click)="actionSelected.emit(item.action)"
+        class="w-full text-left px-4 py-2 text-sm transition-colors"
+        [class]="item.danger
+          ? 'text-ink-danger hover:bg-ink-border'
+          : 'text-ink-text hover:bg-ink-border'">
+        {{ item.label }}
+      </button>
+    }
   }
 </div>

@@ -50,6 +50,15 @@
       }
     </span>
 
+    <!-- Indicador de estado (solo documentos con status asignado) -->
+    @if (node().type === 'document' && node().status) {
+      <span
+        class="w-1.5 h-1.5 rounded-full shrink-0"
+        [style.background]="statusColor(node().status!)"
+        [title]="statusLabel(node().status!)">
+      </span>
+    }
+
     <!-- Icono carpeta / documento -->
     @if (node().type === "folder") {
       <svg

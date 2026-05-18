@@ -18,11 +18,12 @@ import { TauriBridgeService } from '../../core/services/tauri-bridge.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { ExportModalComponent } from '../export/export-modal.component';
 import { SynopsisModalComponent } from './synopsis/synopsis-modal.component';
+import { FindReplaceBarComponent } from './find-replace-bar/find-replace-bar.component';
 
 @Component({
   selector: 'app-editor-layout',
   standalone: true,
-  imports: [BinderComponent, TiptapEditorComponent, EditorTopBarComponent, SnapshotsPanelComponent, AiAssistantPanelComponent, InkNavComponent, ExportModalComponent, SynopsisModalComponent],
+  imports: [BinderComponent, TiptapEditorComponent, EditorTopBarComponent, SnapshotsPanelComponent, AiAssistantPanelComponent, InkNavComponent, ExportModalComponent, SynopsisModalComponent, FindReplaceBarComponent],
   templateUrl: './editor-layout.component.html',
 })
 export class EditorLayoutComponent implements OnInit, OnDestroy {
@@ -45,6 +46,9 @@ export class EditorLayoutComponent implements OnInit, OnDestroy {
   showAiPanel         = signal(false);
   showExportModal     = signal(false);
   synopsisDocument    = signal<DocumentFile | null>(null);
+  showFindReplace     = signal(false);
+  findReplaceWithReplace = signal(false);
+  findReplaceCount    = signal<{ current: number; total: number }>({ current: 0, total: 0 });
 
   sessionGoal        = signal<number>(0);
   sessionWordsAdded  = signal<number>(0);
@@ -222,6 +226,65 @@ export class EditorLayoutComponent implements OnInit, OnDestroy {
       event.preventDefault();
       this.toggleAiPanel();
     }
+    if (event.ctrlKey && event.key === 'h') {
+      event.preventDefault();
+      this.findReplaceWithReplace.set(true);
+      this.showFindReplace.set(true);
+    }
+    if (event.ctrlKey && event.key === 'g') {
+      event.preventDefault();
+      this.findReplaceWithReplace.set(false);
+      this.showFindReplace.set(true);
+    }
+    if (event.key === 'Escape' && this.showFindReplace()) {
+      this.onFindReplaceClosed();
+    }
+  }
+
+  onFindQueryChanged(event: { query: string; caseSensitive: boolean }): void {
+    this.tiptapEditor?.find(event.query, event.caseSensitive);
+    setTimeout(() => {
+      this.findReplaceCount.set(
+        this.tiptapEditor?.getSearchResultCount() ?? { current: 0, total: 0 }
+      );
+    }, 50);
+  }
+
+  onFindNext(): void {
+    this.tiptapEditor?.findNext();
+    setTimeout(() => this.findReplaceCount.set(
+      this.tiptapEditor?.getSearchResultCount() ?? { current: 0, total: 0 }
+    ), 50);
+  }
+
+  onFindPrev(): void {
+    this.tiptapEditor?.findPrev();
+    setTimeout(() => this.findReplaceCount.set(
+      this.tiptapEditor?.getSearchResultCount() ?? { current: 0, total: 0 }
+    ), 50);
+  }
+
+  onReplace(replacement: string): void {
+    this.tiptapEditor?.replace(replacement);
+    setTimeout(() => this.findReplaceCount.set(
+      this.tiptapEditor?.getSearchResultCount() ?? { current: 0, total: 0 }
+    ), 50);
+  }
+
+  onReplaceAll(replacement: string): void {
+    const count = this.tiptapEditor?.getSearchResultCount()?.total ?? 0;
+    this.tiptapEditor?.replaceAll(replacement);
+    this.findReplaceCount.set({ current: 0, total: 0 });
+    if (count > 0) {
+      this.toast.success(`${count} ocurrencia${count !== 1 ? 's' : ''} reemplazada${count !== 1 ? 's' : ''}.`);
+    }
+  }
+
+  onFindReplaceClosed(): void {
+    this.showFindReplace.set(false);
+    this.findReplaceWithReplace.set(false);
+    this.tiptapEditor?.clearSearch();
+    this.findReplaceCount.set({ current: 0, total: 0 });
   }
 
   async onSynopsisRequested(node: TreeNode): Promise<void> {

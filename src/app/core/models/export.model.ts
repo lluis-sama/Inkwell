@@ -1,4 +1,4 @@
-export type ExportFormat = 'pdf-manuscript' | 'epub';
+export type ExportFormat = 'pdf-manuscript' | 'epub' | 'docx';
 export type PageSize = 'a4' | 'letter';
 
 export interface ExportMetadata {
