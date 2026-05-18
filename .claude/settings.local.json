@@ -21,7 +21,14 @@
       "Bash(npm search *)",
       "Bash(pnpm view *)",
       "Bash(npm view *)",
-      "Bash(pnpm exec *)"
+      "Bash(pnpm exec *)",
+      "Bash(grep -E \"\\\\.\\(ts|html|css\\)$\")",
+      "Bash(grep -E \"\\\\.\\(ts|html\\)$\")",
+      "Bash(grep -E \"\\\\.ts$\")",
+      "Bash(sort -t/ -k6 -r)",
+      "mcp__plugin_engram_engram__mem_get_observation",
+      "Bash(sed -n '13,20p' /home/david/dev/inkwell/src/app/core/services/project.service.ts)",
+      "Bash(sed -n '70,80p' /home/david/dev/inkwell/src/app/core/services/project.service.ts)"
     ]
   }
 }

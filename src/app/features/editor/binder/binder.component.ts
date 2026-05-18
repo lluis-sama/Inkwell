@@ -1,5 +1,5 @@
 import { Component, inject, input, output, signal, computed } from '@angular/core';
-import { TreeNode, DocumentStatus } from '../../../core/models/project.model';
+import { TreeNode, DocumentStatus, DOCUMENT_STATUS_CONFIG } from '../../../core/models/project.model';
 import { ProjectService, findNode, deleteNode, insertAfter, insertInside, isDescendant } from '../../../core/services/project.service';
 import { DocumentService } from '../../../core/services/document.service';
 import { ImportService } from '../../../core/services/import.service';
@@ -43,6 +43,14 @@ export class BinderComponent {
   draggedNodeId = signal<string | null>(null);
   showSearch    = signal(false);
   importing     = signal(false);
+
+  statusFilter = signal<DocumentStatus | 'all'>('all');
+
+  readonly statusEntries = Object.entries(DOCUMENT_STATUS_CONFIG).map(([key, val]) => ({
+    key:   key as DocumentStatus,
+    label: val.label,
+    color: val.color,
+  }));
 
   contextActions = computed<ContextMenuAction[]>(() => {
     const node = this.contextMenu()?.node;

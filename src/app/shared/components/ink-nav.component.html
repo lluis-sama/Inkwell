@@ -76,6 +76,19 @@
     </button>
   }
 
+  <!-- Stats button -->
+  @if (projectService.isLoaded()) {
+    <button (click)="showStats.set(true)" title="Estadísticas"
+            class="nav-icon text-ink-subtle hover:text-ink-text transition-colors">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="18" y1="20" x2="18" y2="10"/>
+        <line x1="12" y1="20" x2="12" y2="4"/>
+        <line x1="6"  y1="20" x2="6"  y2="14"/>
+      </svg>
+    </button>
+  }
+
   <!-- Spacer -->
   <div class="flex-1"></div>
 
@@ -122,6 +135,11 @@
   <!-- Shortcuts modal -->
   @if (showShortcuts()) {
     <app-shortcuts-modal (closed)="showShortcuts.set(false)" />
+  }
+
+  <!-- Stats modal -->
+  @if (showStats()) {
+    <app-stats-modal (closed)="showStats.set(false)"/>
   }
 
   <!-- Theme toggle -->

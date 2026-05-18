@@ -5,6 +5,10 @@ import { InkModalComponent } from '../../shared/components/ink-modal.component';
 import { InkButtonComponent } from '../../shared/components/ink-button.component';
 import { TauriBridgeService } from '../../core/services/tauri-bridge.service';
 import { ProjectService } from '../../core/services/project.service';
+import { DocumentService } from '../../core/services/document.service';
+import { PROJECT_TEMPLATES } from '../../core/data/project-templates';
+import { ProjectTemplate } from '../../core/models/project.model';
+import { TemplateNode } from '../../core/models/project.model';
 import slugify from 'slugify';
 
 @Component({
@@ -14,8 +18,9 @@ import slugify from 'slugify';
   templateUrl: './new-project-modal.component.html',
 })
 export class NewProjectModalComponent {
-  private bridge  = inject(TauriBridgeService);
-  private projectService = inject(ProjectService);
+  private bridge          = inject(TauriBridgeService);
+  private projectService  = inject(ProjectService);
+  private docService      = inject(DocumentService);
   readonly translocoService = inject(TranslocoService);
 
   created   = output<void>();
@@ -26,6 +31,12 @@ export class NewProjectModalComponent {
   folderPath  = signal<string | null>(null);
   creating    = signal(false);
   error       = signal<string | null>(null);
+
+  readonly templates       = PROJECT_TEMPLATES;
+  step                     = signal<1 | 2>(1);
+  selectedTemplate         = signal<ProjectTemplate>(PROJECT_TEMPLATES[0]);
+  customParts              = 3;
+  customChapters           = 5;
 
   readonly projectSlug = computed(() =>
     slugify(this.name(), { lower: true, strict: true, locale: 'es' }),
@@ -62,11 +73,52 @@ export class NewProjectModalComponent {
         this.description.trim(),
       );
       this.projectService.addRecentProject(this.name().trim(), fullPath);
+
+      // Aplicar la plantilla
+      const template  = this.selectedTemplate();
+      const structure = template.id === 'custom'
+        ? this.buildCustomStructure(this.customParts, this.customChapters)
+        : template.structure;
+
+      if (structure.length > 0) {
+        await this.applyTemplate(structure);
+      }
+
       this.created.emit();
     } catch (e) {
       this.error.set(this.translocoService.translate('MODAL.ERROR_CREATE', { error: String(e) }));
     } finally {
       this.creating.set(false);
+    }
+  }
+
+  private buildCustomStructure(parts: number, chaptersPerPart: number): TemplateNode[] {
+    const roman = ['I','II','III','IV','V','VI','VII','VIII','IX','X',
+                   'XI','XII','XIII','XIV','XV','XVI','XVII','XVIII','XIX','XX'];
+    return Array.from({ length: parts }, (_, i) => ({
+      title:    `Parte ${roman[i] ?? i + 1}`,
+      type:     'folder' as const,
+      children: Array.from({ length: chaptersPerPart }, (_, j) => ({
+        title:    `Capítulo ${i * chaptersPerPart + j + 1}`,
+        type:     'document' as const,
+        children: [],
+      })),
+    }));
+  }
+
+  private async applyTemplate(
+    nodes: TemplateNode[],
+    parentId: string | null = null,
+  ): Promise<void> {
+    for (const node of nodes) {
+      if (node.type === 'folder') {
+        const treeNode = await this.projectService.addNode('folder', node.title, parentId);
+        if (node.children.length > 0) {
+          await this.applyTemplate(node.children, treeNode.id);
+        }
+      } else {
+        await this.docService.createDocument(node.title, parentId);
+      }
     }
   }
 }

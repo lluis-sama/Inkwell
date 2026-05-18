@@ -39,11 +39,21 @@ export class BinderNodeComponent {
   dropped           = output<DropEvent>();
   synopsisRequested = output<TreeNode>();
 
+  statusFilter = input<DocumentStatus | 'all'>('all');
+
   expanded       = signal<boolean>(true);
   isActive       = computed(() => this.activeId() === this.node().id);
   renaming       = computed(() => this.renamingId() === this.node().id);
   isDragOver     = signal(false);
   isDragOverInner = signal(false);
+
+  isVisible = computed(() => {
+    const filter = this.statusFilter();
+    if (filter === 'all') return true;
+    const n = this.node();
+    if (n.type === 'folder') return this.hasMatchingDescendant(n, filter);
+    return n.status === filter;
+  });
 
   constructor() {
     // Auto-focus the rename input when it appears
@@ -120,5 +130,10 @@ export class BinderNodeComponent {
     this.dropped.emit({ draggedId, targetId: this.node().id, position });
     this.isDragOver.set(false);
     this.isDragOverInner.set(false);
+  }
+
+  private hasMatchingDescendant(node: TreeNode, status: DocumentStatus): boolean {
+    if (node.type === 'document') return node.status === status;
+    return node.children.some(c => this.hasMatchingDescendant(c, status));
   }
 }

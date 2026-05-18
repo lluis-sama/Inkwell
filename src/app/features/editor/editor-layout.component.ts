@@ -19,6 +19,7 @@ import { ToastService } from '../../shared/services/toast.service';
 import { ExportModalComponent } from '../export/export-modal.component';
 import { SynopsisModalComponent } from './synopsis/synopsis-modal.component';
 import { FindReplaceBarComponent } from './find-replace-bar/find-replace-bar.component';
+import { StatsService } from '../../core/services/stats.service';
 
 @Component({
   selector: 'app-editor-layout',
@@ -36,6 +37,7 @@ export class EditorLayoutComponent implements OnInit, OnDestroy {
   private route            = inject(ActivatedRoute);
   private bridge           = inject(TauriBridgeService);
   private toast            = inject(ToastService);
+  private statsService     = inject(StatsService);
 
   showBinder          = signal(true);
   focusMode           = signal(false);
@@ -86,6 +88,7 @@ export class EditorLayoutComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.stopAutosave();
+    this.statsService.resetSession();
   }
 
   // ─── Documentos ───────────────────────────────────────────────────────────
@@ -108,6 +111,7 @@ export class EditorLayoutComponent implements OnInit, OnDestroy {
       this.isDirty = false;
       this.saveStatus.set('saved');
       this.updateWindowTitle();
+      await this.statsService.trackSessionStart();
     } catch (e) {
       console.error('Error cargando documento:', e);
     }
@@ -197,6 +201,7 @@ export class EditorLayoutComponent implements OnInit, OnDestroy {
       this.accumulatedSessionWords += delta;
       this.docCachedWordCount = editorWords;
       this.sessionWordsAdded.set(this.accumulatedSessionWords);
+      await this.statsService.updateTodayWords();
     } catch {
       this.saveStatus.set('error');
     }

@@ -17,3 +17,7 @@ export function boardPath(basePath: string, id: string): string {
 export function boardsFolderPath(basePath: string): string {
   return `${basePath}/boards`;
 }
+
+export function statsPath(basePath: string): string {
+  return `${basePath}/stats.json`;
+}

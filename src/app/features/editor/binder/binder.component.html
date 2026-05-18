@@ -60,13 +60,35 @@
   </div>
 
   <!-- Árbol de documentos o búsqueda -->
-  <div class="flex-1 overflow-hidden">
+  <div class="flex-1 flex flex-col overflow-hidden">
     @if (showSearch()) {
       <app-binder-search
         (documentSelected)="onSearchDocumentSelected($event)"
         (closed)="showSearch.set(false)"/>
     } @else {
-      <div class="h-full overflow-y-auto py-2 px-1">
+      <div class="flex items-center gap-1 px-2 py-1.5 border-b border-ink-border overflow-x-auto shrink-0">
+        <button
+          (click)="statusFilter.set('all')"
+          class="shrink-0 px-2 py-1 rounded text-xs transition-colors"
+          [class]="statusFilter() === 'all'
+            ? 'bg-ink-border text-ink-text'
+            : 'text-ink-subtle hover:text-ink-text hover:bg-ink-surface'">
+          Todos
+        </button>
+        @for (entry of statusEntries; track entry.key) {
+          <button
+            (click)="statusFilter.set(entry.key)"
+            class="shrink-0 flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors"
+            [class]="statusFilter() === entry.key
+              ? 'bg-ink-border text-ink-text'
+              : 'text-ink-subtle hover:text-ink-text hover:bg-ink-surface'">
+            <span class="w-1.5 h-1.5 rounded-full shrink-0"
+                  [style.background]="entry.color"></span>
+            {{ entry.label }}
+          </button>
+        }
+      </div>
+      <div class="flex-1 overflow-y-auto py-2 px-1">
         @if ((projectService.project()?.tree ?? []).length === 0) {
           <p class="text-ink-subtle text-xs text-center mt-8 px-4 leading-relaxed">
             Sin documentos todavía.<br>Crea uno con el botón +
@@ -78,6 +100,7 @@
               [depth]="0"
               [activeId]="activeId()"
               [renamingId]="renamingId()"
+              [statusFilter]="statusFilter()"
               (nodeClicked)="documentOpened.emit($event)"
               (contextMenu)="onContextMenu($event)"
               (renamed)="onRenamed($event)"

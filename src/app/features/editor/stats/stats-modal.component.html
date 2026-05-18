@@ -1,0 +1,27 @@
+<ink-modal title="Estadísticas de escritura" [hasActions]="false" (closed)="closed.emit()">
+  <div class="flex flex-col gap-6">
+
+    <div class="grid grid-cols-3 gap-3">
+      <div class="flex flex-col items-center gap-1 p-3 rounded-lg bg-ink-bg border border-ink-border">
+        <span class="text-ink-accent text-xl font-bold font-mono">{{ streak() }}</span>
+        <span class="text-ink-subtle text-xs text-center">días de racha</span>
+      </div>
+      <div class="flex flex-col items-center gap-1 p-3 rounded-lg bg-ink-bg border border-ink-border">
+        <span class="text-ink-accent text-xl font-bold font-mono">{{ totalWords30() | number }}</span>
+        <span class="text-ink-subtle text-xs text-center">palabras este mes</span>
+      </div>
+      <div class="flex flex-col items-center gap-1 p-3 rounded-lg bg-ink-bg border border-ink-border">
+        <span class="text-ink-accent text-xl font-bold font-mono">{{ avgWords30() | number:'1.0-0' }}</span>
+        <span class="text-ink-subtle text-xs text-center">media diaria</span>
+      </div>
+    </div>
+
+    <div>
+      <p class="text-ink-subtle text-xs mb-3 uppercase tracking-widest font-medium">
+        Últimos 30 días
+      </p>
+      <svg #chartSvg width="100%" height="120"></svg>
+    </div>
+
+  </div>
+</ink-modal>

@@ -55,3 +55,17 @@ export const DEFAULT_PROJECT_SETTINGS: ProjectSettings = {
   aiModel: 'claude-sonnet-4-20250514',
   spellcheck: true,
 };
+
+export interface ProjectTemplate {
+  id:          string;
+  name:        string;
+  description: string;
+  icon:        string;
+  structure:   TemplateNode[];
+}
+
+export interface TemplateNode {
+  title:    string;
+  type:     'folder' | 'document';
+  children: TemplateNode[];
+}
