@@ -15,6 +15,9 @@ import { Card, CardType, CARD_TYPE_ICONS } from '../../../core/models/board.mode
       div:hover .card-delete {
         opacity: 1 !important;
       }
+      div:hover .card-image {
+        opacity: 1 !important;
+      }
     `,
   ],
 })
@@ -26,12 +29,15 @@ export class BoardCardComponent implements OnInit, OnDestroy {
   positionChanged = output<{ id: string; x: number; y: number }>();
   editRequested = output<Card>();
   deleteRequested = output<string>();
+  imageRequested = output<Card>();
 
   readonly typeIcons = CARD_TYPE_ICONS;
 
   chapterCount = computed(() =>
     this.card().characterData?.appearsInChapters.length ?? 0
   );
+
+  hasImage = computed(() => !!this.card().imageData);
 
   typeIcon(type: CardType | undefined): string {
     return CARD_TYPE_ICONS[type ?? 'note'];

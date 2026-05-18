@@ -1,42 +1,74 @@
 <div
   #cardEl
-  class="absolute rounded-lg border border-black/10 shadow-md cursor-grab active:cursor-grabbing select-none flex flex-col overflow-hidden"
+  class="absolute rounded-lg border shadow-md cursor-grab active:cursor-grabbing select-none flex flex-col overflow-hidden"
+  [class]="hasImage() ? 'border-black/20' : 'border-black/10'"
   [style.left.px]="card().x"
   [style.top.px]="card().y"
   [style.width.px]="card().width"
   [style.min-height.px]="card().height"
-  [style.background]="card().color"
+  [style.background]="hasImage() ? 'transparent' : card().color"
   (dblclick)="editRequested.emit(card())"
 >
-  <!-- Type indicator -->
-  <div class="flex items-center gap-1.5 px-3 pt-2.5 pb-0">
-    <span class="text-xs opacity-70">{{ typeIcon(card().type) }}</span>
-    @if (card().type === 'character' && chapterCount() > 0) {
-      <span class="ml-auto text-xs opacity-60 font-mono">
-        {{ chapterCount() }} cap.
-      </span>
-    }
-  </div>
-
-  <!-- Header -->
-  <div class="px-3 pt-3 pb-1">
-    <p class="text-ink-text text-sm font-medium leading-snug break-words">{{ card().title }}</p>
-  </div>
-
-  <!-- Body (conditional) -->
-  @if (card().body) {
-    <div class="px-3 pb-3 flex-1">
-      <p class="text-ink-subtle text-xs leading-relaxed break-words whitespace-pre-wrap">{{ card().body }}</p>
+  <!-- Background image -->
+  @if (hasImage()) {
+    <div class="absolute inset-0">
+      <img
+        [src]="card().imageData"
+        alt=""
+        class="w-full h-full object-cover"/>
+      <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/10"></div>
     </div>
   }
+
+  <!-- Content wrapper -->
+  <div class="relative z-10 flex flex-col h-full">
+
+    <!-- Type indicator -->
+    <div class="flex items-center gap-1.5 px-3 pt-2.5 pb-0">
+      <span class="text-xs opacity-70" [class]="hasImage() ? 'text-white' : ''">{{ typeIcon(card().type) }}</span>
+      @if (card().type === 'character' && chapterCount() > 0) {
+        <span class="ml-auto text-xs opacity-60 font-mono" [class]="hasImage() ? 'text-white' : ''">
+          {{ chapterCount() }} cap.
+        </span>
+      }
+    </div>
+
+    <!-- Header -->
+    <div class="px-3 pt-3 pb-1">
+      <p [class]="hasImage() ? 'text-white drop-shadow text-sm font-medium leading-snug break-words' : 'text-ink-text text-sm font-medium leading-snug break-words'">{{ card().title }}</p>
+    </div>
+
+    <!-- Body (conditional) -->
+    @if (card().body && !hasImage()) {
+      <div class="px-3 pb-3 flex-1">
+        <p class="text-ink-subtle text-xs leading-relaxed break-words whitespace-pre-wrap">{{ card().body }}</p>
+      </div>
+    }
+
+  </div>
 
   <!-- Delete button -->
   <button
     (click)="deleteRequested.emit(card().id); $event.stopPropagation()"
-    class="absolute top-1.5 right-1.5 w-5 h-5 rounded flex items-center justify-center text-ink-subtle opacity-0 hover:opacity-100 hover:text-ink-danger hover:bg-black/20 transition-all card-delete"
+    class="absolute top-1.5 right-1.5 w-5 h-5 rounded flex items-center justify-center opacity-0 hover:opacity-100 hover:text-ink-danger hover:bg-black/20 transition-all card-delete"
+    [class]="hasImage() ? 'text-white' : 'text-ink-subtle'"
   >
     <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
       <path d="M1.293 1.293a1 1 0 0 1 1.414 0L5 3.586l2.293-2.293a1 1 0 1 1 1.414 1.414L6.414 5l2.293 2.293a1 1 0 0 1-1.414 1.414L5 6.414 2.707 8.707a1 1 0 0 1-1.414-1.414L3.586 5 1.293 2.707a1 1 0 0 1 0-1.414z"/>
+    </svg>
+  </button>
+
+  <!-- Camera button -->
+  <button
+    (click)="imageRequested.emit(card()); $event.stopPropagation()"
+    title="Generar imagen"
+    class="absolute bottom-1.5 right-1.5 w-6 h-6 rounded flex items-center justify-center opacity-0 hover:opacity-100 hover:bg-black/20 transition-all card-image"
+    [class]="hasImage() ? 'text-white' : 'text-ink-subtle hover:text-ink-accent'">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2">
+      <rect x="3" y="3" width="18" height="18" rx="2"/>
+      <circle cx="8.5" cy="8.5" r="1.5"/>
+      <polyline points="21,15 16,10 5,21"/>
     </svg>
   </button>
 </div>

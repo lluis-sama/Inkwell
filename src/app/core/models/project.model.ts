@@ -43,6 +43,8 @@ export interface TreeNode {
 }
 
 export type AiProvider = 'anthropic' | 'openai-compatible' | 'ollama';
+export type ImageProvider = 'dalle' | 'openai-compatible-image';
+export type ImageSize = '1024x1024' | '768x768' | '512x512' | '256x256';
 
 export interface ProjectSettings {
   autosaveInterval: number;
@@ -52,6 +54,11 @@ export interface ProjectSettings {
   aiProvider:   AiProvider;
   aiEndpoint?:  string;
   aiApiKey?:    string;
+  imageProvider?:  ImageProvider;
+  imageEndpoint?:  string;
+  imageApiKey?:    string;
+  imageModel?:     string;
+  imageSize?:      ImageSize;
 }
 
 export const DEFAULT_PROJECT_SETTINGS: ProjectSettings = {

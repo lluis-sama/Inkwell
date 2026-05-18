@@ -5,7 +5,7 @@ import { AiService } from '../../core/services/ai.service';
 import { BackupService } from '../../core/services/backup.service';
 import { ProjectService } from '../../core/services/project.service';
 import { ThemeService } from '../../core/services/theme.service';
-import { AiProvider } from '../../core/models/project.model';
+import { AiProvider, ImageProvider, ImageSize } from '../../core/models/project.model';
 import { InkModalComponent } from './ink-modal.component';
 import { InkButtonComponent } from './ink-button.component';
 
@@ -72,6 +72,13 @@ export class InkSettingsModalComponent implements OnInit {
   openAiCustomKey   = '';
   connectionStatus  = signal<{ ok: boolean; message: string } | null>(null);
 
+  // Image generation settings
+  imageProvider: ImageProvider | '' = '';
+  imageApiKey   = '';
+  imageEndpoint = '';
+  imageModel    = '';
+  imageSize: ImageSize | '' = '';
+
   readonly sections = [
     { id: 'editor' as SettingsSection, label: 'Editor' },
     { id: 'ai' as SettingsSection, label: 'Asistente IA' },
@@ -113,6 +120,11 @@ export class InkSettingsModalComponent implements OnInit {
         this.openAiEndpoint = settings.aiEndpoint ?? '';
       }
       this.openAiCustomKey = settings.aiApiKey ?? '';
+      this.imageProvider = settings.imageProvider ?? '';
+      this.imageApiKey   = settings.imageApiKey   ?? '';
+      this.imageEndpoint = settings.imageEndpoint ?? '';
+      this.imageModel    = settings.imageModel    ?? '';
+      this.imageSize     = settings.imageSize     ?? '';
     }
   }
 
@@ -137,10 +149,15 @@ export class InkSettingsModalComponent implements OnInit {
 
     if (this.projectService.isLoaded()) {
       this.projectService.updateSettings({
-        aiModel:    this.selectedModel,
-        aiProvider: provider,
-        aiEndpoint: endpoint || undefined,
-        aiApiKey:   this.openAiCustomKey || undefined,
+        aiModel:       this.selectedModel,
+        aiProvider:    provider,
+        aiEndpoint:    endpoint || undefined,
+        aiApiKey:      this.openAiCustomKey || undefined,
+        imageProvider: (this.imageProvider || undefined) as ImageProvider | undefined,
+        imageApiKey:   this.imageApiKey   || undefined,
+        imageEndpoint: this.imageEndpoint || undefined,
+        imageModel:    this.imageModel    || undefined,
+        imageSize:     (this.imageSize    || undefined) as ImageSize | undefined,
       });
     }
     this.closed.emit();

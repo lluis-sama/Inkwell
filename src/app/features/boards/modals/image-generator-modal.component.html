@@ -1,0 +1,79 @@
+<ink-modal title="Generar imagen" (closed)="cancelled.emit()">
+
+  <div class="flex flex-col gap-4">
+
+    @if (!imageService.isConfigured()) {
+      <!-- Aviso: proveedor no configurado -->
+      <div class="flex flex-col gap-2 p-3 rounded-lg border border-ink-border bg-ink-surface">
+        <p class="text-ink-text text-sm font-medium">
+          {{ imageService.providerStatusMessage() }}
+        </p>
+        <p class="text-ink-muted text-xs leading-relaxed">
+          Configura el proveedor de imágenes en Settings &rarr; IA &rarr; Imágenes.
+        </p>
+      </div>
+    } @else {
+      <!-- Prompt -->
+      <div class="flex flex-col gap-1.5">
+        <label class="text-ink-subtle text-xs font-medium uppercase tracking-wider">Prompt de imagen</label>
+        <textarea
+          [(ngModel)]="prompt"
+          rows="4"
+          placeholder="Describe la imagen que quieres generar..."
+          class="w-full px-2.5 py-2 rounded border border-ink-border bg-ink-bg
+                 text-ink-text text-sm resize-none
+                 placeholder:text-ink-muted
+                 focus:outline-none focus:border-ink-accent">
+        </textarea>
+        <p class="text-ink-muted text-xs leading-relaxed">
+          El prompt se genera automáticamente a partir del título y el contenido
+          de la tarjeta. Puedes editarlo libremente antes de generar.
+        </p>
+      </div>
+
+      <!-- Preview de imagen -->
+      @if (previewImage()) {
+        <div class="rounded-lg overflow-hidden border border-ink-border">
+          <img
+            [src]="previewImage()"
+            alt="Imagen generada"
+            class="w-full object-cover max-h-60"/>
+        </div>
+      }
+
+      <!-- Botón generar / regenerar -->
+      <ink-button
+        variant="secondary"
+        [fullWidth]="true"
+        [loading]="imageService.isGenerating()"
+        [disabled]="!prompt.trim()"
+        (clicked)="generate()">
+        @if (previewImage()) {
+          Regenerar
+        } @else {
+          Generar imagen
+        }
+      </ink-button>
+
+      <!-- Error -->
+      @if (error()) {
+        <p class="text-ink-danger text-xs leading-relaxed">{{ error() }}</p>
+      }
+    }
+
+  </div>
+
+  <ng-container slot="actions">
+    @if (card().imageData) {
+      <ink-button variant="danger" (clicked)="removeImage()">Quitar imagen</ink-button>
+    }
+    <ink-button variant="ghost" (clicked)="cancelled.emit()">Cancelar</ink-button>
+    <ink-button
+      variant="primary"
+      [disabled]="!previewImage()"
+      (clicked)="apply()">
+      Aplicar
+    </ink-button>
+  </ng-container>
+
+</ink-modal>

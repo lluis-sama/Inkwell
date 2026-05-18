@@ -12,6 +12,7 @@ import { BoardSelectorComponent } from './board-selector/board-selector.componen
 import { BoardCanvasComponent } from './canvas/board-canvas.component';
 import { NewBoardModalComponent } from './modals/new-board-modal.component';
 import { CardEditorModalComponent } from './modals/card-editor-modal.component';
+import { ImageGeneratorModalComponent } from './modals/image-generator-modal.component';
 
 @Component({
   selector: 'app-boards-layout',
@@ -22,6 +23,7 @@ import { CardEditorModalComponent } from './modals/card-editor-modal.component';
     BoardCanvasComponent,
     NewBoardModalComponent,
     CardEditorModalComponent,
+    ImageGeneratorModalComponent,
     TranslocoPipe,
   ],
   templateUrl: './boards-layout.component.html',
@@ -37,6 +39,7 @@ export class BoardsLayoutComponent implements OnInit {
   showNewBoardModal = signal(false);
   editingCard       = signal<Card | null>(null);
   isNewCard         = signal(false);
+  imageCard         = signal<Card | null>(null);
 
   async ngOnInit(): Promise<void> {
     if (!this.projectService.isLoaded()) {
@@ -95,6 +98,24 @@ export class BoardsLayoutComponent implements OnInit {
   onEditRequested(card: Card): void {
     this.isNewCard.set(false);
     this.editingCard.set(card);
+  }
+
+  onImageRequested(card: Card): void {
+    this.imageCard.set(card);
+  }
+
+  async onImageApplied(result: { imageData: string; imagePrompt: string } | null): Promise<void> {
+    const card  = this.imageCard();
+    const board = this.activeBoard();
+    if (!card || !board) return;
+    this.imageCard.set(null);
+
+    const updatedCard: Card = result
+      ? { ...card, imageData: result.imageData, imagePrompt: result.imagePrompt }
+      : { ...card, imageData: undefined, imagePrompt: undefined };
+
+    const updatedBoard = this.boardService.updateCard(board, updatedCard);
+    await this.persistBoard(updatedBoard);
   }
 
   async onCardSaved(card: Card): Promise<void> {

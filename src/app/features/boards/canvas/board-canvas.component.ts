@@ -26,6 +26,7 @@ export class BoardCanvasComponent {
   cardAdded = output<{ x: number; y: number; type: CardType }>();
   editRequested = output<Card>();
   deleteRequested = output<string>();
+  imageRequested = output<Card>();
 
   contextMenu = signal<{
     screenX: number;
@@ -57,5 +58,9 @@ export class BoardCanvasComponent {
 
   onPositionChanged(pos: { id: string; x: number; y: number }): void {
     this.positionChanged.emit(pos);
+  }
+
+  onImageRequested(card: Card): void {
+    this.imageRequested.emit(card);
   }
 }

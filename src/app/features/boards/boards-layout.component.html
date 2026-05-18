@@ -31,6 +31,7 @@
         (cardAdded)="onCardAdded($event)"
         (editRequested)="onEditRequested($event)"
         (deleteRequested)="onDeleteCard($event)"
+        (imageRequested)="onImageRequested($event)"
       />
     } @else {
       <div class="flex flex-col items-center justify-center flex-1 gap-4 opacity-40">
@@ -69,4 +70,11 @@
     (saved)="onCardSaved($event)"
     (cancelled)="onCardEditCancelled()"
   />
+}
+
+@if (imageCard()) {
+  <app-image-generator-modal
+    [card]="imageCard()!"
+    (applied)="onImageApplied($event)"
+    (cancelled)="imageCard.set(null)"/>
 }

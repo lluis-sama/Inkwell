@@ -25,6 +25,8 @@ export interface Card {
   height: number;
   type: CardType;
   characterData?: CharacterData;
+  imageData?: string;    // base64 data URL: "data:image/jpeg;base64,..."
+  imagePrompt?: string;  // prompt usado para generar la imagen
 }
 
 export const DEFAULT_CARD_COLORS: string[] = [
