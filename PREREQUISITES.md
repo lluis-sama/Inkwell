@@ -282,3 +282,23 @@ El target de Rust no está instalado:
 ```bash
 rustup target add x86_64-unknown-linux-gnu
 ```
+
+---
+
+## Ollama (opcional — para IA local)
+
+```bash
+# Instalar Ollama
+curl -fsSL https://ollama.ai/install.sh | sh
+
+# Descargar un modelo (ejemplos)
+ollama pull llama3.2       # 3B params, ~2GB, rápido
+ollama pull qwen2.5:7b     # 7B params, ~4.7GB, mejor calidad
+ollama pull mistral        # 7B params, ~4.1GB, buen equilibrio
+
+# Verificar que está corriendo
+ollama list
+curl http://localhost:11434/api/tags
+```
+
+En Inkwell: Settings → IA → Ollama → URL: `http://localhost:11434` → Modelo: `llama3.2`

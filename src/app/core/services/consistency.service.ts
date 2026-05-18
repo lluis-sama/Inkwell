@@ -1,5 +1,4 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { fetch } from '@tauri-apps/plugin-http';
 import { TauriBridgeService } from './tauri-bridge.service';
 import { ProjectService }     from './project.service';
 import { AiService }          from './ai.service';
@@ -211,39 +210,8 @@ export class ConsistencyService {
     }
   }
 
-  private async callAiOnce(userContent: string, systemPrompt: string): Promise<string> {
-    const apiKey = this.ai.apiKey();
-    if (!apiKey) throw new Error('API key no configurada');
-
-    const model = this.project.project()?.settings.aiModel ?? 'claude-sonnet-4-20250514';
-
-    const headers = new Headers();
-    headers.set('Content-Type', 'application/json');
-    headers.set('x-api-key', apiKey);
-    headers.set('anthropic-version', '2023-06-01');
-    headers.set('anthropic-dangerous-direct-browser-access', 'true');
-
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({
-        model,
-        max_tokens: 2048,
-        system:     systemPrompt,
-        messages:   [{ role: 'user', content: userContent }],
-      }),
-    });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(
-        (error as { error?: { message?: string } }).error?.message
-        ?? `Error ${response.status}`
-      );
-    }
-
-    const data = await response.json();
-    return (data as { content?: Array<{ text?: string }> }).content?.[0]?.text ?? '';
+  private callAiOnce(userContent: string, systemPrompt: string): Promise<string> {
+    return this.ai.callOnce(userContent, systemPrompt);
   }
 
   private flattenDocumentIds(tree: TreeNode[]): string[] {

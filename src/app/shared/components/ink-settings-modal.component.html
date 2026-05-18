@@ -106,54 +106,155 @@
       @if (activeSection() === 'ai') {
         <div class="flex flex-col gap-5">
 
+          <!-- Selector de proveedor -->
           <div class="flex flex-col gap-1.5">
             <label class="text-ink-subtle text-xs font-medium uppercase tracking-wide">
-              Anthropic API Key
+              Proveedor de IA
             </label>
-            <input
-              [(ngModel)]="apiKeyInput"
-              type="password"
-              placeholder="sk-ant-..."
-              class="w-full px-3 py-2 rounded bg-ink-bg border border-ink-border
-                     text-ink-text text-sm placeholder:text-ink-muted font-mono
-                     focus:outline-none focus:border-ink-accent transition-colors"/>
-            <p class="text-ink-muted text-xs leading-relaxed">
-              Guardada únicamente en este dispositivo (localStorage). Nunca
-              se envía a ningún servidor propio; solo a api.anthropic.com.
-            </p>
-            @if (aiService.hasApiKey()) {
-              <div class="flex items-center justify-between px-3 py-1.5 rounded
-                          bg-ink-bg border border-ink-success/30 mt-1">
-                <span class="text-ink-success text-xs">&#x2713; API key configurada</span>
-                <button
-                  (click)="clearApiKey()"
-                  class="text-ink-subtle text-xs hover:text-ink-danger transition-colors">
-                  Eliminar
-                </button>
-              </div>
-            }
-          </div>
-
-          <div class="flex flex-col gap-1.5">
-            <label class="text-ink-subtle text-xs font-medium uppercase tracking-wide">
-              Modelo
-            </label>
-            <select
-              [(ngModel)]="selectedModel"
-              class="w-full px-3 py-2 rounded bg-ink-bg border border-ink-border
-                     text-ink-text text-sm focus:outline-none
-                     focus:border-ink-accent transition-colors">
-              @for (model of aiModels; track model.id) {
-                <option [value]="model.id">{{ model.label }}</option>
+            <div class="flex flex-col gap-2">
+              @for (p of providers; track p.id) {
+                <label class="flex items-start gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all"
+                       [class]="selectedProvider() === p.id
+                         ? 'border-ink-accent bg-ink-surface'
+                         : 'border-ink-border hover:border-ink-muted'">
+                  <input type="radio" [value]="p.id"
+                         [checked]="selectedProvider() === p.id"
+                         (change)="selectedProvider.set(p.id)"
+                         class="mt-0.5 accent-ink-accent"/>
+                  <div class="flex flex-col gap-0.5">
+                    <span class="text-ink-text text-sm font-medium">{{ p.label }}</span>
+                    <span class="text-ink-subtle text-xs">{{ p.description }}</span>
+                  </div>
+                </label>
               }
-            </select>
+            </div>
           </div>
 
-          <ink-button
-            variant="primary"
-            [disabled]="!apiKeyInput.trim() && !aiService.hasApiKey()"
-            (clicked)="saveAiSettings()">
-            Guardar cambios
+          <!-- Configuración según proveedor -->
+
+          @if (selectedProvider() === 'anthropic') {
+            <!-- API key de Anthropic -->
+            <div class="flex flex-col gap-1.5">
+              <label class="text-ink-subtle text-xs font-medium uppercase tracking-wide">
+                Anthropic API Key
+              </label>
+              <input [(ngModel)]="apiKeyInput" type="password" placeholder="sk-ant-..."
+                     class="w-full px-3 py-2 rounded bg-ink-bg border border-ink-border
+                            text-ink-text text-sm placeholder:text-ink-muted font-mono
+                            focus:outline-none focus:border-ink-accent transition-colors"/>
+              @if (aiService.hasApiKey()) {
+                <div class="flex items-center justify-between px-3 py-1.5 rounded
+                            bg-ink-bg border border-ink-success/30 mt-1">
+                  <span class="text-ink-success text-xs">&#x2713; API key configurada</span>
+                  <button (click)="clearApiKey()"
+                          class="text-ink-subtle text-xs hover:text-ink-danger transition-colors">
+                    Eliminar
+                  </button>
+                </div>
+              }
+            </div>
+
+            <!-- Selector de modelo Anthropic -->
+            <div class="flex flex-col gap-1.5">
+              <label class="text-ink-subtle text-xs font-medium uppercase tracking-wide">
+                Modelo
+              </label>
+              <select [(ngModel)]="selectedModel"
+                      class="w-full px-3 py-2 rounded bg-ink-bg border border-ink-border
+                             text-ink-text text-sm focus:outline-none
+                             focus:border-ink-accent transition-colors">
+                @for (m of anthropicModels; track m.id) {
+                  <option [value]="m.id">{{ m.label }}</option>
+                }
+              </select>
+            </div>
+          }
+
+          @if (selectedProvider() === 'ollama') {
+            <div class="flex flex-col gap-1.5">
+              <label class="text-ink-subtle text-xs font-medium uppercase tracking-wide">
+                URL de Ollama
+              </label>
+              <input [(ngModel)]="ollamaEndpoint" placeholder="http://localhost:11434"
+                     class="w-full px-3 py-2 rounded bg-ink-bg border border-ink-border
+                            text-ink-text text-sm placeholder:text-ink-muted font-mono
+                            focus:outline-none focus:border-ink-accent transition-colors"/>
+              <p class="text-ink-muted text-xs leading-relaxed">
+                URL base de tu instancia de Ollama. Por defecto: http://localhost:11434
+              </p>
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label class="text-ink-subtle text-xs font-medium uppercase tracking-wide">
+                Nombre del modelo
+              </label>
+              <input [(ngModel)]="selectedModel" placeholder="llama3.2, mistral, qwen2.5..."
+                     class="w-full px-3 py-2 rounded bg-ink-bg border border-ink-border
+                            text-ink-text text-sm placeholder:text-ink-muted font-mono
+                            focus:outline-none focus:border-ink-accent transition-colors"/>
+              <p class="text-ink-muted text-xs">
+                Debe estar descargado en tu instancia de Ollama.
+                Ejecuta <code class="bg-ink-bg px-1 rounded">ollama list</code> para ver los disponibles.
+              </p>
+            </div>
+            <ink-button variant="secondary" [fullWidth]="true" (clicked)="testConnection()">
+              Probar conexión
+            </ink-button>
+          }
+
+          @if (selectedProvider() === 'openai-compatible') {
+            <div class="flex flex-col gap-1.5">
+              <label class="text-ink-subtle text-xs font-medium uppercase tracking-wide">
+                URL del servidor *
+              </label>
+              <input [(ngModel)]="openAiEndpoint" placeholder="http://localhost:1234"
+                     class="w-full px-3 py-2 rounded bg-ink-bg border border-ink-border
+                            text-ink-text text-sm placeholder:text-ink-muted font-mono
+                            focus:outline-none focus:border-ink-accent transition-colors"/>
+              <p class="text-ink-muted text-xs leading-relaxed">
+                Compatible con llama.cpp (llama-server), LM Studio, LocalAI, vLLM, Jan, etc.
+                La app añade automáticamente <code class="bg-ink-bg px-1 rounded">/v1/chat/completions</code>.
+              </p>
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label class="text-ink-subtle text-xs font-medium uppercase tracking-wide">
+                Nombre del modelo
+              </label>
+              <input [(ngModel)]="selectedModel"
+                     placeholder="qwen2.5-7b-instruct, llama-3.2-3b..."
+                     class="w-full px-3 py-2 rounded bg-ink-bg border border-ink-border
+                            text-ink-text text-sm placeholder:text-ink-muted font-mono
+                            focus:outline-none focus:border-ink-accent transition-colors"/>
+              <p class="text-ink-muted text-xs">
+                El nombre exacto depende de tu servidor. Muchos aceptan cualquier cadena.
+              </p>
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label class="text-ink-subtle text-xs font-medium uppercase tracking-wide">
+                API key <span class="normal-case font-normal">(si tu servidor la requiere)</span>
+              </label>
+              <input [(ngModel)]="openAiCustomKey" type="password" placeholder="opcional"
+                     class="w-full px-3 py-2 rounded bg-ink-bg border border-ink-border
+                            text-ink-text text-sm placeholder:text-ink-muted font-mono
+                            focus:outline-none focus:border-ink-accent transition-colors"/>
+            </div>
+            <ink-button variant="secondary" [fullWidth]="true" (clicked)="testConnection()">
+              Probar conexión
+            </ink-button>
+          }
+
+          <!-- Estado de la conexión tras el test -->
+          @if (connectionStatus()) {
+            <div class="flex items-center gap-2 px-3 py-2 rounded border text-xs"
+                 [class]="connectionStatus()!.ok
+                   ? 'border-ink-success/30 text-ink-success bg-ink-bg'
+                   : 'border-ink-danger/30 text-ink-danger bg-ink-bg'">
+              {{ connectionStatus()!.ok ? '✓' : '✕' }} {{ connectionStatus()!.message }}
+            </div>
+          }
+
+          <!-- Guardar -->
+          <ink-button variant="primary" (clicked)="saveAiSettings()">
+            Guardar configuración de IA
           </ink-button>
 
         </div>

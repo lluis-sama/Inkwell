@@ -45,7 +45,7 @@ const MODE_PLACEHOLDERS: Record<AiMode, string> = {
             title="Configurar API key"
             class="p-1 rounded text-ink-subtle hover:text-ink-text
                    hover:bg-ink-border transition-colors"
-            [class.text-ink-warning]="!ai.hasApiKey()">
+            [class.text-ink-warning]="!ai.isProviderReady()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
                  stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="12" r="3"/>
@@ -91,16 +91,15 @@ const MODE_PLACEHOLDERS: Record<AiMode, string> = {
         </div>
       </div>
 
-      <!-- Sin API key -->
-      @if (!ai.hasApiKey()) {
+      <!-- Sin proveedor configurado -->
+      @if (!ai.isProviderReady()) {
         <div class="flex flex-col items-center gap-3 m-4 p-4 rounded-lg
                     border border-ink-warning/30 bg-ink-bg">
           <p class="text-ink-warning text-xs text-center leading-relaxed">
-            Configura tu Anthropic API key para usar el asistente.
+            {{ ai.providerStatusMessage() }}
           </p>
-          <button
-            (click)="showSettings.set(true)"
-            class="text-ink-accent text-xs hover:underline">
+          <button (click)="showSettings.set(true)"
+                  class="text-ink-accent text-xs hover:underline">
             Abrir configuración →
           </button>
         </div>
@@ -267,10 +266,12 @@ export class AiAssistantPanelComponent implements AfterViewChecked {
 
   private shouldScrollToBottom = false;
 
+  providerMessage = () => this.ai.providerStatusMessage();
+
   canSend = () =>
     this.userInput.trim().length > 0 &&
     !this.isStreaming() &&
-    this.ai.hasApiKey();
+    this.ai.isProviderReady();
 
   ngAfterViewChecked(): void {
     if (this.shouldScrollToBottom) {

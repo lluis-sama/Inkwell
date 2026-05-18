@@ -42,11 +42,16 @@ export interface TreeNode {
   status?: DocumentStatus;
 }
 
+export type AiProvider = 'anthropic' | 'openai-compatible' | 'ollama';
+
 export interface ProjectSettings {
   autosaveInterval: number;
   maxSnapshots: number;
   aiModel: string;
   spellcheck: boolean;
+  aiProvider:   AiProvider;
+  aiEndpoint?:  string;
+  aiApiKey?:    string;
 }
 
 export const DEFAULT_PROJECT_SETTINGS: ProjectSettings = {
@@ -54,6 +59,7 @@ export const DEFAULT_PROJECT_SETTINGS: ProjectSettings = {
   maxSnapshots: 10,
   aiModel: 'claude-sonnet-4-20250514',
   spellcheck: true,
+  aiProvider: 'anthropic',
 };
 
 export interface ProjectTemplate {

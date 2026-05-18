@@ -1,12 +1,16 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, inject } from '@angular/core';
 import { fetch } from '@tauri-apps/plugin-http';
+import { ProjectService } from './project.service';
+import { AiProvider } from '../models/project.model';
 
 export type AiMode = 'analyze' | 'review' | 'brainstorm' | 'synopsis';
 
 export interface AiMessage {
-  role: 'user' | 'assistant';
+  role:    'user' | 'assistant';
   content: string;
 }
+
+// ─── System prompts ───────────────────────────────────────────────────────────
 
 const SYSTEM_PROMPTS: Record<AiMode, string> = {
   analyze: `Eres un asistente experto en escritura creativa y narrativa.
@@ -34,13 +38,15 @@ Responde ÚNICAMENTE con la sinopsis, sin introducción, título, ni explicació
 Responde siempre en el mismo idioma que el texto que se te proporcione.`,
 };
 
-const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
-const MODEL             = 'claude-sonnet-4-20250514';
+const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
 
 @Injectable({ providedIn: 'root' })
 export class AiService {
-  readonly apiKey      = signal<string>(localStorage.getItem('inkwell-api-key') ?? '');
-  readonly hasApiKey   = () => this.apiKey().trim().length > 0;
+  private projectService = inject(ProjectService);
+
+  // API key de Anthropic (global, en localStorage)
+  readonly apiKey    = signal<string>(localStorage.getItem('inkwell-api-key') ?? '');
+  readonly hasApiKey = () => this.apiKey().trim().length > 0;
 
   saveApiKey(key: string): void {
     this.apiKey.set(key.trim());
@@ -52,9 +58,58 @@ export class AiService {
     localStorage.removeItem('inkwell-api-key');
   }
 
+  // ─── Estado del proveedor activo ─────────────────────────────────────────
+
   /**
-   * Envía un mensaje al modelo y devuelve un AsyncGenerator que emite
-   * chunks de texto a medida que llegan (streaming SSE).
+   * Retorna la configuración del proveedor activo para el proyecto actual.
+   */
+  getActiveProvider(): {
+    provider: AiProvider;
+    model:    string;
+    endpoint: string | undefined;
+    apiKey:   string | undefined;
+  } {
+    const settings = this.projectService.project()?.settings;
+    return {
+      provider: settings?.aiProvider  ?? 'anthropic',
+      model:    settings?.aiModel     ?? 'claude-sonnet-4-20250514',
+      endpoint: settings?.aiEndpoint,
+      apiKey:   settings?.aiApiKey,
+    };
+  }
+
+  /**
+   * ¿Está listo el proveedor activo para recibir llamadas?
+   */
+  isProviderReady(): boolean {
+    const { provider, endpoint } = this.getActiveProvider();
+    switch (provider) {
+      case 'anthropic':         return this.hasApiKey();
+      case 'ollama':            return !!(endpoint?.trim());
+      case 'openai-compatible': return !!(endpoint?.trim());
+    }
+  }
+
+  /**
+   * Mensaje de estado del proveedor para la UI.
+   */
+  providerStatusMessage(): string {
+    const { provider, endpoint } = this.getActiveProvider();
+    switch (provider) {
+      case 'anthropic':
+        return this.hasApiKey() ? '✓ Anthropic configurado' : 'API key no configurada';
+      case 'ollama':
+        return endpoint ? `✓ Ollama: ${endpoint}` : 'URL de Ollama no configurada';
+      case 'openai-compatible':
+        return endpoint ? `✓ Servidor: ${endpoint}` : 'URL del servidor no configurada';
+    }
+  }
+
+  // ─── Streaming unificado ─────────────────────────────────────────────────
+
+  /**
+   * Envía un mensaje y retorna un AsyncGenerator de chunks de texto.
+   * Delega al proveedor configurado en el proyecto activo.
    *
    * @param messages  Historial de conversación (sin el system prompt)
    * @param mode      Modo de asistencia; determina el system prompt
@@ -65,28 +120,46 @@ export class AiService {
     mode: AiMode,
     context: string,
   ): AsyncGenerator<string> {
-    if (!this.hasApiKey()) throw new Error('API key no configurada');
+    if (!this.isProviderReady()) {
+      throw new Error('El proveedor de IA no está configurado correctamente.');
+    }
 
-    const key = this.apiKey();
-
-    // Inyectar contexto en el primer mensaje de usuario si existe
+    const { provider } = this.getActiveProvider();
     const messagesWithContext = this.injectContext(messages, context);
 
-    const headers = new Headers();
-    headers.set('content-type', 'application/json');
-    headers.set('x-api-key', key);
-    headers.set('anthropic-version', '2023-06-01');
-    headers.set('anthropic-dangerous-direct-browser-access', 'true');
+    switch (provider) {
+      case 'anthropic':
+        yield* this.streamAnthropic(messagesWithContext, SYSTEM_PROMPTS[mode]);
+        break;
+      case 'ollama':
+        yield* this.streamOpenAICompatible(messagesWithContext, SYSTEM_PROMPTS[mode], true);
+        break;
+      case 'openai-compatible':
+        yield* this.streamOpenAICompatible(messagesWithContext, SYSTEM_PROMPTS[mode], false);
+        break;
+    }
+  }
 
-    const response = await fetch(ANTHROPIC_API_URL, {
+  // ─── Proveedor Anthropic ──────────────────────────────────────────────────
+
+  private async *streamAnthropic(
+    messages: AiMessage[],
+    systemPrompt: string,
+  ): AsyncGenerator<string> {
+    const response = await fetch(ANTHROPIC_URL, {
       method: 'POST',
-      headers,
+      headers: {
+        'Content-Type':                            'application/json',
+        'x-api-key':                               this.apiKey(),
+        'anthropic-version':                       '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
       body: JSON.stringify({
-        model:      MODEL,
+        model:      this.getActiveProvider().model,
         max_tokens: 2048,
         stream:     true,
-        system:     SYSTEM_PROMPTS[mode],
-        messages:   messagesWithContext,
+        system:     systemPrompt,
+        messages,
       }),
     });
 
@@ -98,7 +171,60 @@ export class AiService {
       );
     }
 
-    // Leer el stream SSE
+    yield* this.readSSEStream(response, 'anthropic');
+  }
+
+  // ─── Proveedor OpenAI-compatible (Ollama, llama.cpp, LM Studio, etc.) ─────
+
+  private async *streamOpenAICompatible(
+    messages: AiMessage[],
+    systemPrompt: string,
+    isOllama: boolean,
+  ): AsyncGenerator<string> {
+    const { model, endpoint, apiKey } = this.getActiveProvider();
+
+    // Construir la URL del endpoint
+    const baseUrl = endpoint!.replace(/\/$/, '');
+    const url     = isOllama
+      ? `${baseUrl}/api/chat`            // Ollama nativo
+      : `${baseUrl}/v1/chat/completions`; // OpenAI-compatible
+
+    // Convertir al formato de mensajes OpenAI (añadir system como primer mensaje)
+    const openAiMessages = [
+      { role: 'system', content: systemPrompt },
+      ...messages.map(m => ({ role: m.role, content: m.content })),
+    ];
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    if (apiKey) {
+      headers['Authorization'] = `Bearer ${apiKey}`;
+    }
+
+    const body = isOllama
+      ? JSON.stringify({ model, messages: openAiMessages, stream: true })
+      : JSON.stringify({ model, messages: openAiMessages, stream: true, max_tokens: 2048 });
+
+    const response = await fetch(url, { method: 'POST', headers, body });
+
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => '');
+      throw new Error(
+        `Error del servidor (${response.status}): ${errorText.slice(0, 200) || 'Sin detalles'}`
+      );
+    }
+
+    yield* this.readSSEStream(response, isOllama ? 'ollama' : 'openai');
+  }
+
+  // ─── Lector de SSE unificado ──────────────────────────────────────────────
+
+  private async *readSSEStream(
+    response: Response,
+    format: 'anthropic' | 'openai' | 'ollama',
+  ): AsyncGenerator<string> {
     const reader  = response.body!.getReader();
     const decoder = new TextDecoder();
     let   buffer  = '';
@@ -112,30 +238,136 @@ export class AiService {
       buffer = lines.pop() ?? '';
 
       for (const line of lines) {
-        if (!line.startsWith('data: ')) continue;
-        const data = line.slice(6).trim();
-        if (data === '[DONE]') return;
-
-        try {
-          const parsed = JSON.parse(data);
-          if (parsed.type === 'content_block_delta' &&
-              parsed.delta?.type === 'text_delta') {
-            yield parsed.delta.text as string;
-          }
-        } catch {
-          // Ignorar líneas malformadas
-        }
+        const text = this.extractChunkText(line.trim(), format);
+        if (text) yield text;
       }
+    }
+
+    // Procesar lo que quede en el buffer
+    if (buffer.trim()) {
+      const text = this.extractChunkText(buffer.trim(), format);
+      if (text) yield text;
     }
   }
 
+  private extractChunkText(
+    line: string,
+    format: 'anthropic' | 'openai' | 'ollama',
+  ): string {
+    if (!line.startsWith('data: ')) return '';
+    const data = line.slice(6).trim();
+    if (data === '[DONE]') return '';
+
+    try {
+      const parsed = JSON.parse(data);
+
+      switch (format) {
+        case 'anthropic':
+          if (parsed.type === 'content_block_delta' &&
+              parsed.delta?.type === 'text_delta') {
+            return parsed.delta.text ?? '';
+          }
+          return '';
+
+        case 'openai':
+          return parsed.choices?.[0]?.delta?.content ?? '';
+
+        case 'ollama': {
+          // Ollama nativo usa { message: { content: '...' }, done: bool }
+          if (parsed.done) return '';
+          return parsed.message?.content ?? '';
+        }
+      }
+    } catch { return ''; }
+
+    return '';
+  }
+
+  // ─── Llamada sin streaming (para ConsistencyService) ─────────────────────
+
   /**
-   * Inyecta el contexto del proyecto/documento como prefijo
-   * del primer mensaje de usuario en el historial.
+   * Llamada directa sin streaming. Usada por ConsistencyService (INK-18).
+   * Funciona con cualquier proveedor.
    */
+  async callOnce(
+    userContent: string,
+    systemPrompt: string,
+    maxTokens = 2048,
+  ): Promise<string> {
+    if (!this.isProviderReady()) {
+      throw new Error('El proveedor de IA no está configurado correctamente.');
+    }
+
+    const { provider, model, endpoint, apiKey } = this.getActiveProvider();
+
+    if (provider === 'anthropic') {
+      return this.callAnthropicOnce(userContent, systemPrompt, model, maxTokens);
+    } else {
+      return this.callOpenAICompatibleOnce(
+        userContent, systemPrompt, model, endpoint!, apiKey, provider === 'ollama', maxTokens,
+      );
+    }
+  }
+
+  private async callAnthropicOnce(
+    content: string, system: string, model: string, maxTokens: number,
+  ): Promise<string> {
+    const response = await fetch(ANTHROPIC_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type':                            'application/json',
+        'x-api-key':                               this.apiKey(),
+        'anthropic-version':                       '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model, max_tokens: maxTokens, system,
+        messages: [{ role: 'user', content }],
+      }),
+    });
+    if (!response.ok) throw new Error(`Error Anthropic ${response.status}`);
+    const data = await response.json();
+    return (data as { content?: Array<{ text?: string }> }).content?.[0]?.text ?? '';
+  }
+
+  private async callOpenAICompatibleOnce(
+    content: string, system: string, model: string,
+    endpoint: string, apiKey: string | undefined,
+    isOllama: boolean, maxTokens: number,
+  ): Promise<string> {
+    const baseUrl = endpoint.replace(/\/$/, '');
+    const url     = isOllama
+      ? `${baseUrl}/api/chat`
+      : `${baseUrl}/v1/chat/completions`;
+
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (apiKey) headers['Authorization'] = `Bearer ${apiKey}`;
+
+    const body = JSON.stringify({
+      model,
+      max_tokens: maxTokens,
+      messages: [
+        { role: 'system', content: system },
+        { role: 'user',   content },
+      ],
+    });
+
+    const response = await fetch(url, { method: 'POST', headers, body });
+    if (!response.ok) throw new Error(`Error servidor ${response.status}`);
+    const data = await response.json() as {
+      message?: { content?: string };
+      choices?: Array<{ message?: { content?: string } }>;
+    };
+
+    return isOllama
+      ? data.message?.content ?? ''
+      : data.choices?.[0]?.message?.content ?? '';
+  }
+
+  // ─── Utilidades ──────────────────────────────────────────────────────────
+
   private injectContext(messages: AiMessage[], context: string): AiMessage[] {
     if (!context.trim() || messages.length === 0) return messages;
-
     const [first, ...rest] = messages;
     return [
       {
