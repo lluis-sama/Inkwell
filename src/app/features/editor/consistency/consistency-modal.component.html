@@ -1,0 +1,169 @@
+<ink-modal title="Análisis de inconsistencias" [hasActions]="false"
+           (closed)="closed.emit()">
+
+  <div class="flex flex-col gap-5 max-h-[70vh] overflow-y-auto">
+
+    <!-- Sin API key -->
+    @if (!ai.hasApiKey()) {
+      <div class="flex flex-col gap-2 p-4 rounded-lg border border-ink-warning/30 bg-ink-bg">
+        <p class="text-ink-warning text-sm">Configura la API key de Anthropic para usar esta función.</p>
+      </div>
+    }
+
+    <!-- Estado: en análisis -->
+    @if (consistencySvc.isAnalyzing()) {
+      <div class="flex flex-col gap-4">
+        <div class="flex items-center gap-3">
+          <span class="inline-block w-5 h-5 border-2 border-ink-accent
+                       border-t-transparent rounded-full animate-spin shrink-0"></span>
+          <span class="text-ink-text text-sm">
+            {{ consistencySvc.progress().phase }}
+          </span>
+        </div>
+        @if (consistencySvc.progress().total > 0) {
+          <div class="flex flex-col gap-1.5">
+            <div class="w-full h-1.5 rounded-full bg-ink-border overflow-hidden">
+              <div
+                class="h-full bg-ink-accent transition-all duration-300 rounded-full"
+                [style.width.%]="(consistencySvc.progress().current / consistencySvc.progress().total) * 100">
+              </div>
+            </div>
+            <p class="text-ink-subtle text-xs text-right">
+              {{ consistencySvc.progress().current }} / {{ consistencySvc.progress().total }}
+            </p>
+          </div>
+        }
+        <div class="max-h-32 overflow-y-auto flex flex-col gap-1">
+          @for (log of progressLog(); track log) {
+            <p class="text-ink-muted text-xs">{{ log }}</p>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Estado: sin análisis previo -->
+    @if (!consistencySvc.isAnalyzing() && !report()) {
+      <div class="flex flex-col gap-4">
+        <p class="text-ink-subtle text-sm leading-relaxed">
+          El análisis examina todos los capítulos del proyecto en busca de
+          contradicciones: descripciones de personajes, línea temporal,
+          objetos, relaciones y nombres.
+        </p>
+
+        <div class="p-3 rounded-lg bg-ink-bg border border-ink-border">
+          <p class="text-ink-subtle text-xs leading-relaxed">
+            <strong class="text-ink-text">Cómo funciona:</strong>
+            El análisis se hace en dos fases. Primero se extrae un resumen
+            de hechos de cada capítulo por separado, luego se comparan entre sí.
+            Esto permite analizar novelas largas sin límite de contexto.
+          </p>
+        </div>
+
+        <div class="p-3 rounded-lg bg-ink-bg border border-ink-border">
+          <p class="text-ink-subtle text-xs leading-relaxed">
+            <strong class="text-ink-text">Coste estimado:</strong>
+            ~{{ estimatedCost() }} llamadas a la API
+            (1 por capítulo + 1 para el análisis global).
+            Usa el modelo configurado en settings.
+          </p>
+        </div>
+
+        <ink-button
+          variant="primary"
+          [fullWidth]="true"
+          [disabled]="!ai.hasApiKey()"
+          (clicked)="startAnalysis()">
+          Iniciar análisis
+        </ink-button>
+      </div>
+    }
+
+    <!-- Estado: informe disponible -->
+    @if (!consistencySvc.isAnalyzing() && report(); as r) {
+      <div class="flex flex-col gap-4">
+
+        <!-- Cabecera del informe -->
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-ink-text text-sm">
+              {{ r.issues.length === 0
+                ? '✅ Sin inconsistencias detectadas'
+                : r.issues.length + ' posible' + (r.issues.length > 1 ? 's inconsistencias' : ' inconsistencia') }}
+            </p>
+            <p class="text-ink-subtle text-xs mt-0.5">
+              {{ r.documentsAnalyzed }} capítulos analizados ·
+              {{ formatDate(r.generatedAt) }}
+            </p>
+          </div>
+          <ink-button variant="ghost" (clicked)="startAnalysis()">
+            Re-analizar
+          </ink-button>
+        </div>
+
+        <!-- Resumen -->
+        <div class="p-3 rounded-lg bg-ink-bg border border-ink-border">
+          <p class="text-ink-subtle text-sm leading-relaxed">{{ r.summary }}</p>
+        </div>
+
+        <!-- Lista de issues -->
+        @if (r.issues.length > 0) {
+          <div class="flex flex-col gap-3">
+            @for (issue of sortedIssues(); track issue.id) {
+              <div class="flex flex-col gap-2 p-3 rounded-lg border border-ink-border bg-ink-bg">
+
+                <!-- Severidad + tipo -->
+                <div class="flex items-center gap-2">
+                  <span
+                    class="px-2 py-0.5 rounded-full text-xs font-medium border"
+                    [style.color]="severityConfig[issue.severity].color"
+                    [style.border-color]="severityConfig[issue.severity].color + '40'">
+                    {{ severityConfig[issue.severity].label }}
+                  </span>
+                  <span class="text-ink-subtle text-xs">
+                    {{ typeLabels[issue.type] }}
+                  </span>
+                </div>
+
+                <!-- Descripción -->
+                <p class="text-ink-text text-sm leading-relaxed">
+                  {{ issue.description }}
+                </p>
+
+                <!-- Documentos involucrados -->
+                <div class="flex flex-wrap gap-1.5">
+                  @for (doc of issue.documents; track doc) {
+                    <span class="px-2 py-0.5 rounded bg-ink-surface
+                                 text-ink-subtle text-xs border border-ink-border">
+                      {{ doc }}
+                    </span>
+                  }
+                </div>
+
+                <!-- Fragmento -->
+                @if (issue.quote) {
+                  <p class="text-ink-subtle text-xs italic border-l-2
+                             border-ink-muted pl-2 leading-relaxed">
+                    "{{ issue.quote }}"
+                  </p>
+                }
+
+                <!-- Sugerencia -->
+                @if (issue.suggestion) {
+                  <div class="flex items-start gap-1.5">
+                    <span class="text-ink-accent text-xs shrink-0 mt-0.5">💡</span>
+                    <p class="text-ink-subtle text-xs leading-relaxed">
+                      {{ issue.suggestion }}
+                    </p>
+                  </div>
+                }
+
+              </div>
+            }
+          </div>
+        }
+
+      </div>
+    }
+
+  </div>
+</ink-modal>

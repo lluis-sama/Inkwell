@@ -21,3 +21,7 @@ export function boardsFolderPath(basePath: string): string {
 export function statsPath(basePath: string): string {
   return `${basePath}/stats.json`;
 }
+
+export function consistencyReportPath(basePath: string): string {
+  return `${basePath}/consistency-report.json`;
+}

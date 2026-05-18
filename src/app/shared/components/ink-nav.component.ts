@@ -7,11 +7,13 @@ import { InkSettingsModalComponent } from './ink-settings-modal.component';
 import { AuthorProfileModalComponent } from './author-profile-modal.component';
 import { ShortcutsModalComponent } from './shortcuts-modal.component';
 import { StatsModalComponent } from '../../features/editor/stats/stats-modal.component';
+import { ConsistencyModalComponent } from '../../features/editor/consistency/consistency-modal.component';
+import { ConsistencyService } from '../../core/services/consistency.service';
 
 @Component({
   selector: 'ink-nav',
   standalone: true,
-  imports: [RouterLink, TranslocoPipe, InkSettingsModalComponent, AuthorProfileModalComponent, ShortcutsModalComponent, StatsModalComponent],
+  imports: [RouterLink, TranslocoPipe, InkSettingsModalComponent, AuthorProfileModalComponent, ShortcutsModalComponent, StatsModalComponent, ConsistencyModalComponent],
   templateUrl: './ink-nav.component.html',
   styles: [`
     :host { display: flex; height: 100%; }
@@ -25,10 +27,13 @@ export class InkNavComponent {
   protected projectService = inject(ProjectService);
   private router = inject(Router);
 
+  protected consistencySvc = inject(ConsistencyService);
+
   showSettings = signal(false);
   showAuthorProfile = signal(false);
   showShortcuts = signal(false);
   showStats = signal(false);
+  showConsistency = signal(false);
 
   isRoute(path: string): boolean {
     return this.router.url.startsWith(path);
