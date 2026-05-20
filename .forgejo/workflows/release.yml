@@ -9,9 +9,6 @@ jobs:
   build-linux:
     runs-on: ubuntu-22.04
 
-    container:
-      image: gitea/runner-images:ubuntu-22.04
-
     steps:
       - uses: actions/checkout@v4
 
