@@ -6,10 +6,6 @@ on:
       - 'v*'
   workflow_dispatch:
 
-defaults:
-  run:
-    working-directory: /workspace/frozenfangkb/inkwell
-
 jobs:
   build-linux:
     runs-on: ubuntu-22.04
@@ -39,7 +35,8 @@ jobs:
             libwebkit2gtk-4.1-dev \
             libappindicator3-dev \
             librsvg2-dev \
-            patchelf
+            patchelf \
+            xdg-utils
 
       - name: Install frontend dependencies
         run: pnpm install
@@ -54,6 +51,7 @@ jobs:
         with:
           name: inkwell-linux
           path: |
-            /workspace/frozenfangkb/inkwell/src-tauri/target/release/bundle/deb/*.deb
-            /workspace/frozenfangkb/inkwell/src-tauri/target/release/bundle/appimage/*.AppImage
+            src-tauri/target/release/bundle/deb/*.deb
+            src-tauri/target/release/bundle/rpm/*.rpm
+            src-tauri/target/release/bundle/appimage/*.AppImage
           if-no-files-found: warn
