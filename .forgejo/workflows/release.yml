@@ -37,6 +37,9 @@ jobs:
             librsvg2-dev \
             patchelf
 
+      - name: Debug pause
+        run: sleep 300
+
       - name: Install frontend dependencies
         run: pnpm install
 
