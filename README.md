@@ -1,63 +1,61 @@
 # ✒️ Inkwell
 
-**El entorno de escritura libre para escritores.**
+**The free writing environment for writers.**
 
-Inkwell es una aplicación de escritorio de código abierto para Linux diseñada para escritores de largo aliento. Organiza tu obra, escribe sin distracciones, y usa IA para mejorar tu narrativa — todo con tus archivos en tu disco, sin cuentas, sin suscripciones.
+Inkwell is an open-source desktop application for Linux designed for long-form writers. Organize your work, write without distractions, and use AI to improve your narrative — all with your files on your disk, no accounts, no subscriptions.
+
+> 🌐 [Leer en español](README.es.md)
 
 ![Inkwell Editor](docs/screenshots/editor.png)
 
 ---
 
-## ✨ Características
+## ✨ Features
 
-### Escribir
+### Write
+- **Focused editor** — serif typography, double spacing, focus mode and typewriter mode
+- **Snapshots** — save document versions with one click and restore any of them
+- **Professional export** — PDF in standard manuscript format for publishers, EPUB for e-readers, DOCX for Word
+- **Import** — bring in existing documents in TXT, Markdown and DOCX
 
-- **Editor enfocado** — tipografía serif, doble espaciado, modo focus y modo máquina de escribir
-- **Snapshots** — guarda versiones de tu documento con un click y restaura cualquiera de ellas
-- **Exportación profesional** — PDF en formato manuscrito estándar para editores, EPUB para ereaders, DOCX para Word
-- **Importación** — importa documentos existentes en TXT, Markdown y DOCX
+### Organize
+- **Unlimited binder** — folders and chapters with infinite depth, drag to reorder, filter by status
+- **Corkboards** — cards for characters, research and notes, with AI-generated images for your moodboard
+- **Narrative view** — all your chapters as cards with synopses and assigned characters
+- **Project templates** — start with a predefined structure or create your own
 
-### Organizar
+### AI-powered
+- **Writing assistant** — analyzes scenes, reviews text, brainstorms with you
+- **Narrative consistency** — detects contradictions in names, descriptions and timeline
+- **Automatic synopses** — generate each chapter's synopsis with one click
+- **Flexible AI** — use the Anthropic API, a local model with Ollama, or any compatible server
 
-- **Binder ilimitado** — carpetas y capítulos con profundidad infinita, arrastrar para reordenar, filtrar por estado
-- **Tableros de corcho** — tarjetas para personajes, investigación y notas, con imágenes generadas por IA
-- **Vista narrativa** — todos tus capítulos como tarjetas con sinopsis y personajes asignados
-- **Plantillas de proyecto** — empieza con una estructura predefinida o crea la tuya
-
-### Potenciar con IA
-
-- **Asistente de escritura** — analiza escenas, revisa texto, hace brainstorming contigo
-- **Consistencia narrativa** — detecta contradicciones en nombres, descripciones y línea temporal
-- **Sinopsis automáticas** — genera la sinopsis de cada capítulo con un click
-- **IA flexible** — usa la API de Anthropic, un modelo local con Ollama, o cualquier servidor compatible
-
-### Tus datos, tu control
-
-- Archivos JSON en tu disco — legibles, versionables, portables
-- Sincroniza con ProtonDrive, Syncthing o cualquier cliente de tu elección
-- Sin cuentas. Sin servidores nuestros. Sin telemetría.
+### Your data, your control
+- JSON files on your disk — readable, versionable, portable
+- Sync with ProtonDrive, Syncthing or any client of your choice
+- No accounts. No our servers. No telemetry.
 
 ---
 
-## 📦 Descargar
+## 📦 Download
 
-Descarga el instalador para tu sistema desde la [página de releases](../../releases).
+Download the installer for your platform from the [releases page](../../releases).
 
-| Plataforma            | Formato     |
-| --------------------- | ----------- |
-| Linux (Debian/Ubuntu) | `.deb`      |
-| Linux (universal)     | `.AppImage` |
+| Platform | Format |
+|---|---|
+| Linux (Debian/Ubuntu) | `.deb` |
+| Linux (universal) | `.AppImage` |
 
-**Requisitos:** Linux 64-bit · ~200MB de espacio libre
+**Requirements:** Linux 64-bit · ~200MB disk space
 
 ---
 
-## 🛠️ Compilar desde el código fuente
+## 🛠️ Build from source
 
-### Prerrequisitos
+### Prerequisites
 
 ```bash
-# Dependencias del sistema (Debian/Ubuntu)
+# System dependencies (Debian/Ubuntu)
 sudo apt install -y \
   build-essential curl \
   libwebkit2gtk-4.1-dev libssl-dev \
@@ -67,7 +65,7 @@ sudo apt install -y \
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 source "$HOME/.cargo/env"
 
-# Node.js (via nvm recomendado)
+# Node.js (nvm recommended)
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
 nvm install 22 && nvm use 22
 
@@ -78,18 +76,18 @@ npm install -g pnpm
 cargo install tauri-cli --version "^2"
 ```
 
-### Compilar
+### Build
 
 ```bash
-git clone https://codeberg.org/TU_USUARIO/inkwell.git
+git clone https://codeberg.org/YOUR_USERNAME/inkwell.git
 cd inkwell
 pnpm install
 pnpm tauri build
 ```
 
-Los artefactos se generan en `src-tauri/target/release/bundle/`.
+Artifacts are generated in `src-tauri/target/release/bundle/`.
 
-### Modo desarrollo
+### Development mode
 
 ```bash
 pnpm tauri dev
@@ -97,61 +95,60 @@ pnpm tauri dev
 
 ---
 
-## 🤖 Configurar la IA
+## 🤖 Setting up AI
 
-Inkwell soporta tres proveedores de IA:
+Inkwell supports three AI providers:
 
-**Anthropic (nube)** — obtén una API key en [console.anthropic.com](https://console.anthropic.com) e introdúcela en Settings → IA.
+**Anthropic (cloud)** — get an API key at [console.anthropic.com](https://console.anthropic.com) and enter it in Settings → AI.
 
-**Ollama (local)** — instala [Ollama](https://ollama.ai), descarga un modelo y configura la URL en Settings → IA:
-
+**Ollama (local)** — install [Ollama](https://ollama.ai), download a model and configure the URL in Settings → AI:
 ```bash
 ollama pull llama3.2
 # URL: http://localhost:11434
 ```
 
-**Servidor OpenAI-compatible** — compatible con llama.cpp, LM Studio, LocalAI, Jan y otros. Introduce la URL de tu servidor en Settings → IA.
+**OpenAI-compatible server** — works with llama.cpp, LM Studio, LocalAI, Jan and others. Enter your server URL in Settings → AI.
 
-La IA es completamente opcional. Inkwell funciona sin ella.
+AI is completely optional. Inkwell works without it.
 
 ---
 
-## 🏗️ Stack técnico
+## 🏗️ Tech stack
 
-| Capa     | Tecnología                                             |
-| -------- | ------------------------------------------------------ |
-| Desktop  | [Tauri 2](https://tauri.app)                           |
+| Layer | Technology |
+|---|---|
+| Desktop | [Tauri 2](https://tauri.app) |
 | Frontend | [Angular 19](https://angular.dev) (zoneless + signals) |
-| Editor   | [TipTap 2](https://tiptap.dev)                         |
-| Estilos  | [TailwindCSS](https://tailwindcss.com) · Catppuccin    |
-| IA       | Anthropic API · Ollama · OpenAI-compatible             |
+| Editor | [TipTap 2](https://tiptap.dev) |
+| Styles | [TailwindCSS](https://tailwindcss.com) · Catppuccin |
+| AI | Anthropic API · Ollama · OpenAI-compatible |
 
 ---
 
-## 🤝 Contribuir
+## 🤝 Contributing
 
-Las contribuciones son bienvenidas. Antes de abrir un pull request, abre una issue para discutir el cambio que quieres hacer.
+Contributions are welcome. Before opening a pull request, please open an issue to discuss the change you'd like to make.
 
 ```bash
-# Fork del repo en Codeberg
-# Crear una rama
-git checkout -b feature/mi-mejora
+# Fork the repo on Codeberg
+# Create a branch
+git checkout -b feature/my-improvement
 
-# Hacer los cambios y commitear
-git commit -m "feat: descripción del cambio"
+# Make your changes and commit
+git commit -m "feat: description of change"
 
-# Push y abrir Pull Request
-git push origin feature/mi-mejora
+# Push and open a Pull Request
+git push origin feature/my-improvement
 ```
 
 ---
 
-## 📄 Licencia
+## 📄 License
 
-Inkwell es software libre distribuido bajo la licencia [MIT](LICENSE).
+Inkwell is free software distributed under the [MIT License](LICENSE).
 
 ---
 
 <div align="center">
-  <sub>Hecho con ♥ para escritores · <a href="https://codeberg.org/frozenfangkb/inkwell">Codeberg</a></sub>
+  <sub>Made with ♥ for writers · <a href="https://codeberg.org/YOUR_USERNAME/inkwell">Codeberg</a></sub>
 </div>
