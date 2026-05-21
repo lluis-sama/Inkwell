@@ -7,6 +7,46 @@ on:
   workflow_dispatch:
 
 jobs:
+  build-windows:
+    runs-on: windows-local
+  
+    defaults:
+      run:
+        shell: pwsh
+  
+    steps:
+      - uses: actions/checkout@v4
+  
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+  
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10   # actualizado desde 9 (EOL)
+  
+      - name: Update Rust toolchain
+        run: |
+          rustup update stable
+          rustup default stable
+          rustup target add x86_64-pc-windows-msvc
+  
+      - name: Install frontend dependencies
+        run: pnpm install
+  
+      - name: Build Tauri app
+        run: pnpm tauri build
+  
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: inkwell-windows
+          path: |
+            src-tauri/target/release/bundle/msi/*.msi
+            src-tauri/target/release/bundle/nsis/*.exe
+          if-no-files-found: warn
   build-linux:
     runs-on: ubuntu-22.04
 
