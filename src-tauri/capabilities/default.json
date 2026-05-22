@@ -9,19 +9,43 @@
     "dialog:allow-open",
     {
       "identifier": "http:allow-fetch",
-      "allow": [{ "url": "https://api.anthropic.com/**" }]
+      "allow": [
+        { "url": "https://api.anthropic.com/**" },
+        { "url": "https://api.openai.com/**" },
+        { "url": "https://api.groq.com/**" },
+        { "url": "http://localhost:*/**" },
+        { "url": "http://127.0.0.1:*/**" }
+      ]
     },
     {
       "identifier": "http:allow-fetch-send",
-      "allow": [{ "url": "https://api.anthropic.com/**" }]
+      "allow": [
+        { "url": "https://api.anthropic.com/**" },
+        { "url": "https://api.openai.com/**" },
+        { "url": "https://api.groq.com/**" },
+        { "url": "http://localhost:*/**" },
+        { "url": "http://127.0.0.1:*/**" }
+      ]
     },
     {
       "identifier": "http:allow-fetch-read-body",
-      "allow": [{ "url": "https://api.anthropic.com/**" }]
+      "allow": [
+        { "url": "https://api.anthropic.com/**" },
+        { "url": "https://api.openai.com/**" },
+        { "url": "https://api.groq.com/**" },
+        { "url": "http://localhost:*/**" },
+        { "url": "http://127.0.0.1:*/**" }
+      ]
     },
     {
       "identifier": "http:allow-fetch-cancel-body",
-      "allow": [{ "url": "https://api.anthropic.com/**" }]
+      "allow": [
+        { "url": "https://api.anthropic.com/**" },
+        { "url": "https://api.openai.com/**" },
+        { "url": "https://api.groq.com/**" },
+        { "url": "http://localhost:*/**" },
+        { "url": "http://127.0.0.1:*/**" }
+      ]
     }
   ]
 }

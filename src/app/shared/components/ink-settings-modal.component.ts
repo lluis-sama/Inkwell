@@ -5,7 +5,7 @@ import { AiService } from '../../core/services/ai.service';
 import { BackupService } from '../../core/services/backup.service';
 import { ProjectService } from '../../core/services/project.service';
 import { ThemeService } from '../../core/services/theme.service';
-import { AiProvider, ImageProvider, ImageSize } from '../../core/models/project.model';
+import { AiProvider, ImageProvider, ImageSize, TranscriptionProvider } from '../../core/models/project.model';
 import { InkModalComponent } from './ink-modal.component';
 import { InkButtonComponent } from './ink-button.component';
 
@@ -79,6 +79,12 @@ export class InkSettingsModalComponent implements OnInit {
   imageModel    = '';
   imageSize: ImageSize | '' = '';
 
+  // Transcription settings
+  transcriptionProvider: TranscriptionProvider | '' = '';
+  transcriptionApiKey   = '';
+  transcriptionEndpoint = '';
+  transcriptionLanguage = '';
+
   readonly sections = [
     { id: 'editor' as SettingsSection, label: 'Editor' },
     { id: 'ai' as SettingsSection, label: 'Asistente IA' },
@@ -125,6 +131,10 @@ export class InkSettingsModalComponent implements OnInit {
       this.imageEndpoint = settings.imageEndpoint ?? '';
       this.imageModel    = settings.imageModel    ?? '';
       this.imageSize     = settings.imageSize     ?? '';
+      this.transcriptionProvider = settings.transcriptionProvider ?? '';
+      this.transcriptionApiKey   = settings.transcriptionApiKey   ?? '';
+      this.transcriptionEndpoint = settings.transcriptionEndpoint ?? '';
+      this.transcriptionLanguage = settings.transcriptionLanguage ?? '';
     }
   }
 
@@ -158,6 +168,10 @@ export class InkSettingsModalComponent implements OnInit {
         imageEndpoint: this.imageEndpoint || undefined,
         imageModel:    this.imageModel    || undefined,
         imageSize:     (this.imageSize    || undefined) as ImageSize | undefined,
+        transcriptionProvider: (this.transcriptionProvider || undefined) as TranscriptionProvider | undefined,
+        transcriptionApiKey:   this.transcriptionApiKey   || undefined,
+        transcriptionEndpoint: this.transcriptionEndpoint || undefined,
+        transcriptionLanguage: this.transcriptionLanguage || undefined,
       });
     }
     this.closed.emit();
