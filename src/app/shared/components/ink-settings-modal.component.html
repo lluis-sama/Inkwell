@@ -485,6 +485,22 @@
             </div>
           </div>
 
+          <div class="flex flex-col gap-2">
+            <label class="text-xs font-medium text-ink-text-secondary">Tamaño de fuente de la interfaz</label>
+            <div class="flex gap-2">
+              @for (opt of fontScaleOptions; track opt.value) {
+                <button
+                  class="flex-1 py-1.5 text-xs rounded border transition-colors"
+                  [class]="currentFontScale() === opt.value
+                    ? 'border-ink-accent bg-ink-accent/10 text-ink-accent'
+                    : 'border-ink-border text-ink-text-secondary hover:bg-ink-hover'"
+                  (click)="settingsService.setUiFontScale(opt.value)"
+                >{{ opt.label }}</button>
+              }
+            </div>
+            <p class="text-xs text-ink-text-muted">No afecta al área de escritura.</p>
+          </div>
+
         </div>
       }
 

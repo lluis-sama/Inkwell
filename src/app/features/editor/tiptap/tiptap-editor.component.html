@@ -5,6 +5,8 @@
   <div
     #editorEl
     [attr.spellcheck]="spellcheck()"
+    [style.font-family]="editorFontFamily()"
+    [style.font-size.px]="editorFontSize()"
     class="flex-1 overflow-y-auto px-16 py-12 focus:outline-none"
   ></div>
 

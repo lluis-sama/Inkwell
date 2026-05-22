@@ -9,6 +9,8 @@ import {
   AfterViewInit,
   SimpleChanges,
   signal,
+  computed,
+  inject,
 } from "@angular/core";
 import { Editor, Extension } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
@@ -17,6 +19,7 @@ import CharacterCount from "@tiptap/extension-character-count";
 import { Plugin, PluginKey } from "prosemirror-state";
 import { Decoration, DecorationSet } from "prosemirror-view";
 import { EditorToolbarComponent } from "./editor-toolbar.component";
+import { SettingsService } from "../../../core/services/settings.service";
 
 interface SearchState {
   term: string;
@@ -99,8 +102,6 @@ function findAll(
       ::ng-deep .tiptap-host .ProseMirror {
         outline: none;
         min-height: 100%;
-        font-family: "Lora", Georgia, serif;
-        font-size: 1.05rem;
         line-height: 1.25;
         color: var(--ink-text);
         max-width: 720px;
@@ -198,6 +199,11 @@ function findAll(
 export class TiptapEditorComponent
   implements AfterViewInit, OnChanges, OnDestroy
 {
+  private readonly settingsService = inject(SettingsService);
+
+  readonly editorFontFamily = computed(() => this.settingsService.settings().editor.fontFamily);
+  readonly editorFontSize   = computed(() => this.settingsService.settings().editor.fontSize);
+
   @ViewChild("editorEl") editorEl!: ElementRef<HTMLDivElement>;
 
   content = input<object>({ type: "doc", content: [{ type: "paragraph" }] });

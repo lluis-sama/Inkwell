@@ -1,11 +1,13 @@
-import { Component, inject, signal, OnInit, output } from '@angular/core';
+import { Component, computed, inject, signal, OnInit, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { fetch } from '@tauri-apps/plugin-http';
 import { AiService } from '../../core/services/ai.service';
 import { BackupService } from '../../core/services/backup.service';
 import { ProjectService } from '../../core/services/project.service';
+import { SettingsService } from '../../core/services/settings.service';
 import { ThemeService } from '../../core/services/theme.service';
 import { AiProvider, ImageProvider, ImageSize, TranscriptionProvider } from '../../core/models/project.model';
+import { UiFontScale } from '../../core/models/app-settings.model';
 import { InkModalComponent } from './ink-modal.component';
 import { InkButtonComponent } from './ink-button.component';
 
@@ -27,6 +29,7 @@ export class InkSettingsModalComponent implements OnInit {
   aiService = inject(AiService);
   private backupService = inject(BackupService);
   projectService = inject(ProjectService);
+  readonly settingsService = inject(SettingsService);
   themeService = inject(ThemeService);
 
   closed = output<void>();
@@ -111,6 +114,15 @@ export class InkSettingsModalComponent implements OnInit {
       text: '#4c4f69',
     },
   ];
+
+  readonly fontScaleOptions: { value: UiFontScale; label: string }[] = [
+    { value: 'sm', label: 'Pequeño' },
+    { value: 'md', label: 'Normal' },
+    { value: 'lg', label: 'Grande' },
+    { value: 'xl', label: 'Muy grande' },
+  ];
+
+  readonly currentFontScale = computed(() => this.settingsService.settings().appearance.uiFontScale);
 
   ngOnInit(): void {
     const settings = this.projectService.project()?.settings;

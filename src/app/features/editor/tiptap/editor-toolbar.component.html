@@ -166,5 +166,43 @@
       </svg>
     </button>
 
+    <!-- Divider -->
+    <div class="w-px h-5 bg-ink-border mx-1"></div>
+
+    <!-- Font family selector -->
+    <select
+      class="text-xs bg-ink-surface border border-ink-border rounded px-2 py-1 text-ink-text-primary focus:outline-none focus:border-ink-accent max-w-[130px]"
+      [value]="editorFontFamily()"
+      (change)="setFontFamily($any($event.target).value)"
+      (mousedown)="$event.stopPropagation()"
+      title="Familia tipográfica"
+    >
+      @for (font of fontOptions; track font.value) {
+        <option [value]="font.value">{{ font.label }}</option>
+      }
+    </select>
+
+    <!-- Divider -->
+    <div class="w-px h-5 bg-ink-border mx-1"></div>
+
+    <!-- Font size stepper -->
+    <div class="flex items-center gap-1">
+      <button
+        class="w-6 h-6 flex items-center justify-center rounded text-ink-text-secondary hover:bg-ink-hover disabled:opacity-40"
+        (click)="decrementFontSize()"
+        [disabled]="editorFontSize() <= 12"
+        title="Reducir tamaño"
+      >−</button>
+      <span class="text-xs text-ink-text-primary min-w-[28px] text-center tabular-nums select-none">
+        {{ editorFontSize() }}px
+      </span>
+      <button
+        class="w-6 h-6 flex items-center justify-center rounded text-ink-text-secondary hover:bg-ink-hover disabled:opacity-40"
+        (click)="incrementFontSize()"
+        [disabled]="editorFontSize() >= 32"
+        title="Aumentar tamaño"
+      >+</button>
+    </div>
+
   </div>
 }
