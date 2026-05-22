@@ -32,7 +32,7 @@
               }
             ],
             "styles": ["src/styles.css"],
-            "allowedCommonJsDependencies": ["epub-gen-memory", "jszip"]
+            "allowedCommonJsDependencies": ["epub-gen-memory", "jszip", "slugify", "mammoth", "interactjs"]
           },
           "configurations": {
             "production": {

@@ -9,11 +9,13 @@ import { ShortcutsModalComponent } from './shortcuts-modal.component';
 import { StatsModalComponent } from '../../features/editor/stats/stats-modal.component';
 import { ConsistencyModalComponent } from '../../features/editor/consistency/consistency-modal.component';
 import { ConsistencyService } from '../../core/services/consistency.service';
+import { TranscriptionModalComponent } from '../../features/transcription/transcription-modal.component';
+import { TranscriptionService } from '../../core/services/transcription.service';
 
 @Component({
   selector: 'ink-nav',
   standalone: true,
-  imports: [RouterLink, TranslocoPipe, InkSettingsModalComponent, AuthorProfileModalComponent, ShortcutsModalComponent, StatsModalComponent, ConsistencyModalComponent],
+  imports: [RouterLink, TranslocoPipe, InkSettingsModalComponent, AuthorProfileModalComponent, ShortcutsModalComponent, StatsModalComponent, ConsistencyModalComponent, TranscriptionModalComponent],
   templateUrl: './ink-nav.component.html',
   styles: [`
     :host { display: flex; height: 100%; }
@@ -27,13 +29,15 @@ export class InkNavComponent {
   protected projectService = inject(ProjectService);
   private router = inject(Router);
 
-  protected consistencySvc = inject(ConsistencyService);
+  protected consistencySvc   = inject(ConsistencyService);
+  protected transcriptionSvc = inject(TranscriptionService);
 
-  showSettings = signal(false);
+  showSettings      = signal(false);
   showAuthorProfile = signal(false);
-  showShortcuts = signal(false);
-  showStats = signal(false);
-  showConsistency = signal(false);
+  showShortcuts     = signal(false);
+  showStats         = signal(false);
+  showConsistency   = signal(false);
+  showTranscription = signal(false);
 
   isRoute(path: string): boolean {
     return this.router.url.startsWith(path);

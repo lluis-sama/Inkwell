@@ -32,7 +32,8 @@
       "Bash(sort -t/ -k6)",
       "Bash(npx ngc *)",
       "mcp__plugin_engram_engram__mem_current_project",
-      "Bash(pnpm run *)"
+      "Bash(pnpm run *)",
+      "Bash(grep -v \"^$\")"
     ]
   }
 }

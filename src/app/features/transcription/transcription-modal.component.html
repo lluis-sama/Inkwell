@@ -1,0 +1,96 @@
+<ink-modal title="Transcribir audio" (closed)="closed.emit()">
+  <div class="flex flex-col gap-5">
+
+    <!-- Sin proveedor configurado -->
+    @if (!svc.isConfigured()) {
+      <div class="p-4 rounded-lg border border-ink-warning/30 bg-ink-bg">
+        <p class="text-ink-warning text-sm">
+          {{ svc.providerStatusMessage() }}
+        </p>
+        <p class="text-ink-subtle text-xs mt-2 leading-relaxed">
+          Configura el proveedor de transcripción en
+          Configuración → IA → Transcripción de audio.
+        </p>
+      </div>
+    }
+
+    <!-- Selección de archivo -->
+    <div class="flex flex-col gap-1.5">
+      <label class="field-label">Archivo de audio</label>
+      <div class="flex gap-2">
+        <div
+          class="flex-1 px-3 py-2 rounded bg-ink-bg border border-ink-border text-sm truncate"
+          [class.text-ink-text]="selectedFile()"
+          [class.text-ink-muted]="!selectedFile()">
+          {{ selectedFile() ?? 'Ningún archivo seleccionado' }}
+        </div>
+        <ink-button variant="secondary" (clicked)="selectFile()">
+          Elegir
+        </ink-button>
+      </div>
+
+      @if (fileSizeWarning()) {
+        <p class="text-ink-warning text-xs">
+          ⚠️ El archivo supera {{ MAX_SIZE_MB }}MB. Puede fallar con proveedores cloud.
+        </p>
+      }
+
+      <p class="text-ink-muted text-xs">
+        Formatos soportados: {{ supportedFormats }}
+      </p>
+    </div>
+
+    <!-- Idioma -->
+    <div class="flex flex-col gap-1.5">
+      <label class="field-label">
+        Idioma del audio
+        <span class="normal-case font-normal">(opcional)</span>
+      </label>
+      <select [(ngModel)]="selectedLanguage" class="field-input">
+        <option value="">Autodetección</option>
+        <option value="es">Español</option>
+        <option value="en">English</option>
+        <option value="fr">Français</option>
+        <option value="de">Deutsch</option>
+        <option value="it">Italiano</option>
+        <option value="pt">Português</option>
+        <option value="ca">Català</option>
+        <option value="gl">Galego</option>
+        <option value="eu">Euskara</option>
+      </select>
+      <p class="text-ink-muted text-xs">Especificar el idioma mejora la precisión.</p>
+    </div>
+
+    <!-- Estado del proceso -->
+    @if (svc.isTranscribing()) {
+      <div class="flex items-center gap-3 p-3 rounded-lg bg-ink-bg border border-ink-border">
+        <span class="inline-block w-4 h-4 border-2 border-ink-accent border-t-transparent rounded-full animate-spin shrink-0"></span>
+        <span class="text-ink-subtle text-sm">{{ svc.progress() }}</span>
+      </div>
+    }
+
+    <!-- Error -->
+    @if (error()) {
+      <div class="p-3 rounded-lg border border-ink-danger/30 bg-ink-bg">
+        <p class="text-ink-danger text-xs leading-relaxed">{{ error() }}</p>
+      </div>
+    }
+
+    <!-- Proveedor activo -->
+    @if (svc.isConfigured() && !svc.isTranscribing()) {
+      <p class="text-ink-subtle text-xs">{{ svc.providerStatusMessage() }}</p>
+    }
+
+  </div>
+
+  <ng-container slot="actions">
+    <ink-button variant="ghost" (clicked)="closed.emit()">Cancelar</ink-button>
+    <ink-button
+      variant="primary"
+      [disabled]="!canTranscribe()"
+      [loading]="svc.isTranscribing()"
+      (clicked)="transcribe()">
+      Transcribir
+    </ink-button>
+  </ng-container>
+</ink-modal>
