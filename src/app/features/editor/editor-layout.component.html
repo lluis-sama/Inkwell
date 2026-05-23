@@ -66,9 +66,9 @@
       @if (deskPos() === 'left') {
         <ink-desk-panel @slideInLeft [style.width.px]="deskSettings().sideWidth" class="shrink-0 overflow-hidden" />
         <div
-          class="shrink-0 w-4 flex items-center justify-center cursor-col-resize group hover:bg-ink-hover/40 border-r border-ink-border select-none"
+          class="group shrink-0 w-4 flex items-center justify-center cursor-col-resize hover:bg-ink-hover/40 border-r border-ink-border select-none"
           (mousedown)="onSideHandleMouseDown($event)">
-          <div class="h-10 w-1 rounded-full bg-ink-border group-hover:bg-ink-accent/60 pointer-events-none"></div>
+          <div class="desk-side-handle-bar group-hover:bg-ink-accent/60"></div>
         </div>
       }
 
@@ -96,7 +96,7 @@
                 <polyline points="14,2 14,8 20,8"/>
               </svg>
               <p class="text-ink-subtle text-sm">
-                Selecciona o crea un documento en el binder
+                {{ 'EDITOR.SELECT_DOCUMENT' | transloco }}
               </p>
             </div>
           }
@@ -105,10 +105,8 @@
           @if (focusMode()) {
             <button
               (click)="toggleFocusMode()"
-              title="Salir del modo focus (Ctrl+Shift+F)"
-              class="absolute top-4 right-4 p-2 rounded text-ink-muted
-                     hover:text-ink-subtle transition-colors opacity-0
-                     hover:opacity-100">
+              [title]="'EDITOR.FOCUS_MODE_EXIT' | transloco"
+              class="focus-exit-btn">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
                    stroke="currentColor" stroke-width="2">
                 <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3
@@ -122,7 +120,7 @@
         @if (deskPos() === 'bottom' || deskPos() === 'closed') {
           <div
             #deskPillHandle
-            class="shrink-0 h-5 flex items-center justify-center cursor-row-resize group transition-colors hover:bg-ink-hover/40"
+            class="group shrink-0 h-5 flex items-center justify-center cursor-row-resize transition-colors hover:bg-ink-hover/40"
             (click)="onDeskHandleClick()"
           >
             <div
@@ -144,9 +142,9 @@
       <!-- Cajón RIGHT -->
       @if (deskPos() === 'right') {
         <div
-          class="shrink-0 w-4 flex items-center justify-center cursor-col-resize group hover:bg-ink-hover/40 border-l border-ink-border select-none"
+          class="group shrink-0 w-4 flex items-center justify-center cursor-col-resize hover:bg-ink-hover/40 border-l border-ink-border select-none"
           (mousedown)="onSideHandleMouseDown($event)">
-          <div class="h-10 w-1 rounded-full bg-ink-border group-hover:bg-ink-accent/60 pointer-events-none"></div>
+          <div class="desk-side-handle-bar group-hover:bg-ink-accent/60"></div>
         </div>
         <ink-desk-panel @slideInRight [style.width.px]="deskSettings().sideWidth" class="shrink-0 overflow-hidden" />
       }
@@ -167,14 +165,12 @@
           (documentChanged)="onDocumentRestoredFromPanel($event)" />
       } @else if (!showSnapshotsPanel() && !showAiPanel() && !focusMode()) {
         <!-- Franja mínima cuando ningún panel está abierto -->
-        <div class="w-8 shrink-0 border-l border-ink-border bg-ink-panel
-                    flex flex-col items-center pt-3 gap-3">
+        <div class="editor-side-strip">
           <!-- Botón IA colapsado -->
           <button
             (click)="showAiPanel.set(true)"
-            title="Abrir asistente IA (Ctrl+Shift+A)"
-            class="p-1.5 rounded text-ink-muted hover:text-ink-accent
-                   hover:bg-ink-border transition-colors">
+            [title]="'EDITOR.OPEN_AI' | transloco"
+            class="editor-strip-btn">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
                  stroke="currentColor" stroke-width="2">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>

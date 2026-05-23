@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { RouterLink, Router } from '@angular/router';
-import { TranslocoPipe } from '@jsverse/transloco';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { ThemeService } from '../../core/services/theme.service';
 import { ProjectService } from '../../core/services/project.service';
 import { InkSettingsModalComponent } from './ink-settings-modal.component';
@@ -17,12 +17,7 @@ import { TranscriptionService } from '../../core/services/transcription.service'
   standalone: true,
   imports: [RouterLink, TranslocoPipe, InkSettingsModalComponent, AuthorProfileModalComponent, ShortcutsModalComponent, StatsModalComponent, ConsistencyModalComponent, TranscriptionModalComponent],
   templateUrl: './ink-nav.component.html',
-  styles: [`
-    :host { display: flex; height: 100%; }
-    .nav-icon { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; color: var(--ink-subtle); transition: color 0.15s, background-color 0.15s; cursor: pointer; text-decoration: none; }
-    .nav-icon:hover { color: var(--ink-text); background: var(--ink-border); }
-    .nav-icon.active { color: var(--ink-accent); background: var(--ink-border); }
-  `],
+  styleUrl: './ink-nav.component.css',
 })
 export class InkNavComponent {
   protected theme = inject(ThemeService);
@@ -31,6 +26,8 @@ export class InkNavComponent {
 
   protected consistencySvc   = inject(ConsistencyService);
   protected transcriptionSvc = inject(TranscriptionService);
+  readonly #transloco = inject(TranslocoService);
+  readonly activeLang = signal(this.#transloco.getActiveLang());
 
   showSettings      = signal(false);
   showAuthorProfile = signal(false);
@@ -50,5 +47,12 @@ export class InkNavComponent {
 
   closeAuthorProfile(): void {
     this.showAuthorProfile.set(false);
+  }
+
+  toggleLang(): void {
+    const next = this.activeLang() === 'es' ? 'en' : 'es';
+    this.#transloco.setActiveLang(next);
+    this.activeLang.set(next);
+    localStorage.setItem('inkwell-lang', next);
   }
 }

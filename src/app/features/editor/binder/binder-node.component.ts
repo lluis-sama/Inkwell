@@ -22,6 +22,7 @@ export interface DropEvent {
   standalone: true,
   imports: [BinderNodeComponent, TranslocoPipe],
   templateUrl: './binder-node.component.html',
+  styleUrl: './binder-node.component.css',
 })
 export class BinderNodeComponent {
   @ViewChild('renameInput') renameInputEl?: ElementRef<HTMLInputElement>;

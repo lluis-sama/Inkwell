@@ -1,5 +1,6 @@
 import { Component, computed, input, model } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 export interface FlatDocument {
   id: string;
@@ -11,51 +12,8 @@ export interface FlatDocument {
 @Component({
   selector: 'app-step-document-selector',
   standalone: true,
-  imports: [DecimalPipe],
-  template: `
-    <div class="flex flex-col gap-4">
-      <p class="text-ink-subtle text-sm">
-        Selecciona los documentos a incluir en la exportación y ordénalos.
-        Solo se incluyen documentos (no carpetas).
-      </p>
-
-      <div class="flex gap-3">
-        <button (click)="selectAll()"
-          class="text-ink-accent text-xs hover:underline">Seleccionar todo</button>
-        <button (click)="deselectAll()"
-          class="text-ink-subtle text-xs hover:underline">Deseleccionar todo</button>
-      </div>
-
-      <div class="flex flex-col gap-1 max-h-72 overflow-y-auto">
-        @for (item of documents(); track item.id) {
-          <label
-            class="flex items-center gap-3 px-3 py-2 rounded cursor-pointer hover:bg-ink-surface transition-colors"
-            [style.paddingLeft.px]="(item.depth * 12) + 12">
-            <input
-              type="checkbox"
-              [checked]="isSelected(item.id)"
-              (change)="toggleDoc(item.id)"
-              class="accent-ink-accent"/>
-            <span class="text-ink-text text-sm truncate">{{ item.title }}</span>
-            @if (item.wordCount > 0) {
-              <span class="ml-auto text-ink-subtle text-xs shrink-0">
-                {{ item.wordCount | number }} palabras
-              </span>
-            }
-          </label>
-        }
-      </div>
-
-      <div class="flex justify-between items-center pt-2 border-t border-ink-border">
-        <span class="text-ink-subtle text-xs">
-          {{ selectedCount() }} documentos seleccionados
-        </span>
-        <span class="text-ink-subtle text-xs">
-          ~{{ totalWordCount() | number }} palabras
-        </span>
-      </div>
-    </div>
-  `,
+  imports: [DecimalPipe, TranslocoPipe],
+  templateUrl: './step-document-selector.component.html',
 })
 export class StepDocumentSelectorComponent {
   documents = input.required<FlatDocument[]>();

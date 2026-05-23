@@ -1,12 +1,14 @@
 import { Component, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { NarrativeCard } from '../../core/services/narrative.service';
 
 @Component({
   selector: 'app-narrative-card',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, TranslocoPipe],
   templateUrl: './narrative-card.component.html',
+  styleUrl: './narrative-card.component.css',
 })
 export class NarrativeCardComponent {
   card = input.required<NarrativeCard>();

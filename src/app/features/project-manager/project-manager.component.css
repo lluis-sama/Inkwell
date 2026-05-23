@@ -1,0 +1,26 @@
+@reference "../../../styles.css";
+
+/* Botón de acción de cabecera (idioma, tema) */
+.header-action-btn {
+  @apply p-2 rounded text-ink-subtle hover:text-ink-text hover:bg-ink-surface transition-colors;
+}
+
+/* Fila de proyecto reciente */
+.recent-project-row {
+  @apply flex items-center gap-3 px-4 py-3 rounded hover:bg-ink-surface transition-colors cursor-pointer;
+}
+
+/* Bloque de info del proyecto reciente */
+.recent-project-info {
+  @apply flex flex-col flex-1 min-w-0 gap-0.5;
+}
+
+/* Fecha del proyecto reciente (visible en hover del row) */
+.recent-project-date {
+  @apply text-ink-subtle text-xs shrink-0 opacity-0 group-hover:opacity-100 transition-opacity;
+}
+
+/* Botón eliminar de recientes */
+.recent-project-remove-btn {
+  @apply shrink-0 p-1 rounded text-ink-subtle opacity-0 group-hover:opacity-100 hover:text-ink-danger transition-all;
+}

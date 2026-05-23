@@ -1,5 +1,5 @@
 <aside
-  class="relative flex flex-col h-full border-l border-ink-border bg-ink-panel shrink-0"
+  class="ai-panel-aside"
   [style.width.px]="panelWidth()">
 
   <!-- Resize handle -->
@@ -9,18 +9,16 @@
   ></div>
 
   <!-- Header -->
-  <div class="flex items-center justify-between pl-5 pr-4 py-3
-              border-b border-ink-border shrink-0">
+  <div class="ai-panel-header">
     <span class="text-ink-subtle text-xs font-medium uppercase tracking-widest">
-      Asistente IA
+      {{ 'AI.TITLE' | transloco }}
     </span>
     <div class="flex gap-1">
       <!-- Botón settings (API key) -->
       <button
         (click)="showSettings.set(true)"
-        title="Configurar API key"
-        class="p-1 rounded text-ink-subtle hover:text-ink-text
-               hover:bg-ink-border transition-colors"
+        [title]="'AI.CONFIGURE_API_KEY' | transloco"
+        class="ai-icon-btn"
         [class.text-ink-warning]="!ai.isProviderReady()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
              stroke="currentColor" stroke-width="2">
@@ -41,11 +39,9 @@
       <!-- Botón limpiar historial -->
       <button
         (click)="clearHistory()"
-        title="Limpiar conversación"
+        [title]="'AI.CLEAR_CONVERSATION' | transloco"
         [disabled]="messages().length === 0"
-        class="p-1 rounded text-ink-subtle hover:text-ink-text
-               hover:bg-ink-border transition-colors disabled:opacity-30
-               disabled:cursor-not-allowed">
+        class="ai-icon-btn disabled:opacity-30 disabled:cursor-not-allowed">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
              stroke="currentColor" stroke-width="2">
           <polyline points="3,6 5,6 21,6"/>
@@ -55,8 +51,7 @@
       <!-- Cerrar panel -->
       <button
         (click)="closed.emit()"
-        class="p-1 rounded text-ink-subtle hover:text-ink-text
-               hover:bg-ink-border transition-colors">
+        class="ai-icon-btn">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
           <path d="M12.207 4.207a1 1 0 0 0-1.414-1.414L8 5.586 5.207
                    2.793a1 1 0 0 0-1.414 1.414L6.586 7l-2.793 2.793a1
@@ -69,14 +64,13 @@
 
   <!-- Sin proveedor configurado -->
   @if (!ai.isProviderReady()) {
-    <div class="flex flex-col items-center gap-3 m-4 p-4 rounded-lg
-                border border-ink-warning/30 bg-ink-bg">
+    <div class="ai-provider-warning">
       <p class="text-ink-warning text-xs text-center leading-relaxed">
         {{ ai.providerStatusMessage() }}
       </p>
       <button (click)="showSettings.set(true)"
               class="text-ink-accent text-xs hover:underline">
-        Abrir configuración →
+        {{ 'AI.OPEN_SETTINGS' | transloco }}
       </button>
     </div>
   }
@@ -107,7 +101,7 @@
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
         </svg>
         <p class="text-ink-subtle text-xs text-center leading-relaxed">
-          Modo: <strong class="text-ink-text">{{ modeLabels[activeMode()] }}</strong><br>
+          {{ 'AI.MODE_LABEL' | transloco }} <strong class="text-ink-text">{{ modeLabels[activeMode()] }}</strong><br>
           {{ modeDescription[activeMode()] }}
         </p>
       </div>
@@ -119,28 +113,23 @@
 
         <!-- Burbuja -->
         <div
-          class="max-w-[92%] rounded-lg px-3 py-2 text-xs leading-relaxed"
-          [class]="msg.role === 'user'
-            ? 'bg-ink-accent/20 text-ink-text border border-ink-accent/20'
-            : 'bg-ink-surface text-ink-text border border-ink-border'">
+          [class]="msg.role === 'user' ? 'ai-bubble-user' : 'ai-bubble-assistant'">
           <p class="whitespace-pre-wrap break-words">{{ msg.content }}</p>
         </div>
 
         @if (msg.role === 'assistant' && last) {
           <div class="flex gap-2 mt-2">
             <button
-              class="text-xs px-2 py-1 rounded border border-ink-border
-                     text-ink-text-secondary hover:bg-ink-hover transition-colors"
+              class="ai-action-btn-secondary"
               (click)="insertIntoEditor.emit(msg.content)"
             >
-              Insertar en el editor
+              {{ 'AI.INSERT_IN_EDITOR' | transloco }}
             </button>
             <button
-              class="text-xs px-2 py-1 rounded border border-ink-accent/50
-                     text-ink-accent hover:bg-ink-accent/10 transition-colors"
+              class="ai-action-btn-accent"
               (click)="saveToDesk(msg.content, activeMode())"
             >
-              Guardar en el cajón
+              {{ 'AI.SAVE_TO_DRAWER' | transloco }}
             </button>
           </div>
         }
@@ -150,8 +139,7 @@
     <!-- Respuesta en streaming -->
     @if (streamingContent()) {
       <div class="flex flex-col items-start gap-1.5">
-        <div class="max-w-[92%] rounded-lg px-3 py-2 text-xs leading-relaxed
-                    bg-ink-surface text-ink-text border border-ink-border">
+        <div class="ai-bubble-assistant">
           <p class="whitespace-pre-wrap break-words">{{ streamingContent() }}</p>
           <span class="inline-block w-1.5 h-3.5 bg-ink-accent ml-0.5
                        animate-pulse align-middle"></span>
@@ -176,19 +164,14 @@
         [disabled]="isStreaming()"
         rows="3"
         (keydown)="onKeyDown($event)"
-        class="w-full px-3 py-2 rounded bg-ink-bg border border-ink-border
-               text-ink-text text-xs placeholder:text-ink-muted resize-none
-               focus:outline-none focus:border-ink-accent transition-colors
-               disabled:opacity-50">
+        class="ai-input-textarea">
       </textarea>
       <div class="flex items-center justify-between">
-        <span class="text-ink-muted text-xs">Enter envía · Shift+Enter nueva línea</span>
+        <span class="text-ink-muted text-xs">{{ 'AI.HINT_SEND' | transloco }}</span>
         <button
           (click)="send()"
           [disabled]="!canSend()"
-          class="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs
-                 font-medium transition-colors disabled:opacity-30
-                 disabled:cursor-not-allowed"
+          class="ai-send-btn"
           [class]="canSend()
             ? 'bg-ink-accent text-ink-panel hover:opacity-90'
             : 'bg-ink-surface text-ink-subtle'">
@@ -200,7 +183,7 @@
               <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
             </svg>
           }
-          Enviar
+          {{ 'AI.SEND' | transloco }}
         </button>
       </div>
     </div>

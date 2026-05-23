@@ -1,0 +1,23 @@
+@reference "../../../styles.css";
+
+.field-input {
+  @apply w-full px-3 py-2 rounded bg-ink-bg border border-ink-border
+         text-ink-text text-sm placeholder:text-ink-muted
+         focus:outline-none focus:border-ink-accent transition-colors;
+}
+
+.template-grid {
+  @apply grid grid-cols-2 gap-2 max-h-72 overflow-y-auto pr-1;
+}
+
+.template-btn {
+  @apply flex flex-col gap-1.5 p-3 rounded-lg border-2 text-left transition-all;
+}
+
+.custom-grid {
+  @apply grid grid-cols-2 gap-3 pt-2 border-t border-ink-border;
+}
+
+.folder-display {
+  @apply flex-1 px-3 py-2 rounded bg-ink-bg border border-ink-border text-sm truncate;
+}

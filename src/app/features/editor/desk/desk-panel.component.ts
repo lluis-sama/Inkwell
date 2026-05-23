@@ -12,6 +12,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import interact from 'interactjs';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { DeskBinderComponent } from './desk-binder.component';
 import { TiptapEditorComponent } from '../tiptap/tiptap-editor.component';
 import { SettingsService } from '../../../core/services/settings.service';
@@ -24,7 +25,7 @@ import { DocumentFile } from '../../../core/models/document.model';
 @Component({
   selector: 'ink-desk-panel',
   standalone: true,
-  imports: [DeskBinderComponent, TiptapEditorComponent],
+  imports: [DeskBinderComponent, TiptapEditorComponent, TranslocoPipe],
   templateUrl: './desk-panel.component.html',
   styleUrl: './desk-panel.component.css',
 })

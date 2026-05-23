@@ -1,5 +1,6 @@
 import { Component, inject, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { TreeNode } from '../../../core/models/project.model';
 import { ProjectService } from '../../../core/services/project.service';
 import { DocumentService } from '../../../core/services/document.service';
@@ -7,7 +8,7 @@ import { DocumentService } from '../../../core/services/document.service';
 @Component({
   selector: 'ink-desk-binder',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslocoPipe],
   templateUrl: './desk-binder.component.html',
   styleUrl: './desk-binder.component.css',
 })

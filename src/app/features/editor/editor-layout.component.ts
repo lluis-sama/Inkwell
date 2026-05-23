@@ -24,12 +24,14 @@ import { FindReplaceBarComponent } from './find-replace-bar/find-replace-bar.com
 import { StatsService } from '../../core/services/stats.service';
 import { SettingsService } from '../../core/services/settings.service';
 import { DeskPanelComponent } from './desk/desk-panel.component';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-editor-layout',
   standalone: true,
-  imports: [BinderComponent, TiptapEditorComponent, EditorTopBarComponent, SnapshotsPanelComponent, AiAssistantPanelComponent, InkNavComponent, ExportModalComponent, SynopsisModalComponent, FindReplaceBarComponent, DeskPanelComponent],
+  imports: [BinderComponent, TiptapEditorComponent, EditorTopBarComponent, SnapshotsPanelComponent, AiAssistantPanelComponent, InkNavComponent, ExportModalComponent, SynopsisModalComponent, FindReplaceBarComponent, DeskPanelComponent, TranslocoPipe],
   templateUrl: './editor-layout.component.html',
+  styleUrl: './editor-layout.component.css',
   animations: [slideUpAnimation, slideInLeftAnimation, slideInRightAnimation],
 })
 export class EditorLayoutComponent implements OnInit, OnDestroy {

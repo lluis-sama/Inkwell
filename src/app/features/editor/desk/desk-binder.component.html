@@ -2,11 +2,11 @@
 
   <div class="flex items-center justify-between px-3 py-3 border-b border-ink-border shrink-0">
     <span class="text-ink-subtle text-xs font-medium uppercase tracking-widest">
-      Notas
+      {{ 'DESK.BINDER_TITLE' | transloco }}
     </span>
     <button
       (click)="newDocument()"
-      title="Nueva nota"
+      [title]="'DESK.NEW_NOTE' | transloco"
       class="p-1 rounded text-ink-subtle hover:text-ink-text hover:bg-ink-border transition-colors">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
            stroke="currentColor" stroke-width="2">
@@ -21,7 +21,7 @@
   <div class="flex-1 overflow-y-auto py-2 px-1">
     @if (tree().length === 0) {
       <p class="text-ink-subtle text-xs text-center mt-8 px-4 leading-relaxed">
-        Sin notas todavía.<br>Crea una con el botón +
+        {{ 'DESK.EMPTY_STATE' | transloco }}
       </p>
     } @else {
       @for (node of tree(); track node.id) {
@@ -35,7 +35,7 @@
             <span class="text-xs truncate flex-1">{{ node.title }}</span>
             <button
               (click)="$event.stopPropagation(); deleteNode(node)"
-              title="Eliminar nota"
+              [title]="'DESK.DELETE_NOTE' | transloco"
               class="opacity-0 group-hover:opacity-100 p-0.5 rounded text-ink-subtle
                      hover:text-red-400 hover:bg-ink-border transition-all ml-1 shrink-0">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none"

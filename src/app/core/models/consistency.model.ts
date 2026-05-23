@@ -26,20 +26,20 @@ export type IssueType =
   | 'other';
 
 export const ISSUE_TYPE_LABELS: Record<IssueType, string> = {
-  'character-description': 'Descripción de personaje',
-  'character-name':        'Nombre de personaje',
-  'timeline':              'Línea temporal',
-  'location':              'Descripción de lugar',
-  'object':                'Objeto o elemento',
-  'relationship':          'Relación entre personajes',
-  'other':                 'Otro',
+  'character-description': 'CONSISTENCY.TYPE_CHARACTER_DESCRIPTION',
+  'character-name':        'CONSISTENCY.TYPE_CHARACTER_NAME',
+  'timeline':              'CONSISTENCY.TYPE_TIMELINE',
+  'location':              'CONSISTENCY.TYPE_LOCATION',
+  'object':                'CONSISTENCY.TYPE_OBJECT',
+  'relationship':          'CONSISTENCY.TYPE_RELATIONSHIP',
+  'other':                 'CONSISTENCY.TYPE_OTHER',
 };
 
 export const ISSUE_SEVERITY_CONFIG: Record<
   ConsistencyIssue['severity'],
   { label: string; color: string }
 > = {
-  high:   { label: 'Alta',  color: 'var(--ink-danger)' },
-  medium: { label: 'Media', color: 'var(--ink-warning)' },
-  low:    { label: 'Baja',  color: 'var(--ink-subtle)' },
+  high:   { label: 'CONSISTENCY.SEVERITY_HIGH',   color: 'var(--ink-danger)' },
+  medium: { label: 'CONSISTENCY.SEVERITY_MEDIUM', color: 'var(--ink-warning)' },
+  low:    { label: 'CONSISTENCY.SEVERITY_LOW',    color: 'var(--ink-subtle)' },
 };

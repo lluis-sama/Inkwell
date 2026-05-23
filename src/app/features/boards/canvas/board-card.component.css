@@ -1,0 +1,40 @@
+@reference "../../../../styles.css";
+
+:host {
+  display: contents;
+}
+
+div:hover .card-delete {
+  opacity: 1 !important;
+}
+
+div:hover .card-image {
+  opacity: 1 !important;
+}
+
+.card-action-btn {
+  @apply absolute w-5 h-5 rounded flex items-center justify-center
+         opacity-0 hover:opacity-100 hover:bg-black/20 transition-all;
+}
+
+.card-root {
+  @apply absolute rounded-lg border shadow-md cursor-grab
+         active:cursor-grabbing select-none flex flex-col overflow-hidden;
+}
+
+.card-body-text {
+  @apply text-ink-subtle text-xs leading-relaxed break-words whitespace-pre-wrap;
+}
+
+.card-image-btn {
+  @apply absolute w-6 h-6 rounded flex items-center justify-center
+         opacity-0 hover:opacity-100 hover:bg-black/20 transition-all;
+}
+
+.card-image-overlay {
+  @apply absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/10;
+}
+
+.card-type-row {
+  @apply flex items-center gap-1.5 px-3 pt-2.5 pb-0;
+}

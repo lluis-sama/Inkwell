@@ -1,10 +1,12 @@
 import { Component, input, output } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 export type SaveStatus = 'saved' | 'saving' | 'unsaved' | 'error';
 
 @Component({
   selector: 'app-editor-top-bar',
   standalone: true,
+  imports: [TranslocoPipe],
   templateUrl: './editor-top-bar.component.html',
 })
 export class EditorTopBarComponent {

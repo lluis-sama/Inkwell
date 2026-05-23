@@ -16,6 +16,7 @@ import slugify from 'slugify';
   standalone: true,
   imports: [InkModalComponent, InkButtonComponent, FormsModule, TranslocoPipe],
   templateUrl: './new-project-modal.component.html',
+  styleUrl: './new-project-modal.component.css',
 })
 export class NewProjectModalComponent {
   private bridge          = inject(TauriBridgeService);

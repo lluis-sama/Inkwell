@@ -1,4 +1,4 @@
-<ink-modal title="Análisis de inconsistencias" [hasActions]="false"
+<ink-modal [title]="'MODAL.CONSISTENCY' | transloco" [hasActions]="false"
            (closed)="closed.emit()">
 
   <div class="flex flex-col gap-5 max-h-[70vh] overflow-y-auto">
@@ -6,7 +6,7 @@
     <!-- Sin API key -->
     @if (!ai.hasApiKey()) {
       <div class="flex flex-col gap-2 p-4 rounded-lg border border-ink-warning/30 bg-ink-bg">
-        <p class="text-ink-warning text-sm">Configura la API key de Anthropic para usar esta función.</p>
+        <p class="text-ink-warning text-sm">{{ 'CONSISTENCY.API_KEY_REQUIRED' | transloco }}</p>
       </div>
     }
 
@@ -52,7 +52,7 @@
 
         <div class="p-3 rounded-lg bg-ink-bg border border-ink-border">
           <p class="text-ink-subtle text-xs leading-relaxed">
-            <strong class="text-ink-text">Cómo funciona:</strong>
+            <strong class="text-ink-text">{{ 'CONSISTENCY.HOW_IT_WORKS' | transloco }}</strong>
             El análisis se hace en dos fases. Primero se extrae un resumen
             de hechos de cada capítulo por separado, luego se comparan entre sí.
             Esto permite analizar novelas largas sin límite de contexto.
@@ -61,7 +61,7 @@
 
         <div class="p-3 rounded-lg bg-ink-bg border border-ink-border">
           <p class="text-ink-subtle text-xs leading-relaxed">
-            <strong class="text-ink-text">Coste estimado:</strong>
+            <strong class="text-ink-text">{{ 'CONSISTENCY.ESTIMATED_COST' | transloco }}</strong>
             ~{{ estimatedCost() }} llamadas a la API
             (1 por capítulo + 1 para el análisis global).
             Usa el modelo configurado en settings.
@@ -73,7 +73,7 @@
           [fullWidth]="true"
           [disabled]="!ai.hasApiKey()"
           (clicked)="startAnalysis()">
-          Iniciar análisis
+          {{ 'CONSISTENCY.START_ANALYSIS' | transloco }}
         </ink-button>
       </div>
     }
@@ -86,17 +86,19 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-ink-text text-sm">
-              {{ r.issues.length === 0
-                ? '✅ Sin inconsistencias detectadas'
-                : r.issues.length + ' posible' + (r.issues.length > 1 ? 's inconsistencias' : ' inconsistencia') }}
+              @if (r.issues.length === 0) {
+                {{ 'CONSISTENCY.NO_ISSUES' | transloco }}
+              } @else {
+                {{ 'CONSISTENCY.ISSUES_COUNT' | transloco: { count: r.issues.length } }}
+              }
             </p>
             <p class="text-ink-subtle text-xs mt-0.5">
-              {{ r.documentsAnalyzed }} capítulos analizados ·
+              {{ r.documentsAnalyzed }} {{ 'CONSISTENCY.CHAPTERS_ANALYZED' | transloco }} ·
               {{ formatDate(r.generatedAt) }}
             </p>
           </div>
           <ink-button variant="ghost" (clicked)="startAnalysis()">
-            Re-analizar
+            {{ 'CONSISTENCY.RE_ANALYZE' | transloco }}
           </ink-button>
         </div>
 
@@ -117,10 +119,10 @@
                     class="px-2 py-0.5 rounded-full text-xs font-medium border"
                     [style.color]="severityConfig[issue.severity].color"
                     [style.border-color]="severityConfig[issue.severity].color + '40'">
-                    {{ severityConfig[issue.severity].label }}
+                    {{ severityConfig[issue.severity].label | transloco }}
                   </span>
                   <span class="text-ink-subtle text-xs">
-                    {{ typeLabels[issue.type] }}
+                    {{ typeLabels[issue.type] | transloco }}
                   </span>
                 </div>
 

@@ -3,15 +3,15 @@ import { ProjectTemplate } from '../models/project.model';
 export const PROJECT_TEMPLATES: ProjectTemplate[] = [
   {
     id:          'blank',
-    name:        'Proyecto en blanco',
-    description: 'Sin estructura. Empieza desde cero.',
+    name:        'TEMPLATES.BLANK_NAME',
+    description: 'TEMPLATES.BLANK_DESC',
     icon:        '📄',
     structure:   [],
   },
   {
     id:          'novel-3act',
-    name:        'Novela (3 actos)',
-    description: 'Estructura clásica en tres actos con capítulos.',
+    name:        'TEMPLATES.THREE_ACT_NAME',
+    description: 'TEMPLATES.THREE_ACT_DESC',
     icon:        '📖',
     structure: [
       {
@@ -47,8 +47,8 @@ export const PROJECT_TEMPLATES: ProjectTemplate[] = [
   },
   {
     id:          'novel-parts',
-    name:        'Novela (partes y capítulos)',
-    description: '3 partes con 5 capítulos cada una.',
+    name:        'TEMPLATES.PARTS_NAME',
+    description: 'TEMPLATES.PARTS_DESC',
     icon:        '📚',
     structure: Array.from({ length: 3 }, (_, i) => ({
       title:    `Parte ${['I', 'II', 'III'][i]}`,
@@ -62,8 +62,8 @@ export const PROJECT_TEMPLATES: ProjectTemplate[] = [
   },
   {
     id:          'short-story',
-    name:        'Relato corto',
-    description: 'Estructura mínima para un relato.',
+    name:        'TEMPLATES.SHORT_STORY_NAME',
+    description: 'TEMPLATES.SHORT_STORY_DESC',
     icon:        '✍️',
     structure: [
       { title: 'Planteamiento', type: 'document', children: [] },
@@ -78,8 +78,8 @@ export const PROJECT_TEMPLATES: ProjectTemplate[] = [
   },
   {
     id:          'essay',
-    name:        'Ensayo',
-    description: 'Introducción, cuerpo por secciones y conclusión.',
+    name:        'TEMPLATES.ESSAY_NAME',
+    description: 'TEMPLATES.ESSAY_DESC',
     icon:        '📝',
     structure: [
       { title: 'Introducción', type: 'document', children: [] },
@@ -96,8 +96,8 @@ export const PROJECT_TEMPLATES: ProjectTemplate[] = [
   },
   {
     id:          'custom',
-    name:        'Personalizado',
-    description: 'Define tú mismo el número de partes y capítulos.',
+    name:        'TEMPLATES.CUSTOM_NAME',
+    description: 'TEMPLATES.CUSTOM_DESC',
     icon:        '⚙️',
     structure:   [],
   },

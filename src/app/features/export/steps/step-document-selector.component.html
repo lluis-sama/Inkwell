@@ -1,0 +1,41 @@
+<div class="flex flex-col gap-4">
+  <p class="text-ink-subtle text-sm">
+    {{ 'EXPORT.SELECTOR.INSTRUCTION' | transloco }}
+  </p>
+
+  <div class="flex gap-3">
+    <button (click)="selectAll()"
+      class="text-ink-accent text-xs hover:underline">{{ 'EXPORT.SELECTOR.SELECT_ALL' | transloco }}</button>
+    <button (click)="deselectAll()"
+      class="text-ink-subtle text-xs hover:underline">{{ 'EXPORT.SELECTOR.DESELECT_ALL' | transloco }}</button>
+  </div>
+
+  <div class="flex flex-col gap-1 max-h-72 overflow-y-auto">
+    @for (item of documents(); track item.id) {
+      <label
+        class="flex items-center gap-3 px-3 py-2 rounded cursor-pointer hover:bg-ink-surface transition-colors"
+        [style.paddingLeft.px]="(item.depth * 12) + 12">
+        <input
+          type="checkbox"
+          [checked]="isSelected(item.id)"
+          (change)="toggleDoc(item.id)"
+          class="accent-ink-accent"/>
+        <span class="text-ink-text text-sm truncate">{{ item.title }}</span>
+        @if (item.wordCount > 0) {
+          <span class="ml-auto text-ink-subtle text-xs shrink-0">
+            {{ item.wordCount | number }} {{ 'EXPORT.SELECTOR.WORD_COUNT' | transloco }}
+          </span>
+        }
+      </label>
+    }
+  </div>
+
+  <div class="flex justify-between items-center pt-2 border-t border-ink-border">
+    <span class="text-ink-subtle text-xs">
+      {{ selectedCount() }} {{ 'EXPORT.SELECTOR.DOCS_SELECTED' | transloco }}
+    </span>
+    <span class="text-ink-subtle text-xs">
+      ~{{ totalWordCount() | number }} palabras
+    </span>
+  </div>
+</div>

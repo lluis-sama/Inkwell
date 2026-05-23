@@ -1,0 +1,21 @@
+@reference "../../../../styles.css";
+
+/* Contenedor raíz del binder */
+.binder-root {
+  @apply flex flex-col h-full bg-ink-panel border-r border-ink-border;
+}
+
+/* Cabecera del binder */
+.binder-header {
+  @apply flex items-center justify-between px-3 py-3 border-b border-ink-border shrink-0;
+}
+
+/* Botón icono estándar del binder */
+.binder-icon-btn {
+  @apply p-1 rounded text-ink-subtle hover:text-ink-text hover:bg-ink-border transition-colors;
+}
+
+/* Botón icono con estado disabled */
+.binder-icon-btn-importable {
+  @apply p-1 rounded text-ink-subtle hover:text-ink-text hover:bg-ink-border transition-colors disabled:opacity-40;
+}

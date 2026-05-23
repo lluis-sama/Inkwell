@@ -1,11 +1,11 @@
-<ink-modal [title]="isNew() ? 'Nueva tarjeta' : 'Editar tarjeta'"
+<ink-modal [title]="isNew() ? ('CARD.NEW_TITLE' | transloco) : ('CARD.EDIT_TITLE' | transloco)"
            (closed)="cancelled.emit()">
 
   <div class="flex flex-col gap-4">
 
     <!-- Selector de tipo -->
     <div class="flex flex-col gap-1.5">
-      <label class="field-label">Tipo</label>
+      <label class="field-label">{{ 'CARD.TYPE_LABEL' | transloco }}</label>
       <div class="flex gap-2">
         @for (type of cardTypes; track type) {
           <button
@@ -16,7 +16,7 @@
               ? 'border-ink-accent bg-ink-surface text-ink-text'
               : 'border-ink-border text-ink-subtle hover:border-ink-muted'">
             <span class="text-base">{{ typeIcons[type] }}</span>
-            <span>{{ typeLabels[type] }}</span>
+            <span>{{ typeLabels[type] | transloco }}</span>
           </button>
         }
       </div>
@@ -25,11 +25,11 @@
     <!-- Título -->
     <div class="flex flex-col gap-1.5">
       <label class="field-label">
-        {{ editType() === 'character' ? 'Nombre del personaje *' : 'Título' }}
+        {{ editType() === 'character' ? ('CARD.TITLE_CHARACTER' | transloco) : ('CARD.TITLE_OTHER' | transloco) }}
       </label>
       <input
         [(ngModel)]="editTitle"
-        [placeholder]="editType() === 'character' ? 'Elena Vidal' : 'Título de la tarjeta'"
+        [placeholder]="editType() === 'character' ? ('CARD.PLACEHOLDER_CHARACTER_TITLE' | transloco) : ('CARD.PLACEHOLDER_OTHER_TITLE' | transloco)"
         maxlength="100"
         class="field-input"/>
     </div>
@@ -37,13 +37,11 @@
     <!-- Cuerpo -->
     <div class="flex flex-col gap-1.5">
       <label class="field-label">
-        {{ editType() === 'character' ? 'Descripción / notas del personaje' : 'Contenido' }}
+        {{ editType() === 'character' ? ('CARD.BODY_CHARACTER' | transloco) : ('CARD.BODY_OTHER' | transloco) }}
       </label>
       <textarea
         [(ngModel)]="editBody"
-        [placeholder]="editType() === 'character'
-          ? 'Protagonista. 34 años. Detective privada...'
-          : 'Escribe aquí tus notas, ideas...'"
+        [placeholder]="editType() === 'character' ? ('CARD.PLACEHOLDER_CHARACTER_BODY' | transloco) : ('CARD.PLACEHOLDER_OTHER_BODY' | transloco)"
         rows="4"
         class="field-input resize-none">
       </textarea>
@@ -56,22 +54,22 @@
         <!-- Aliases -->
         <div class="flex flex-col gap-1.5">
           <label class="field-label">
-            Nombres alternativos / apodos
+            {{ 'CARD.ALIASES_LABEL' | transloco }}
             <span class="normal-case font-normal">(separados por coma)</span>
           </label>
           <input
             [(ngModel)]="aliasesInput"
-            placeholder="Elena, Eli, Detective Vidal"
+            [placeholder]="'CARD.ALIASES_PLACEHOLDER' | transloco"
             class="field-input"/>
           <p class="text-ink-muted text-xs">
-            Se usarán todos en la búsqueda de apariciones.
+            {{ 'CARD.ALIASES_HINT' | transloco }}
           </p>
         </div>
 
         <!-- Apariciones en capítulos -->
         <div class="flex flex-col gap-2">
           <div class="flex items-center justify-between">
-            <label class="field-label">Aparece en</label>
+            <label class="field-label">{{ 'CARD.APPEARANCES_LABEL' | transloco }}</label>
             <button
               (click)="scanChapters()"
               [disabled]="!editTitle.trim() || scanning()"
@@ -81,22 +79,21 @@
               @if (scanning()) {
                 <span class="inline-block w-3 h-3 border border-current
                              border-t-transparent rounded-full animate-spin"></span>
-                Escaneando...
+                {{ 'CARD.SCANNING' | transloco }}
               } @else {
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
                      stroke="currentColor" stroke-width="2">
                   <circle cx="11" cy="11" r="8"/>
                   <line x1="21" y1="21" x2="16.65" y2="16.65"/>
                 </svg>
-                Buscar apariciones
+                {{ 'CARD.SEARCH_APPEARANCES' | transloco }}
               }
             </button>
           </div>
 
           @if (scanResults().length > 0) {
             <div class="text-ink-muted text-xs mb-1">
-              Resultados del último escaneo.
-              Desmarca los capítulos donde el personaje no aparece realmente.
+              {{ 'CARD.APPEARANCES_HINT' | transloco }}
             </div>
           }
 
@@ -104,7 +101,7 @@
           <div class="max-h-40 overflow-y-auto flex flex-col gap-1">
             @if (allDocuments().length === 0) {
               <p class="text-ink-muted text-xs">
-                El proyecto no tiene documentos todavía.
+                {{ 'CARD.NO_DOCUMENTS' | transloco }}
               </p>
             }
             @for (doc of allDocuments(); track doc.id) {
@@ -126,8 +123,7 @@
           </div>
 
           <p class="text-ink-muted text-xs leading-relaxed">
-            La búsqueda automática usa el nombre del personaje como palabra completa.
-            Ajusta manualmente si hay falsos positivos o nombres no detectados.
+            {{ 'CARD.SEARCH_AUTO_HINT' | transloco }}
           </p>
         </div>
       </div>
@@ -135,7 +131,7 @@
 
     <!-- Color -->
     <div class="flex flex-col gap-2">
-      <label class="field-label">Color</label>
+      <label class="field-label">{{ 'CARD.COLOR_LABEL' | transloco }}</label>
       <div class="flex gap-2 flex-wrap">
         @for (color of availableColors; track color) {
           <button
@@ -153,12 +149,12 @@
   </div>
 
   <ng-container slot="actions">
-    <ink-button variant="ghost" (clicked)="cancelled.emit()">Cancelar</ink-button>
+    <ink-button variant="ghost" (clicked)="cancelled.emit()">{{ 'COMMON.CANCEL' | transloco }}</ink-button>
     <ink-button
       variant="primary"
       [disabled]="!canSave()"
       (clicked)="save()">
-      {{ isNew() ? 'Crear tarjeta' : 'Guardar' }}
+      {{ isNew() ? ('CARD.CREATE_BTN' | transloco) : ('COMMON.SAVE' | transloco) }}
     </ink-button>
   </ng-container>
 

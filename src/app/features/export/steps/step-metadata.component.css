@@ -1,0 +1,8 @@
+.input-field {
+  width: 100%; padding: 0.5rem 0.75rem;
+  border-radius: 0.25rem;
+  background: var(--ink-bg); border: 1px solid var(--ink-border);
+  color: var(--ink-text); font-size: 0.875rem;
+}
+.input-field:focus { outline: none; border-color: var(--ink-accent); }
+.input-field::placeholder { color: var(--ink-muted); }

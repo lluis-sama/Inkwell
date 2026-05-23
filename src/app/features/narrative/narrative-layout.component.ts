@@ -1,5 +1,6 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { InkNavComponent } from '../../shared/components/ink-nav.component';
 import { NarrativeCardComponent } from './narrative-card.component';
 import { NarrativeService, NarrativeCard } from '../../core/services/narrative.service';
@@ -9,7 +10,7 @@ import { DocumentService } from '../../core/services/document.service';
 @Component({
   selector: 'app-narrative-layout',
   standalone: true,
-  imports: [InkNavComponent, NarrativeCardComponent],
+  imports: [InkNavComponent, NarrativeCardComponent, TranslocoPipe],
   templateUrl: './narrative-layout.component.html',
 })
 export class NarrativeLayoutComponent implements OnInit {

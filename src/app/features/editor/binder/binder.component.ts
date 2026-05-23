@@ -1,4 +1,5 @@
 import { Component, inject, input, output, signal, computed } from '@angular/core';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { TreeNode, DocumentStatus, DOCUMENT_STATUS_CONFIG } from '../../../core/models/project.model';
 import { ProjectService, findNode, deleteNode, insertAfter, insertInside, isDescendant } from '../../../core/services/project.service';
 import { DocumentService } from '../../../core/services/document.service';
@@ -12,14 +13,17 @@ import { BinderSearchComponent } from './binder-search.component';
 @Component({
   selector: 'app-binder',
   standalone: true,
-  imports: [BinderNodeComponent, BinderContextMenuComponent, BinderFooterComponent, BinderSearchComponent],
+  imports: [TranslocoPipe, BinderNodeComponent, BinderContextMenuComponent, BinderFooterComponent, BinderSearchComponent],
   templateUrl: './binder.component.html',
+  styleUrl: './binder.component.css',
   host: {
     '(document:click)': 'closeContextMenu()',
     '(document:keydown.escape)': 'closeContextMenu()',
   },
 })
 export class BinderComponent {
+  readonly #transloco = inject(TranslocoService);
+
   projectService      = inject(ProjectService);
   private docService  = inject(DocumentService);
   private importService = inject(ImportService);
@@ -56,32 +60,34 @@ export class BinderComponent {
     const node = this.contextMenu()?.node;
     if (!node) return [];
 
+    const t = (key: string) => this.#transloco.translate(key);
+
     const actions: ContextMenuAction[] = [
-      { label: 'Renombrar', action: 'rename' },
+      { label: t('BINDER.CTX_RENAME'), action: 'rename' },
     ];
 
     if (node.type === 'document') {
       actions.push(
         { label: '', action: 'sep1', separator: true },
-        { label: 'Estado', action: 'header-status', disabled: true },
-        { label: '○  Sin estado',   action: 'status:clear' },
-        { label: '○  Por escribir', action: 'status:todo' },
-        { label: '○  Borrador',     action: 'status:draft' },
-        { label: '○  En revisión',  action: 'status:revised' },
-        { label: '●  Finalizado',   action: 'status:final' },
-        { label: '◇  Solo notas',   action: 'status:notes' },
+        { label: t('BINDER.CTX_STATUS'), action: 'header-status', disabled: true },
+        { label: t('BINDER.CTX_STATUS_CLEAR'),   action: 'status:clear' },
+        { label: t('BINDER.CTX_STATUS_TODO'),    action: 'status:todo' },
+        { label: t('BINDER.CTX_STATUS_DRAFT'),   action: 'status:draft' },
+        { label: t('BINDER.CTX_STATUS_REVISED'), action: 'status:revised' },
+        { label: t('BINDER.CTX_STATUS_FINAL'),   action: 'status:final' },
+        { label: t('BINDER.CTX_STATUS_NOTES'),   action: 'status:notes' },
         { label: '', action: 'sep2', separator: true },
       );
     }
 
     if (node.type === 'folder') {
       actions.push(
-        { label: 'Nuevo documento aquí', action: 'add-document' },
-        { label: 'Nueva carpeta aquí',   action: 'add-folder' },
+        { label: t('BINDER.CTX_NEW_DOC_HERE'),    action: 'add-document' },
+        { label: t('BINDER.CTX_NEW_FOLDER_HERE'), action: 'add-folder' },
       );
     }
 
-    actions.push({ label: 'Eliminar', action: 'delete', danger: true });
+    actions.push({ label: t('BINDER.CTX_DELETE'), action: 'delete', danger: true });
     return actions;
   });
 
@@ -205,13 +211,13 @@ export class BinderComponent {
       const allWarnings = results.flatMap(r => r.warnings);
       if (allWarnings.length > 0) {
         this.toast.success(
-          `Importado con advertencias: ${allWarnings.join('; ')}`
+          this.#transloco.translate('BINDER.IMPORT_WARNINGS', { warnings: allWarnings.join('; ') })
         );
       } else {
         this.toast.success(
           results.length === 1
-            ? `"${results[0].title}" importado correctamente.`
-            : `${results.length} documentos importados correctamente.`
+            ? this.#transloco.translate('BINDER.IMPORT_SUCCESS_SINGLE', { title: results[0].title })
+            : this.#transloco.translate('BINDER.IMPORT_SUCCESS_MULTI', { count: results.length })
         );
       }
 

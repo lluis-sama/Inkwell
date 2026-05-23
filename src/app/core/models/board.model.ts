@@ -39,10 +39,10 @@ export const DEFAULT_CARD_COLORS: string[] = [
 ];
 
 export const CARD_TYPE_LABELS: Record<CardType, string> = {
-  character:  'Personaje',
-  note:       'Nota',
-  research:   'Investigación',
-  other:      'Otro',
+  character:  'CARD.TYPE_CHARACTER',
+  note:       'CARD.TYPE_NOTE',
+  research:   'CARD.TYPE_RESEARCH',
+  other:      'CARD.TYPE_OTHER',
 };
 
 export const CARD_TYPE_ICONS: Record<CardType, string> = {

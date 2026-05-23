@@ -5,14 +5,14 @@
   >
     <button
       (click)="toggleLanguage()"
-      class="p-2 rounded text-ink-subtle hover:text-ink-text hover:bg-ink-surface transition-colors text-xs font-medium"
+      class="header-action-btn text-xs font-medium"
     >
       {{ translocoService.getActiveLang() === "es" ? "EN" : "ES" }}
     </button>
     <button
       (click)="theme.toggle()"
       [title]="'PM.CHANGE_THEME' | transloco"
-      class="p-2 rounded text-ink-subtle hover:text-ink-text hover:bg-ink-surface transition-colors"
+      class="header-action-btn"
     >
       @if (theme.theme() === "dark") {
         <!-- Icono sol -->
@@ -191,7 +191,7 @@
           <ul class="flex flex-col gap-1">
             @for (project of recentProjects(); track project.basePath) {
               <li
-                class="group flex items-center gap-3 px-4 py-3 rounded hover:bg-ink-surface transition-colors cursor-pointer"
+                class="group recent-project-row"
                 (click)="openRecentProject(project)"
               >
                 <!-- Icono -->
@@ -212,7 +212,7 @@
                 </svg>
 
                 <!-- Info -->
-                <div class="flex flex-col flex-1 min-w-0 gap-0.5">
+                <div class="recent-project-info">
                   <span class="text-ink-text text-sm font-medium truncate">
                     {{ project.name }}
                   </span>
@@ -222,9 +222,7 @@
                 </div>
 
                 <!-- Fecha -->
-                <span
-                  class="text-ink-subtle text-xs shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                >
+                <span class="recent-project-date">
                   {{ formatDate(project.openedAt) }}
                 </span>
 
@@ -232,7 +230,7 @@
                 <button
                   (click)="removeFromRecents($event, project.basePath)"
                   [title]="'PM.REMOVE_RECENT' | transloco"
-                  class="shrink-0 p-1 rounded text-ink-subtle opacity-0 group-hover:opacity-100 hover:text-ink-danger transition-all"
+                  class="recent-project-remove-btn"
                 >
                   <svg
                     width="12"

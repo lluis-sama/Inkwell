@@ -63,7 +63,7 @@
   @if (projectService.isLoaded()) {
     <button
       (click)="closeProject()"
-      title="Cerrar proyecto y volver al inicio"
+      [title]="'NAV.CLOSE_PROJECT' | transloco"
       class="nav-icon"
     >
       <svg
@@ -136,7 +136,7 @@
   <!-- Narrative link -->
   <a
     routerLink="/narrative"
-    title="Vista narrativa (Alt+3)"
+    [title]="'NAV.NARRATIVE_VIEW' | transloco"
     class="nav-icon"
     [class.active]="isRoute('/narrative')"
   >
@@ -182,7 +182,7 @@
   @if (projectService.isLoaded()) {
     <button
       (click)="showStats.set(true)"
-      title="Estadísticas"
+      [title]="'NAV.STATS' | transloco"
       class="nav-icon text-ink-subtle hover:text-ink-text transition-colors"
     >
       <svg
@@ -205,7 +205,7 @@
   @if (projectService.isLoaded()) {
     <button
       (click)="showTranscription.set(true)"
-      title="Transcribir audio"
+      [title]="'NAV.TRANSCRIBE' | transloco"
       class="nav-icon"
       [class.text-ink-warning]="!transcriptionSvc.isConfigured()"
     >
@@ -223,7 +223,7 @@
   @if (projectService.isLoaded()) {
     <button
       (click)="showConsistency.set(true)"
-      title="Análisis de inconsistencias"
+      [title]="'NAV.CONSISTENCY' | transloco"
       class="nav-icon"
       [class.text-ink-warning]="consistencySvc.isAnalyzing()"
       [class.animate-pulse]="consistencySvc.isAnalyzing()"
@@ -252,7 +252,7 @@
   <!-- Keyboard shortcuts button -->
   <button
     (click)="showShortcuts.set(true)"
-    title="Atajos de teclado (?)"
+    [title]="'NAV.SHORTCUTS' | transloco"
     class="nav-icon"
   >
     <svg
@@ -272,7 +272,7 @@
   <!-- Settings button -->
   <button
     (click)="showSettings.set(true)"
-    title="Configuración"
+    [title]="'NAV.SETTINGS' | transloco"
     class="nav-icon"
   >
     <svg
@@ -330,6 +330,13 @@
   @if (showTranscription()) {
     <app-transcription-modal (closed)="showTranscription.set(false)" />
   }
+
+  <!-- Language toggle -->
+  <button class="lang-toggle" (click)="toggleLang()" [title]="'NAV.TOGGLE_LANG' | transloco">
+    <span [class.lang-active]="activeLang() === 'es'">ES</span>
+    <span class="lang-sep">/</span>
+    <span [class.lang-active]="activeLang() === 'en'">EN</span>
+  </button>
 
   <!-- Theme toggle -->
   <button

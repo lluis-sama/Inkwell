@@ -13,6 +13,7 @@ import { DocumentFile }    from '../../../core/models/document.model';
 import { tiptapToText }    from '../../../shared/utils/tiptap-to-text';
 import { InkSettingsModalComponent } from '../../../shared/components/ink-settings-modal.component';
 import { SettingsService } from '../../../core/services/settings.service';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 const MODE_LABELS: Record<AiMode, string> = {
   analyze:    'Analizar escena',
@@ -31,8 +32,9 @@ const MODE_PLACEHOLDERS: Record<AiMode, string> = {
 @Component({
   selector: 'app-ai-assistant-panel',
   standalone: true,
-  imports: [FormsModule, InkSettingsModalComponent],
+  imports: [FormsModule, InkSettingsModalComponent, TranslocoPipe],
   templateUrl: './ai-assistant-panel.component.html',
+  styleUrl: './ai-assistant-panel.component.css',
 })
 export class AiAssistantPanelComponent implements AfterViewChecked, OnDestroy {
   @ViewChild('messagesEl') messagesEl!: ElementRef<HTMLDivElement>;

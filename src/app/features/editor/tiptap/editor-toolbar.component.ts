@@ -1,4 +1,5 @@
 import { Component, computed, inject, input } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { Editor } from '@tiptap/core';
 import { SettingsService } from '../../../core/services/settings.service';
 
@@ -19,46 +20,9 @@ export const EDITOR_FONT_OPTIONS: FontOption[] = [
 @Component({
   selector: 'app-editor-toolbar',
   standalone: true,
+  imports: [TranslocoPipe],
   templateUrl: './editor-toolbar.component.html',
-  styles: [
-    `
-      :host {
-        display: block;
-      }
-
-      .toolbar-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 28px;
-        height: 28px;
-        padding: 0 4px;
-        border-radius: 4px;
-        border: none;
-        background: transparent;
-        color: var(--ink-subtle);
-        cursor: pointer;
-        transition:
-          color 0.15s,
-          background-color 0.15s;
-      }
-      .toolbar-btn:hover {
-        color: var(--ink-text);
-        background: var(--ink-border);
-      }
-      .toolbar-btn.active {
-        color: var(--ink-accent);
-        background: var(--ink-border);
-      }
-
-      .toolbar-sep {
-        width: 1px;
-        height: 18px;
-        background: var(--ink-border);
-        margin: 0 4px;
-      }
-    `,
-  ],
+  styleUrl: './editor-toolbar.component.css',
 })
 export class EditorToolbarComponent {
   editor = input<Editor | null>(null);

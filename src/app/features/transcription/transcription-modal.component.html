@@ -1,4 +1,4 @@
-<ink-modal title="Transcribir audio" (closed)="closed.emit()">
+<ink-modal [title]="'MODAL.TRANSCRIPTION' | transloco" (closed)="closed.emit()">
   <div class="flex flex-col gap-5">
 
     <!-- Sin proveedor configurado -->
@@ -8,21 +8,20 @@
           {{ svc.providerStatusMessage() }}
         </p>
         <p class="text-ink-subtle text-xs mt-2 leading-relaxed">
-          Configura el proveedor de transcripción en
-          Configuración → IA → Transcripción de audio.
+          {{ 'TRANSCRIPTION.CONFIGURE_HINT' | transloco }}
         </p>
       </div>
     }
 
     <!-- Selección de archivo -->
     <div class="flex flex-col gap-1.5">
-      <label class="field-label">Archivo de audio</label>
+      <label class="field-label">{{ 'TRANSCRIPTION.AUDIO_LABEL' | transloco }}</label>
       <div class="flex gap-2">
         <div
           class="flex-1 px-3 py-2 rounded bg-ink-bg border border-ink-border text-sm truncate"
           [class.text-ink-text]="selectedFile()"
           [class.text-ink-muted]="!selectedFile()">
-          {{ selectedFile() ?? 'Ningún archivo seleccionado' }}
+          {{ selectedFile() ?? ('TRANSCRIPTION.NO_FILE' | transloco) }}
         </div>
         <ink-button variant="secondary" (clicked)="selectFile()">
           Elegir
@@ -43,22 +42,22 @@
     <!-- Idioma -->
     <div class="flex flex-col gap-1.5">
       <label class="field-label">
-        Idioma del audio
+        {{ 'TRANSCRIPTION.LANG_LABEL' | transloco }}
         <span class="normal-case font-normal">(opcional)</span>
       </label>
       <select [(ngModel)]="selectedLanguage" class="field-input">
-        <option value="">Autodetección</option>
-        <option value="es">Español</option>
-        <option value="en">English</option>
-        <option value="fr">Français</option>
-        <option value="de">Deutsch</option>
-        <option value="it">Italiano</option>
-        <option value="pt">Português</option>
-        <option value="ca">Català</option>
-        <option value="gl">Galego</option>
-        <option value="eu">Euskara</option>
+        <option value="">{{ 'TRANSCRIPTION.LANG_AUTO' | transloco }}</option>
+        <option value="es">{{ 'SETTINGS.TRANSCRIPTION.LANG_ES' | transloco }}</option>
+        <option value="en">{{ 'SETTINGS.TRANSCRIPTION.LANG_EN' | transloco }}</option>
+        <option value="fr">{{ 'SETTINGS.TRANSCRIPTION.LANG_FR' | transloco }}</option>
+        <option value="de">{{ 'SETTINGS.TRANSCRIPTION.LANG_DE' | transloco }}</option>
+        <option value="it">{{ 'SETTINGS.TRANSCRIPTION.LANG_IT' | transloco }}</option>
+        <option value="pt">{{ 'SETTINGS.TRANSCRIPTION.LANG_PT' | transloco }}</option>
+        <option value="ca">{{ 'TRANSCRIPTION.LANG_CA' | transloco }}</option>
+        <option value="gl">{{ 'TRANSCRIPTION.LANG_GL' | transloco }}</option>
+        <option value="eu">{{ 'TRANSCRIPTION.LANG_EU' | transloco }}</option>
       </select>
-      <p class="text-ink-muted text-xs">Especificar el idioma mejora la precisión.</p>
+      <p class="text-ink-muted text-xs">{{ 'TRANSCRIPTION.LANG_HINT' | transloco }}</p>
     </div>
 
     <!-- Estado del proceso -->
@@ -84,13 +83,13 @@
   </div>
 
   <ng-container slot="actions">
-    <ink-button variant="ghost" (clicked)="closed.emit()">Cancelar</ink-button>
+    <ink-button variant="ghost" (clicked)="closed.emit()">{{ 'COMMON.CANCEL' | transloco }}</ink-button>
     <ink-button
       variant="primary"
       [disabled]="!canTranscribe()"
       [loading]="svc.isTranscribing()"
       (clicked)="transcribe()">
-      Transcribir
+      {{ 'NAV.TRANSCRIBE' | transloco }}
     </ink-button>
   </ng-container>
 </ink-modal>

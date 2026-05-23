@@ -14,7 +14,7 @@
         #searchInput
         [ngModel]="searchQuery"
         (ngModelChange)="onQueryChange($event)"
-        placeholder="Buscar..."
+        [placeholder]="'FIND_REPLACE.SEARCH_PLACEHOLDER' | transloco"
         class="flex-1 bg-transparent text-ink-text text-sm focus:outline-none
                placeholder:text-ink-muted"/>
       @if (resultCount().total > 0) {
@@ -22,14 +22,14 @@
           {{ resultCount().current }}/{{ resultCount().total }}
         </span>
       } @else if (searchQuery) {
-        <span class="text-ink-danger text-xs shrink-0">Sin resultados</span>
+        <span class="text-ink-danger text-xs shrink-0">{{ 'FIND_REPLACE.NO_RESULTS' | transloco }}</span>
       }
     </div>
 
     <!-- Navegación -->
     <button (click)="prevRequested.emit()"
       [disabled]="!searchQuery"
-      title="Anterior"
+      [title]="'COMMON.PREVIOUS' | transloco"
       class="p-1.5 rounded text-ink-subtle hover:text-ink-text hover:bg-ink-border
              transition-colors disabled:opacity-30">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
@@ -39,7 +39,7 @@
     </button>
     <button (click)="nextRequested.emit()"
       [disabled]="!searchQuery"
-      title="Siguiente"
+      [title]="'COMMON.NEXT' | transloco"
       class="p-1.5 rounded text-ink-subtle hover:text-ink-text hover:bg-ink-border
              transition-colors disabled:opacity-30">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
@@ -51,7 +51,7 @@
     <!-- Toggle mayúsculas -->
     <button
       (click)="toggleCase()"
-      title="Distinguir mayúsculas"
+      [title]="'FIND_REPLACE.MATCH_CASE' | transloco"
       class="p-1.5 rounded text-xs font-mono transition-colors"
       [class]="caseSensitive()
         ? 'bg-ink-border text-ink-accent'
@@ -62,7 +62,7 @@
     <!-- Toggle show replace -->
     <button
       (click)="toggleShowReplace()"
-      title="Mostrar reemplazo"
+      [title]="'FIND_REPLACE.TOGGLE_REPLACE' | transloco"
       class="p-1.5 rounded text-ink-subtle hover:text-ink-text
              hover:bg-ink-border transition-colors text-xs">
       ±
@@ -89,7 +89,7 @@
                   focus-within:border-ink-accent">
         <input
           [(ngModel)]="replaceQuery"
-          placeholder="Reemplazar por..."
+          [placeholder]="'FIND_REPLACE.REPLACE_PLACEHOLDER' | transloco"
           class="flex-1 bg-transparent text-ink-text text-sm focus:outline-none
                  placeholder:text-ink-muted"/>
       </div>
@@ -99,7 +99,7 @@
         class="px-3 py-1.5 rounded bg-ink-surface border border-ink-border
                text-ink-text text-xs hover:border-ink-accent transition-colors
                disabled:opacity-30">
-        Reemplazar
+        {{ 'FIND_REPLACE.REPLACE_BTN' | transloco }}
       </button>
       <button
         (click)="replaceAllRequested.emit(replaceQuery)"
@@ -107,7 +107,7 @@
         class="px-3 py-1.5 rounded bg-ink-surface border border-ink-border
                text-ink-text text-xs hover:border-ink-accent transition-colors
                disabled:opacity-30">
-        Todos
+        {{ 'COMMON.ALL' | transloco }}
       </button>
     </div>
   }

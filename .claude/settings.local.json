@@ -35,7 +35,16 @@
       "Bash(pnpm run *)",
       "Bash(grep -v \"^$\")",
       "mcp__plugin_engram_engram__mem_save_prompt",
-      "Bash(cargo build *)"
+      "Bash(cargo build *)",
+      "Bash(/tmp/analyze_tailwind.sh)",
+      "Bash(read count *)",
+      "Bash(git stash *)",
+      "Bash(python3 -c \"import json; json.load\\(open\\('/home/david/dev/inkwell/src/assets/i18n/en.json'\\)\\); print\\('en.json: valid'\\)\")",
+      "Bash(python3 -c \"import json; json.load\\(open\\('/home/david/dev/inkwell/src/assets/i18n/es.json'\\)\\); print\\('es.json: valid'\\)\")",
+      "Bash(grep -v \"^--$\")",
+      "Bash(python3 -c \"import json; json.load\\(open\\('/home/david/dev/inkwell/src/assets/i18n/en.json'\\)\\); print\\('en.json: OK'\\)\")",
+      "Bash(python3 -c \"import json; json.load\\(open\\('/home/david/dev/inkwell/src/assets/i18n/es.json'\\)\\); print\\('es.json: OK'\\)\")",
+      "Bash(python3 *)"
     ]
   }
 }

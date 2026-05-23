@@ -10,23 +10,16 @@ import {
 } from '../../../core/models/board.model';
 import { CharacterScanService, ChapterAppearance } from '../../../core/services/character-scan.service';
 import { ProjectService } from '../../../core/services/project.service';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { InkModalComponent }  from '../../../shared/components/ink-modal.component';
 import { InkButtonComponent } from '../../../shared/components/ink-button.component';
 
 @Component({
   selector: 'app-card-editor-modal',
   standalone: true,
-  imports: [InkModalComponent, InkButtonComponent, FormsModule],
+  imports: [TranslocoPipe, InkModalComponent, InkButtonComponent, FormsModule],
   templateUrl: './card-editor-modal.component.html',
-  styles: [`
-    .field-label { color:var(--ink-subtle); font-size:.7rem; font-weight:500;
-                   text-transform:uppercase; letter-spacing:.05em; }
-    .field-input { width:100%; padding:.4rem .6rem; border-radius:.25rem;
-                   background:var(--ink-bg); border:1px solid var(--ink-border);
-                   color:var(--ink-text); font-size:.875rem; }
-    .field-input:focus { outline:none; border-color:var(--ink-accent); }
-    .field-input::placeholder { color:var(--ink-muted); }
-  `],
+  styleUrl: './card-editor-modal.component.css',
 })
 export class CardEditorModalComponent implements OnInit {
   private scanService = inject(CharacterScanService);

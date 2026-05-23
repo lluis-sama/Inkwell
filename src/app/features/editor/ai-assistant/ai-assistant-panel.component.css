@@ -1,0 +1,41 @@
+@reference "../../../../styles.css";
+
+.ai-panel-aside {
+  @apply relative flex flex-col h-full border-l border-ink-border bg-ink-panel shrink-0;
+}
+
+.ai-panel-header {
+  @apply flex items-center justify-between pl-5 pr-4 py-3 border-b border-ink-border shrink-0;
+}
+
+.ai-icon-btn {
+  @apply p-1 rounded text-ink-subtle hover:text-ink-text hover:bg-ink-border transition-colors;
+}
+
+.ai-provider-warning {
+  @apply flex flex-col items-center gap-3 m-4 p-4 rounded-lg border border-ink-warning/30 bg-ink-bg;
+}
+
+.ai-bubble-user {
+  @apply max-w-[92%] rounded-lg px-3 py-2 text-xs leading-relaxed bg-ink-accent/20 text-ink-text border border-ink-accent/20;
+}
+
+.ai-bubble-assistant {
+  @apply max-w-[92%] rounded-lg px-3 py-2 text-xs leading-relaxed bg-ink-surface text-ink-text border border-ink-border;
+}
+
+.ai-action-btn-secondary {
+  @apply text-xs px-2 py-1 rounded border border-ink-border text-ink-subtle hover:bg-ink-border transition-colors;
+}
+
+.ai-action-btn-accent {
+  @apply text-xs px-2 py-1 rounded border border-ink-accent/50 text-ink-accent hover:bg-ink-accent/10 transition-colors;
+}
+
+.ai-input-textarea {
+  @apply w-full px-3 py-2 rounded bg-ink-bg border border-ink-border text-ink-text text-xs placeholder:text-ink-muted resize-none focus:outline-none focus:border-ink-accent transition-colors disabled:opacity-50;
+}
+
+.ai-send-btn {
+  @apply flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium transition-colors disabled:opacity-30 disabled:cursor-not-allowed;
+}

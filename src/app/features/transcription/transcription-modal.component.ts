@@ -7,6 +7,7 @@ import { ProjectService }           from '../../core/services/project.service';
 import { ToastService }             from '../../shared/services/toast.service';
 import { InkModalComponent }        from '../../shared/components/ink-modal.component';
 import { InkButtonComponent }       from '../../shared/components/ink-button.component';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 const AUDIO_EXTENSIONS = ['mp3', 'mp4', 'm4a', 'wav', 'ogg', 'webm', 'flac'];
 const MAX_SIZE_MB = 25;
@@ -14,7 +15,7 @@ const MAX_SIZE_MB = 25;
 @Component({
   selector:    'app-transcription-modal',
   standalone:  true,
-  imports:     [InkModalComponent, InkButtonComponent, FormsModule],
+  imports:     [InkModalComponent, InkButtonComponent, FormsModule, TranslocoPipe],
   templateUrl: './transcription-modal.component.html',
   styleUrl:    './transcription-modal.component.css',
 })
@@ -24,6 +25,7 @@ export class TranscriptionModalComponent {
   protected project = inject(ProjectService);
   protected toast   = inject(ToastService);
   protected router  = inject(Router);
+  readonly #transloco = inject(TranslocoService);
 
   closed = output<void>();
 
@@ -63,7 +65,7 @@ export class TranscriptionModalComponent {
       const result = await this.svc.transcribe(filePath);
       const node   = await this.svc.saveTranscriptionToProject(result);
 
-      this.toast.success(`Transcripción completada y guardada en la carpeta "Transcriptions".`);
+      this.toast.success(this.#transloco.translate('TRANSCRIPTION.SUCCESS'));
       this.closed.emit();
       this.router.navigate(['/editor'], { queryParams: { doc: node.id } });
 
