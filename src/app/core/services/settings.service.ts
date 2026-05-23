@@ -2,6 +2,7 @@ import { Injectable, signal } from '@angular/core';
 import {
   AppSettings,
   DEFAULT_APP_SETTINGS,
+  DeskPosition,
   UiFontScale,
 } from '../models/app-settings.model';
 
@@ -28,6 +29,7 @@ export class SettingsService {
       editor: { ...DEFAULT_APP_SETTINGS.editor, ...stored?.editor },
       appearance: { ...DEFAULT_APP_SETTINGS.appearance, ...stored?.appearance },
       aiPanel: { ...DEFAULT_APP_SETTINGS.aiPanel, ...stored?.aiPanel },
+      deskPanel: { ...DEFAULT_APP_SETTINGS.deskPanel, ...stored?.deskPanel },
     };
   }
 
@@ -54,5 +56,21 @@ export class SettingsService {
   setAiPanelWidth(width: number): void {
     const clamped = Math.min(Math.max(width, 240), 600);
     this.updateSettings({ aiPanel: { width: clamped } });
+  }
+
+  setDeskPosition(position: DeskPosition): void {
+    this.updateSettings({ deskPanel: { ...this.settings().deskPanel, position } });
+  }
+
+  setDeskBottomHeight(height: number): void {
+    const max = Math.floor(window.innerHeight * 0.70);
+    const clamped = Math.min(Math.max(height, 150), max);
+    this.updateSettings({ deskPanel: { ...this.settings().deskPanel, bottomHeight: clamped } });
+  }
+
+  setDeskSideWidth(width: number): void {
+    const max = Math.floor(window.innerWidth * 0.60);
+    const clamped = Math.min(Math.max(width, 240), max);
+    this.updateSettings({ deskPanel: { ...this.settings().deskPanel, sideWidth: clamped } });
   }
 }

@@ -113,7 +113,7 @@
       </div>
     }
 
-    @for (msg of messages(); track $index) {
+    @for (msg of messages(); track $index; let last = $last) {
       <div class="flex flex-col gap-1.5"
            [class]="msg.role === 'user' ? 'items-end' : 'items-start'">
 
@@ -126,20 +126,23 @@
           <p class="whitespace-pre-wrap break-words">{{ msg.content }}</p>
         </div>
 
-        <!-- Botón insertar en editor (solo respuestas del asistente) -->
-        @if (msg.role === 'assistant') {
-          <button
-            (click)="insertIntoEditor.emit(msg.content)"
-            title="Insertar en el editor"
-            class="flex items-center gap-1.5 text-ink-subtle text-xs
-                   hover:text-ink-accent transition-colors px-1">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
-                 stroke="currentColor" stroke-width="2">
-              <polyline points="9,10 4,15 9,20"/>
-              <path d="M20 4v7a4 4 0 0 1-4 4H4"/>
-            </svg>
-            Insertar en editor
-          </button>
+        @if (msg.role === 'assistant' && last) {
+          <div class="flex gap-2 mt-2">
+            <button
+              class="text-xs px-2 py-1 rounded border border-ink-border
+                     text-ink-text-secondary hover:bg-ink-hover transition-colors"
+              (click)="insertIntoEditor.emit(msg.content)"
+            >
+              Insertar en el editor
+            </button>
+            <button
+              class="text-xs px-2 py-1 rounded border border-ink-accent/50
+                     text-ink-accent hover:bg-ink-accent/10 transition-colors"
+              (click)="saveToDesk(msg.content, activeMode())"
+            >
+              Guardar en el cajón
+            </button>
+          </div>
         }
       </div>
     }

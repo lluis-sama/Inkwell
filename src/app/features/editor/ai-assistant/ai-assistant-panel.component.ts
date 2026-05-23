@@ -7,6 +7,8 @@ import interact from 'interactjs';
 import { FormsModule } from '@angular/forms';
 import { AiService, AiMessage, AiMode } from '../../../core/services/ai.service';
 import { ProjectService }  from '../../../core/services/project.service';
+import { DocumentService } from '../../../core/services/document.service';
+import { DeskService }     from '../../../core/services/desk.service';
 import { DocumentFile }    from '../../../core/models/document.model';
 import { tiptapToText }    from '../../../shared/utils/tiptap-to-text';
 import { InkSettingsModalComponent } from '../../../shared/components/ink-settings-modal.component';
@@ -45,6 +47,8 @@ export class AiAssistantPanelComponent implements AfterViewChecked, OnDestroy {
 
   ai                     = inject(AiService);
   private project        = inject(ProjectService);
+  private docService     = inject(DocumentService);
+  private deskService    = inject(DeskService);
   private settingsService = inject(SettingsService);
 
   readonly panelWidth = computed(() => this.settingsService.settings().aiPanel.width);
@@ -156,6 +160,30 @@ export class AiAssistantPanelComponent implements AfterViewChecked, OnDestroy {
     } finally {
       this.isStreaming.set(false);
       this.shouldScrollToBottom = true;
+    }
+  }
+
+  async saveToDesk(content: string, mode: AiMode): Promise<void> {
+    const modeLabel: Record<AiMode, string> = {
+      analyze:    'Análisis',
+      review:     'Revisión',
+      brainstorm: 'Ideas',
+      synopsis:   'Sinopsis',
+    };
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('es-ES', {
+      day: '2-digit', month: '2-digit', year: 'numeric',
+      hour: '2-digit', minute: '2-digit',
+    });
+    const docTitle = `${modeLabel[mode] ?? mode} · ${dateStr}`;
+
+    try {
+      await this.docService.createDocumentInDesk(docTitle, content);
+      if (this.settingsService.settings().deskPanel.position === 'closed') {
+        this.settingsService.setDeskPosition('bottom');
+      }
+      this.deskService.notifyNewDocument(docTitle);
+    } catch {
     }
   }
 

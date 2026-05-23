@@ -159,6 +159,16 @@ pub fn write_binary_file(path: String, data: Vec<u8>) -> Result<(), String> {
         .map_err(|e| format!("Error escribiendo {}: {}", path, e))
 }
 
+#[tauri::command]
+pub fn create_folder(path: String) -> Result<(), String> {
+    std::fs::create_dir_all(&path).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub fn folder_exists(path: String) -> bool {
+    std::path::Path::new(&path).is_dir()
+}
+
 // ─── Importación ─────────────────────────────────────────────────────────────
 
 /// Abre un diálogo de selección de archivos con filtro por extensión.

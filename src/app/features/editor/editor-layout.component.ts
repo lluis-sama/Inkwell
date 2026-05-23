@@ -1,7 +1,9 @@
 import {
-  Component, inject, signal, computed, ViewChild,
-  OnInit, OnDestroy, HostListener,
+  Component, inject, signal, computed, ViewChild, viewChild, ElementRef,
+  OnInit, OnDestroy, HostListener, effect,
 } from '@angular/core';
+import interact from 'interactjs';
+import { slideUpAnimation, slideInLeftAnimation, slideInRightAnimation } from '../../shared/animations/desk.animations';
 import { Router, ActivatedRoute } from '@angular/router';
 import { findNode } from '../../core/services/project.service';
 import { ProjectService }  from '../../core/services/project.service';
@@ -20,12 +22,15 @@ import { ExportModalComponent } from '../export/export-modal.component';
 import { SynopsisModalComponent } from './synopsis/synopsis-modal.component';
 import { FindReplaceBarComponent } from './find-replace-bar/find-replace-bar.component';
 import { StatsService } from '../../core/services/stats.service';
+import { SettingsService } from '../../core/services/settings.service';
+import { DeskPanelComponent } from './desk/desk-panel.component';
 
 @Component({
   selector: 'app-editor-layout',
   standalone: true,
-  imports: [BinderComponent, TiptapEditorComponent, EditorTopBarComponent, SnapshotsPanelComponent, AiAssistantPanelComponent, InkNavComponent, ExportModalComponent, SynopsisModalComponent, FindReplaceBarComponent],
+  imports: [BinderComponent, TiptapEditorComponent, EditorTopBarComponent, SnapshotsPanelComponent, AiAssistantPanelComponent, InkNavComponent, ExportModalComponent, SynopsisModalComponent, FindReplaceBarComponent, DeskPanelComponent],
   templateUrl: './editor-layout.component.html',
+  animations: [slideUpAnimation, slideInLeftAnimation, slideInRightAnimation],
 })
 export class EditorLayoutComponent implements OnInit, OnDestroy {
   @ViewChild(TiptapEditorComponent) tiptapEditor?: TiptapEditorComponent;
@@ -38,6 +43,7 @@ export class EditorLayoutComponent implements OnInit, OnDestroy {
   private bridge           = inject(TauriBridgeService);
   private toast            = inject(ToastService);
   private statsService     = inject(StatsService);
+  private settingsService  = inject(SettingsService);
 
   showBinder          = signal(true);
   focusMode           = signal(false);
@@ -67,10 +73,71 @@ export class EditorLayoutComponent implements OnInit, OnDestroy {
     this.sessionGoal() > 0 && this.sessionWordsAdded() >= this.sessionGoal()
   );
 
+  readonly deskPos = computed(() => this.settingsService.settings().deskPanel.position);
+  readonly deskSettings = computed(() => this.settingsService.settings().deskPanel);
+
+  private readonly pillHandleEl = viewChild<ElementRef>('deskPillHandle');
+  private pillInteractable: ReturnType<typeof interact> | null = null;
+  private pillDragMoved = false;
+
+  private sideResizing = false;
+  private sideResizeStartX = 0;
+  private sideResizeStartWidth = 0;
+
   private isDirty       = false;
   private autosaveTimer: ReturnType<typeof setInterval> | null = null;
-  private docCachedWordCount    = 0;  // cached word count of current doc when opened
-  private accumulatedSessionWords = 0; // words accumulated from previous saves/doc switches
+  private docCachedWordCount    = 0;
+  private accumulatedSessionWords = 0;
+
+  constructor() {
+    effect(() => {
+      const handle = this.pillHandleEl()?.nativeElement;
+      if (!handle) {
+        this.pillInteractable?.unset();
+        this.pillInteractable = null;
+        return;
+      }
+      if (this.pillInteractable) return;
+      this.pillInteractable = interact(handle).draggable({
+        listeners: {
+          move: (event: { dy: number }) => {
+            this.pillDragMoved = true;
+            if (this.deskPos() === 'closed' && event.dy < 0) {
+              this.settingsService.setDeskPosition('bottom');
+            }
+            this.settingsService.setDeskBottomHeight(this.deskSettings().bottomHeight - event.dy);
+          },
+          end: () => {
+            setTimeout(() => { this.pillDragMoved = false; }, 0);
+          },
+        },
+      });
+    });
+  }
+
+  onSideHandleMouseDown(event: MouseEvent): void {
+    this.sideResizing = true;
+    this.sideResizeStartX = event.clientX;
+    this.sideResizeStartWidth = this.deskSettings().sideWidth;
+    event.preventDefault();
+  }
+
+  @HostListener('document:mousemove', ['$event'])
+  onDocumentMouseMove(event: MouseEvent): void {
+    if (!this.sideResizing) return;
+    const dx = event.clientX - this.sideResizeStartX;
+    const pos = this.deskPos();
+    if (pos === 'left') {
+      this.settingsService.setDeskSideWidth(this.sideResizeStartWidth + dx);
+    } else if (pos === 'right') {
+      this.settingsService.setDeskSideWidth(this.sideResizeStartWidth - dx);
+    }
+  }
+
+  @HostListener('document:mouseup')
+  onDocumentMouseUp(): void {
+    this.sideResizing = false;
+  }
 
   async ngOnInit(): Promise<void> {
     if (!this.projectService.isLoaded()) {
@@ -89,6 +156,7 @@ export class EditorLayoutComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.stopAutosave();
     this.statsService.resetSession();
+    this.pillInteractable?.unset();
   }
 
   // ─── Documentos ───────────────────────────────────────────────────────────
@@ -328,6 +396,16 @@ export class EditorLayoutComponent implements OnInit, OnDestroy {
       this.showSnapshotsPanel.set(false);
     }
     this.showAiPanel.update(v => !v);
+  }
+
+  onDeskHandleClick(): void {
+    if (this.pillDragMoved) return;
+    const pos = this.settingsService.settings().deskPanel.position;
+    if (pos === 'closed') {
+      this.settingsService.setDeskPosition('bottom');
+    } else {
+      this.settingsService.setDeskPosition('closed');
+    }
   }
 
   onInsertIntoEditor(text: string): void {

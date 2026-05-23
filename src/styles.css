@@ -17,7 +17,8 @@
   --color-ink-info:    var(--ink-info);
   --color-ink-success: var(--ink-success);
   --color-ink-warning: var(--ink-warning);
-  --color-ink-danger:  var(--ink-danger);
+  --color-ink-danger:   var(--ink-danger);
+  --color-ink-overlay:  var(--ink-overlay);
 
   --font-family-sans:  Inter, system-ui, sans-serif;
   --font-family-serif: Lora, Georgia, serif;
@@ -87,6 +88,7 @@
   --ink-success:  var(--ctp-green);
   --ink-warning:  var(--ctp-yellow);
   --ink-danger:   var(--ctp-red);
+  --ink-overlay:  var(--ctp-surface1);
 }
 
 /* ─── Base ─── */

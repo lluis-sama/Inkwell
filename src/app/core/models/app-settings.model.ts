@@ -14,10 +14,19 @@ export interface AiPanelSettings {
   width: number;
 }
 
+export type DeskPosition = 'bottom' | 'left' | 'right' | 'closed';
+
+export interface DeskPanelSettings {
+  position: DeskPosition;
+  bottomHeight: number;
+  sideWidth: number;
+}
+
 export interface AppSettings {
   editor: EditorSettings;
   appearance: AppearanceSettings;
   aiPanel: AiPanelSettings;
+  deskPanel: DeskPanelSettings;
 }
 
 export const DEFAULT_APP_SETTINGS: AppSettings = {
@@ -31,5 +40,10 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
   },
   aiPanel: {
     width: 320,
+  },
+  deskPanel: {
+    position: 'closed',
+    bottomHeight: 300,
+    sideWidth: 320,
   },
 };

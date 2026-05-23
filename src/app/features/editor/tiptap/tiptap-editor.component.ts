@@ -212,6 +212,7 @@ export class TiptapEditorComponent
   focusMode = input<boolean>(false);
   typewriterMode = input<boolean>(false);
   spellcheck = input<boolean>(true);
+  compact = input<boolean>(false);
 
   contentChanged = output<object>();
 
