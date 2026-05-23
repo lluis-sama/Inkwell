@@ -17,7 +17,8 @@
   --color-ink-info:    var(--ink-info);
   --color-ink-success: var(--ink-success);
   --color-ink-warning: var(--ink-warning);
-  --color-ink-danger:  var(--ink-danger);
+  --color-ink-danger:   var(--ink-danger);
+  --color-ink-overlay:  var(--ink-overlay);
 
   --font-family-sans:  Inter, system-ui, sans-serif;
   --font-family-serif: Lora, Georgia, serif;
@@ -87,6 +88,7 @@
   --ink-success:  var(--ctp-green);
   --ink-warning:  var(--ctp-yellow);
   --ink-danger:   var(--ctp-red);
+  --ink-overlay:  var(--ctp-surface1);
 }
 
 /* ─── Base ─── */
@@ -105,3 +107,32 @@ html, body {
 ::-webkit-scrollbar-track { background: var(--ink-bg); }
 ::-webkit-scrollbar-thumb { background: var(--ink-muted); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--ink-subtle); }
+
+/* === Utility classes === */
+
+.form-input {
+  @apply w-full px-3 py-2 rounded bg-ink-bg border border-ink-border
+         text-ink-text text-sm placeholder:text-ink-muted
+         focus:outline-none focus:border-ink-accent transition-colors;
+}
+
+.form-textarea {
+  @apply w-full px-3 py-2 rounded bg-ink-bg border border-ink-border
+         text-ink-text text-sm leading-relaxed
+         placeholder:text-ink-muted resize-none
+         focus:outline-none focus:border-ink-accent transition-colors;
+}
+
+.btn-icon {
+  @apply w-6 h-6 flex items-center justify-center rounded
+         hover:bg-ink-overlay text-ink-subtle hover:text-ink-text transition-colors;
+}
+
+.card-surface {
+  @apply flex flex-col overflow-hidden rounded-lg border border-ink-border
+         bg-ink-surface transition-all cursor-pointer hover:border-ink-accent;
+}
+
+.field-label {
+  @apply text-ink-subtle text-xs font-medium uppercase tracking-wide;
+}

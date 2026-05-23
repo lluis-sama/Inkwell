@@ -1,0 +1,22 @@
+@reference "../../../styles.css";
+
+/* Barra interna del asa lateral */
+.desk-side-handle-bar {
+  @apply h-10 w-1 rounded-full bg-ink-border pointer-events-none;
+}
+
+/* Franja mínima cuando no hay panel abierto */
+.editor-side-strip {
+  @apply w-8 shrink-0 border-l border-ink-border bg-ink-panel flex flex-col items-center pt-3 gap-3;
+}
+
+/* Botón de abrir panel IA desde franja colapsada */
+.editor-strip-btn {
+  @apply p-1.5 rounded text-ink-muted hover:text-ink-accent hover:bg-ink-border transition-colors;
+}
+
+/* Botón de salir de modo focus */
+.focus-exit-btn {
+  @apply absolute top-4 right-4 p-2 rounded text-ink-muted
+         hover:text-ink-subtle transition-colors opacity-0 hover:opacity-100;
+}

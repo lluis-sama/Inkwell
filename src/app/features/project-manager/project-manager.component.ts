@@ -18,6 +18,7 @@ interface RecentProject {
   standalone: true,
   imports: [NewProjectModalComponent, InkButtonComponent, TranslocoPipe],
   templateUrl: './project-manager.component.html',
+  styleUrl: './project-manager.component.css',
 })
 export class ProjectManagerComponent implements OnInit {
   theme                  = inject(ThemeService);

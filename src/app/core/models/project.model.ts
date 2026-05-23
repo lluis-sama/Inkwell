@@ -27,11 +27,11 @@ export interface Project {
 export type DocumentStatus = 'draft' | 'revised' | 'final' | 'todo' | 'notes';
 
 export const DOCUMENT_STATUS_CONFIG: Record<DocumentStatus, { label: string; color: string }> = {
-  todo:    { label: 'Por escribir', color: '#6c7086' },
-  draft:   { label: 'Borrador',     color: '#89b4fa' },
-  revised: { label: 'En revisión',  color: '#f9e2af' },
-  final:   { label: 'Finalizado',   color: '#a6e3a1' },
-  notes:   { label: 'Solo notas',   color: '#cba6f7' },
+  todo:    { label: 'BINDER.STATUS_TODO',    color: '#6c7086' },
+  draft:   { label: 'BINDER.STATUS_DRAFT',   color: '#89b4fa' },
+  revised: { label: 'BINDER.STATUS_REVISED', color: '#f9e2af' },
+  final:   { label: 'BINDER.STATUS_FINAL',   color: '#a6e3a1' },
+  notes:   { label: 'BINDER.STATUS_NOTES',   color: '#cba6f7' },
 };
 
 export interface TreeNode {

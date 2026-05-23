@@ -1,7 +1,7 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { TauriBridgeService } from './tauri-bridge.service';
 import { Project, TreeNode, DEFAULT_PROJECT_SETTINGS, AuthorProfile, DocumentStatus } from '../models/project.model';
-import { projectJsonPath } from '../../shared/utils/project-paths';
+import { projectJsonPath, deskNotesFolderPath, deskNotePath } from '../../shared/utils/project-paths';
 
 @Injectable({ providedIn: 'root' })
 export class ProjectService {
@@ -23,6 +23,7 @@ export class ProjectService {
     }
     this.basePath.set(basePath);
     this.project.set(project);
+    await this.ensureDeskNotesFolder();
   }
 
   async createProject(basePath: string, name: string, description = ''): Promise<Project> {
@@ -46,6 +47,7 @@ export class ProjectService {
 
     this.basePath.set(basePath);
     this.project.set(project);
+    await this.ensureDeskNotesFolder();
     return project;
   }
 
@@ -168,6 +170,31 @@ export class ProjectService {
   removeRecentProject(basePath: string): void {
     const recent = this.getRecentProjects().filter(p => p.basePath !== basePath);
     localStorage.setItem('inkwell-recent-projects', JSON.stringify(recent));
+  }
+
+  async ensureDeskNotesFolder(): Promise<void> {
+    const basePath = this.basePath();
+    if (!basePath) return;
+    const exists = await this.bridge.folderExists(deskNotesFolderPath(basePath));
+    if (!exists) {
+      await this.bridge.createFolder(deskNotesFolderPath(basePath));
+    }
+  }
+
+  async loadDeskNotesTree(): Promise<TreeNode[]> {
+    const basePath = this.basePath();
+    if (!basePath) return [];
+    const ids = await this.bridge.listJsonFiles(deskNotesFolderPath(basePath));
+    const nodes: TreeNode[] = [];
+    for (const id of ids) {
+      try {
+        const raw = await this.bridge.readJsonFile(deskNotePath(basePath, id));
+        const doc = JSON.parse(raw);
+        nodes.push({ id: doc.id, title: doc.title, type: 'document', children: [] });
+      } catch {
+      }
+    }
+    return nodes;
   }
 }
 

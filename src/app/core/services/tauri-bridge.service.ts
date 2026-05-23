@@ -62,4 +62,12 @@ export class TauriBridgeService {
   convertOdtToDocx(path: string): Promise<string> {
     return invoke<string>('convert_odt_to_docx', { path });
   }
+
+  async createFolder(path: string): Promise<void> {
+    return invoke('create_folder', { path });
+  }
+
+  async folderExists(path: string): Promise<boolean> {
+    return invoke('folder_exists', { path });
+  }
 }

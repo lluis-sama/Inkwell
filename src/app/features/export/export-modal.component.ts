@@ -6,6 +6,7 @@ import { ExportService } from '../../core/services/export.service';
 import { ProjectService } from '../../core/services/project.service';
 import { DocumentService } from '../../core/services/document.service';
 import { ToastService } from '../../shared/services/toast.service';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { InkModalComponent } from '../../shared/components/ink-modal.component';
 import { InkButtonComponent } from '../../shared/components/ink-button.component';
 import { StepDocumentSelectorComponent, FlatDocument } from './steps/step-document-selector.component';
@@ -16,89 +17,21 @@ import { StepFormatComponent } from './steps/step-format.component';
   selector: 'app-export-modal',
   standalone: true,
   imports: [
+    TranslocoPipe,
     InkModalComponent,
     InkButtonComponent,
     StepDocumentSelectorComponent,
     StepMetadataComponent,
     StepFormatComponent,
   ],
-  template: `
-    <ink-modal [title]="stepTitle()" [hasActions]="false" (closed)="closed.emit()">
-
-      <div class="flex items-center gap-2 mb-6 -mt-2">
-        @for (step of steps; track step.n) {
-          <div class="flex items-center gap-2">
-            <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium transition-colors"
-                 [class]="currentStep() >= step.n
-                   ? 'bg-ink-accent text-ink-panel'
-                   : 'bg-ink-border text-ink-subtle'">
-              {{ step.n }}
-            </div>
-            <span class="text-xs"
-                  [class]="currentStep() === step.n ? 'text-ink-text' : 'text-ink-subtle'">
-              {{ step.label }}
-            </span>
-            @if (!$last) {
-              <div class="w-8 h-px bg-ink-border mx-1"></div>
-            }
-          </div>
-        }
-      </div>
-
-      @switch (currentStep()) {
-        @case (1) {
-          <app-step-format
-            [format]="selectedFormat()"
-            (formatChange)="selectedFormat.set($event)"
-            (pageSizeChange)="onPageSizeChange($event)"/>
-        }
-        @case (2) {
-          <app-step-document-selector
-            [documents]="flatDocuments()"
-            [selectedIds]="selectedIds()"
-            (selectedIdsChange)="selectedIds.set($event)"/>
-        }
-        @case (3) {
-          <app-step-metadata
-            [meta]="metadata()"
-            (metaChange)="metadata.set($event)"
-            [format]="selectedFormat()"/>
-        }
-      }
-
-      <div class="flex justify-between mt-6 pt-4 border-t border-ink-border">
-        <ink-button
-          variant="ghost"
-          (clicked)="goBack()">
-          {{ currentStep() === 1 ? 'Cancelar' : '← Anterior' }}
-        </ink-button>
-
-        @if (currentStep() < 3) {
-          <ink-button
-            variant="primary"
-            [disabled]="!canAdvance()"
-            (clicked)="goNext()">
-            Siguiente →
-          </ink-button>
-        } @else {
-          <ink-button
-            variant="primary"
-            [disabled]="!canExport()"
-            [loading]="exporting()"
-            (clicked)="doExport()">
-            Exportar
-          </ink-button>
-        }
-      </div>
-
-    </ink-modal>
-  `,
+  templateUrl: './export-modal.component.html',
 })
 export class ExportModalComponent implements OnInit {
   private exportService  = inject(ExportService);
   private projectService = inject(ProjectService);
   private docService     = inject(DocumentService);
   private toast          = inject(ToastService);
+  readonly #transloco    = inject(TranslocoService);
 
   closed    = output<void>();
   exporting = signal(false);
@@ -110,14 +43,14 @@ export class ExportModalComponent implements OnInit {
   flatDocuments  = signal<FlatDocument[]>([]);
 
   readonly steps = [
-    { n: 1, label: 'Formato' },
-    { n: 2, label: 'Documentos' },
-    { n: 3, label: 'Metadatos' },
+    { n: 1, label: 'EXPORT.STEP_FORMAT' },
+    { n: 2, label: 'EXPORT.STEP_SELECTOR' },
+    { n: 3, label: 'EXPORT.STEP_METADATA' },
   ];
 
   stepTitle = computed(() => {
-    const titles = ['', 'Elegir formato', 'Seleccionar documentos', 'Información del autor'];
-    return `Exportar — ${titles[this.currentStep()]}`;
+    const keys = ['', 'EXPORT.STEP_TITLE_FORMAT', 'EXPORT.STEP_TITLE_SELECTOR', 'EXPORT.STEP_TITLE_METADATA'];
+    return this.#transloco.translate(keys[this.currentStep()]);
   });
 
   async ngOnInit(): Promise<void> {
@@ -184,15 +117,15 @@ export class ExportModalComponent implements OnInit {
         this.projectService.project()!.name,
       );
       if (this.selectedFormat() === 'epub') {
-        this.toast.success('EPUB guardado correctamente.');
+        this.toast.success(this.#transloco.translate('EXPORT.SUCCESS_EPUB'));
       } else if (this.selectedFormat() === 'docx') {
-        this.toast.success('Documento Word guardado correctamente.');
+        this.toast.success(this.#transloco.translate('EXPORT.SUCCESS_DOCX'));
       } else {
-        this.toast.success('Manuscrito abierto. Pulsa "Guardar como PDF / Imprimir" en la ventana.');
+        this.toast.success(this.#transloco.translate('EXPORT.SUCCESS_PDF'));
       }
       this.closed.emit();
     } catch (e) {
-      this.toast.error(`Error al exportar: ${e}`);
+      this.toast.error(this.#transloco.translate('EXPORT.ERROR_EXPORT', { error: String(e) }));
     } finally {
       this.exporting.set(false);
     }

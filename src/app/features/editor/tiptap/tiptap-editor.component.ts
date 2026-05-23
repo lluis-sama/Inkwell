@@ -9,6 +9,8 @@ import {
   AfterViewInit,
   SimpleChanges,
   signal,
+  computed,
+  inject,
 } from "@angular/core";
 import { Editor, Extension } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
@@ -17,6 +19,7 @@ import CharacterCount from "@tiptap/extension-character-count";
 import { Plugin, PluginKey } from "prosemirror-state";
 import { Decoration, DecorationSet } from "prosemirror-view";
 import { EditorToolbarComponent } from "./editor-toolbar.component";
+import { SettingsService } from "../../../core/services/settings.service";
 
 interface SearchState {
   term: string;
@@ -88,116 +91,16 @@ function findAll(
   standalone: true,
   imports: [EditorToolbarComponent],
   templateUrl: "./tiptap-editor.component.html",
-  styles: [
-    `
-      :host {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-      }
-
-      ::ng-deep .tiptap-host .ProseMirror {
-        outline: none;
-        min-height: 100%;
-        font-family: "Lora", Georgia, serif;
-        font-size: 1.05rem;
-        line-height: 1.25;
-        color: var(--ink-text);
-        max-width: 720px;
-        margin: 0 auto;
-      }
-
-      ::ng-deep .tiptap-host .ProseMirror p {
-        margin-bottom: 0.75em;
-      }
-      ::ng-deep .tiptap-host .ProseMirror h1 {
-        font-size: 1.75rem;
-        font-weight: 600;
-        margin: 1.5em 0 0.5em;
-        color: var(--ink-text);
-      }
-      ::ng-deep .tiptap-host .ProseMirror h2 {
-        font-size: 1.35rem;
-        font-weight: 600;
-        margin: 1.25em 0 0.4em;
-        color: var(--ink-text);
-      }
-      ::ng-deep .tiptap-host .ProseMirror h3 {
-        font-size: 1.1rem;
-        font-weight: 600;
-        margin: 1em 0 0.3em;
-        color: var(--ink-text);
-      }
-      ::ng-deep .tiptap-host .ProseMirror blockquote {
-        border-left: 3px solid var(--ink-accent);
-        padding-left: 1rem;
-        margin: 1em 0;
-        color: var(--ink-subtle);
-        font-style: italic;
-      }
-      ::ng-deep .tiptap-host .ProseMirror code {
-        background: var(--ink-surface);
-        border-radius: 3px;
-        padding: 0.1em 0.3em;
-        font-family: "JetBrains Mono", monospace;
-        font-size: 0.875em;
-      }
-      ::ng-deep .tiptap-host .ProseMirror pre {
-        background: var(--ink-surface);
-        border-radius: 6px;
-        padding: 1em;
-        overflow-x: auto;
-        margin: 1em 0;
-      }
-      ::ng-deep .tiptap-host .ProseMirror pre code {
-        background: none;
-        padding: 0;
-      }
-      ::ng-deep .tiptap-host .ProseMirror ul,
-      ::ng-deep .tiptap-host .ProseMirror ol {
-        padding-left: 1.5em;
-        margin: 0.5em 0;
-      }
-      ::ng-deep .tiptap-host .ProseMirror li {
-        margin-bottom: 0.25em;
-      }
-      ::ng-deep .tiptap-host .ProseMirror hr {
-        border: none;
-        border-top: 1px solid var(--ink-border);
-        margin: 2em 0;
-      }
-      ::ng-deep .tiptap-host .ProseMirror strong {
-        color: var(--ink-text);
-      }
-      ::ng-deep .tiptap-host .ProseMirror em {
-        color: var(--ink-subtext1, var(--ink-subtle));
-      }
-
-      ::ng-deep .tiptap-host .ProseMirror .is-editor-empty:first-child::before {
-        content: attr(data-placeholder);
-        color: var(--ink-muted);
-        pointer-events: none;
-        float: left;
-        height: 0;
-      }
-
-      ::ng-deep .tiptap-host .ProseMirror .search-result {
-        background: var(--ink-warning, #f9e2af);
-        color: var(--ink-panel, #1e1e2e);
-        border-radius: 2px;
-      }
-
-      ::ng-deep .tiptap-host .ProseMirror .search-result-current {
-        background: var(--ink-accent, #cba6f7);
-        color: var(--ink-panel, #1e1e2e);
-        border-radius: 2px;
-      }
-    `,
-  ],
+  styleUrl: "./tiptap-editor.component.css",
 })
 export class TiptapEditorComponent
   implements AfterViewInit, OnChanges, OnDestroy
 {
+  private readonly settingsService = inject(SettingsService);
+
+  readonly editorFontFamily = computed(() => this.settingsService.settings().editor.fontFamily);
+  readonly editorFontSize   = computed(() => this.settingsService.settings().editor.fontSize);
+
   @ViewChild("editorEl") editorEl!: ElementRef<HTMLDivElement>;
 
   content = input<object>({ type: "doc", content: [{ type: "paragraph" }] });
@@ -206,6 +109,7 @@ export class TiptapEditorComponent
   focusMode = input<boolean>(false);
   typewriterMode = input<boolean>(false);
   spellcheck = input<boolean>(true);
+  compact = input<boolean>(false);
 
   contentChanged = output<object>();
 

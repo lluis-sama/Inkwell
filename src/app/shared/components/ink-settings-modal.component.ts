@@ -1,13 +1,16 @@
-import { Component, inject, signal, OnInit, output } from '@angular/core';
+import { Component, computed, inject, signal, OnInit, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { fetch } from '@tauri-apps/plugin-http';
 import { AiService } from '../../core/services/ai.service';
 import { BackupService } from '../../core/services/backup.service';
 import { ProjectService } from '../../core/services/project.service';
+import { SettingsService } from '../../core/services/settings.service';
 import { ThemeService } from '../../core/services/theme.service';
 import { AiProvider, ImageProvider, ImageSize, TranscriptionProvider } from '../../core/models/project.model';
+import { UiFontScale } from '../../core/models/app-settings.model';
 import { InkModalComponent } from './ink-modal.component';
 import { InkButtonComponent } from './ink-button.component';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 type SettingsSection = 'editor' | 'ai' | 'appearance';
 
@@ -20,13 +23,15 @@ const AI_MODELS = [
 @Component({
   selector: 'ink-settings-modal',
   standalone: true,
-  imports: [InkModalComponent, InkButtonComponent, FormsModule],
+  imports: [InkModalComponent, InkButtonComponent, FormsModule, TranslocoPipe],
   templateUrl: './ink-settings-modal.component.html',
+  styleUrl: './ink-settings-modal.component.css',
 })
 export class InkSettingsModalComponent implements OnInit {
   aiService = inject(AiService);
   private backupService = inject(BackupService);
   projectService = inject(ProjectService);
+  readonly settingsService = inject(SettingsService);
   themeService = inject(ThemeService);
 
   closed = output<void>();
@@ -45,18 +50,18 @@ export class InkSettingsModalComponent implements OnInit {
   readonly providers = [
     {
       id:          'anthropic' as AiProvider,
-      label:       'Anthropic (Claude)',
-      description: 'API en la nube. Máxima calidad. Requiere API key y conexión a internet.',
+      label:       'SETTINGS.AI.PROVIDER_ANTHROPIC_LABEL',
+      description: 'SETTINGS.AI.PROVIDER_ANTHROPIC_DESC',
     },
     {
       id:          'ollama' as AiProvider,
-      label:       'Ollama (local)',
-      description: 'Modelo ejecutándose en tu máquina. Sin coste por token, sin internet.',
+      label:       'SETTINGS.AI.PROVIDER_OLLAMA_LABEL',
+      description: 'SETTINGS.AI.PROVIDER_OLLAMA_DESC',
     },
     {
       id:          'openai-compatible' as AiProvider,
-      label:       'Servidor OpenAI-compatible',
-      description: 'llama.cpp, LM Studio, LocalAI, vLLM, Jan, etc. Local o en red.',
+      label:       'SETTINGS.AI.PROVIDER_LOCAL_LABEL',
+      description: 'SETTINGS.AI.PROVIDER_LOCAL_DESC',
     },
   ];
 
@@ -86,9 +91,9 @@ export class InkSettingsModalComponent implements OnInit {
   transcriptionLanguage = '';
 
   readonly sections = [
-    { id: 'editor' as SettingsSection, label: 'Editor' },
-    { id: 'ai' as SettingsSection, label: 'Asistente IA' },
-    { id: 'appearance' as SettingsSection, label: 'Apariencia' },
+    { id: 'editor' as SettingsSection, label: 'SETTINGS.SECTION_EDITOR' },
+    { id: 'ai' as SettingsSection, label: 'SETTINGS.SECTION_AI' },
+    { id: 'appearance' as SettingsSection, label: 'SETTINGS.SECTION_APPEARANCE' },
   ];
 
   readonly aiModels = AI_MODELS;
@@ -96,7 +101,7 @@ export class InkSettingsModalComponent implements OnInit {
   readonly themes = [
     {
       id: 'dark' as const,
-      label: 'Mocha (oscuro)',
+      label: 'SETTINGS.APPEARANCE.THEME_DARK',
       bg: '#1e1e2e',
       surface: '#181825',
       accent: '#cba6f7',
@@ -104,13 +109,22 @@ export class InkSettingsModalComponent implements OnInit {
     },
     {
       id: 'light' as const,
-      label: 'Latte (claro)',
+      label: 'SETTINGS.APPEARANCE.THEME_LIGHT',
       bg: '#eff1f5',
       surface: '#e6e9ef',
       accent: '#8839ef',
       text: '#4c4f69',
     },
   ];
+
+  readonly fontScaleOptions: { value: UiFontScale; label: string }[] = [
+    { value: 'sm', label: 'SETTINGS.APPEARANCE.FONT_SM' },
+    { value: 'md', label: 'SETTINGS.APPEARANCE.FONT_MD' },
+    { value: 'lg', label: 'SETTINGS.APPEARANCE.FONT_LG' },
+    { value: 'xl', label: 'SETTINGS.APPEARANCE.FONT_XL' },
+  ];
+
+  readonly currentFontScale = computed(() => this.settingsService.settings().appearance.uiFontScale);
 
   ngOnInit(): void {
     const settings = this.projectService.project()?.settings;

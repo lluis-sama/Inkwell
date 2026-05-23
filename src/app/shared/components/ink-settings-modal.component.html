@@ -1,19 +1,19 @@
-<ink-modal title="Configuración" [hasActions]="false" (closed)="closed.emit()"
+<ink-modal [title]="'MODAL.SETTINGS' | transloco" [hasActions]="false" (closed)="closed.emit()"
            [widthClass]="activeSection() === 'ai' ? 'max-w-[70vw]' : 'max-w-xl'">
   <div class="flex gap-0 -mx-6 -mt-5">
 
     <!-- Sidebar de secciones -->
-    <div class="flex flex-col w-36 border-r border-ink-border pt-2 pb-4 shrink-0">
+    <div class="settings-sidebar">
       @for (s of sections; track s.id) {
         <button
           (click)="activeSection.set(s.id)"
-          class="flex items-center gap-2.5 px-4 py-2.5 text-xs transition-colors text-left"
+          class="settings-nav-btn"
           [class]="
             activeSection() === s.id
               ? 'bg-ink-surface text-ink-text font-medium border-r-2 border-ink-accent'
               : 'text-ink-subtle hover:text-ink-text hover:bg-ink-surface'
           ">
-          {{ s.label }}
+          {{ s.label | transloco }}
         </button>
       }
     </div>
@@ -26,70 +26,61 @@
         <div class="flex flex-col gap-5">
 
           <div class="flex flex-col gap-1.5">
-            <label class="text-ink-subtle text-xs font-medium uppercase tracking-wide">
-              Autoguardado
+            <label class="field-label">
+              {{ 'SETTINGS.GENERAL.AUTOSAVE_LABEL' | transloco }}
             </label>
             <select
               [(ngModel)]="autosaveInterval"
-              class="w-full px-3 py-2 rounded bg-ink-bg border border-ink-border
-                     text-ink-text text-sm focus:outline-none
-                     focus:border-ink-accent transition-colors">
-              <option [ngValue]="0">Desactivado</option>
-              <option [ngValue]="15">Cada 15 segundos</option>
-              <option [ngValue]="30">Cada 30 segundos (por defecto)</option>
-              <option [ngValue]="60">Cada minuto</option>
-              <option [ngValue]="300">Cada 5 minutos</option>
+              class="form-input">
+              <option [ngValue]="0">{{ 'SETTINGS.GENERAL.AUTOSAVE_OFF' | transloco }}</option>
+              <option [ngValue]="15">{{ 'SETTINGS.GENERAL.AUTOSAVE_15S' | transloco }}</option>
+              <option [ngValue]="30">{{ 'SETTINGS.GENERAL.AUTOSAVE_30S' | transloco }}</option>
+              <option [ngValue]="60">{{ 'SETTINGS.GENERAL.AUTOSAVE_1M' | transloco }}</option>
+              <option [ngValue]="300">{{ 'SETTINGS.GENERAL.AUTOSAVE_5M' | transloco }}</option>
             </select>
           </div>
 
           <div class="flex flex-col gap-1.5">
-            <label class="text-ink-subtle text-xs font-medium uppercase tracking-wide">
-              Máximo de snapshots por documento
+            <label class="field-label">
+              {{ 'SETTINGS.GENERAL.SNAPSHOTS_LABEL' | transloco }}
             </label>
             <select
               [(ngModel)]="maxSnapshots"
-              class="w-full px-3 py-2 rounded bg-ink-bg border border-ink-border
-                     text-ink-text text-sm focus:outline-none
-                     focus:border-ink-accent transition-colors">
-              <option [ngValue]="5">5 snapshots</option>
-              <option [ngValue]="10">10 snapshots (por defecto)</option>
-              <option [ngValue]="20">20 snapshots</option>
-              <option [ngValue]="50">50 snapshots</option>
+              class="form-input">
+              <option [ngValue]="5">{{ 'SETTINGS.GENERAL.SNAPSHOTS_5' | transloco }}</option>
+              <option [ngValue]="10">{{ 'SETTINGS.GENERAL.SNAPSHOTS_10' | transloco }}</option>
+              <option [ngValue]="20">{{ 'SETTINGS.GENERAL.SNAPSHOTS_20' | transloco }}</option>
+              <option [ngValue]="50">{{ 'SETTINGS.GENERAL.SNAPSHOTS_50' | transloco }}</option>
             </select>
             <p class="text-ink-muted text-xs">
-              Al superar el límite se elimina el más antiguo (FIFO).
+              {{ 'SETTINGS.GENERAL.SNAPSHOTS_HINT' | transloco }}
             </p>
           </div>
 
           <!-- Corrector ortográfico -->
           <div class="flex items-center justify-between">
             <div class="flex flex-col gap-0.5">
-              <span class="text-ink-text text-sm">Corrector ortográfico</span>
+              <span class="text-ink-text text-sm">{{ 'SETTINGS.GENERAL.SPELLCHECK' | transloco }}</span>
               <span class="text-ink-muted text-xs">
-                Usa el diccionario del idioma configurado en el sistema
+                {{ 'SETTINGS.GENERAL.SPELLCHECK_HINT' | transloco }}
               </span>
             </div>
-            <label class="relative inline-flex items-center cursor-pointer shrink-0">
+            <label class="toggle-label">
               <input type="checkbox" [(ngModel)]="spellcheck" class="sr-only peer"/>
-              <div class="w-9 h-5 bg-ink-border peer-focus:ring-2 peer-focus:ring-ink-accent
-                          rounded-full peer peer-checked:bg-ink-accent
-                          peer-checked:after:translate-x-full after:content-['']
-                          after:absolute after:top-0.5 after:left-0.5
-                          after:bg-white after:rounded-full after:h-4 after:w-4
-                          after:transition-all"></div>
+              <div class="toggle-track peer-checked:bg-ink-accent peer-focus:ring-2 peer-focus:ring-ink-accent peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
             </label>
           </div>
 
           <ink-button variant="primary" (clicked)="saveEditorSettings()">
-            Guardar cambios
+            {{ 'SETTINGS.GENERAL.SAVE_BTN' | transloco }}
           </ink-button>
 
           <div class="pt-2 border-t border-ink-border">
             <p class="text-ink-subtle text-xs mb-3">
-              Crea una copia de seguridad completa del proyecto como archivo ZIP.
+              {{ 'SETTINGS.GENERAL.BACKUP_DESC' | transloco }}
             </p>
             <ink-button variant="secondary" [fullWidth]="true" (clicked)="backup()">
-              Crear backup del proyecto
+              {{ 'SETTINGS.GENERAL.BACKUP_BTN' | transloco }}
             </ink-button>
           </div>
 
@@ -99,7 +90,7 @@
       <!-- Editor: sin proyecto abierto -->
       @if (activeSection() === 'editor' && !projectService.isLoaded()) {
         <p class="text-ink-subtle text-sm mt-4">
-          Abre un proyecto para configurar las opciones del editor.
+          {{ 'SETTINGS.GENERAL.NO_PROJECT' | transloco }}
         </p>
       }
 
@@ -115,12 +106,12 @@
 
               <!-- Selector de proveedor -->
               <div class="flex flex-col gap-1.5">
-                <label class="text-ink-subtle text-xs font-medium uppercase tracking-wide">
-                  Proveedor de IA
+                <label class="field-label">
+                  {{ 'SETTINGS.AI.PROVIDER_LABEL' | transloco }}
                 </label>
                 <div class="flex flex-col gap-2">
                   @for (p of providers; track p.id) {
-                    <label class="flex items-start gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all"
+                    <label class="provider-option"
                            [class]="selectedProvider() === p.id
                              ? 'border-ink-accent bg-ink-surface'
                              : 'border-ink-border hover:border-ink-muted'">
@@ -129,8 +120,8 @@
                              (change)="selectedProvider.set(p.id)"
                              class="mt-0.5 accent-ink-accent"/>
                       <div class="flex flex-col gap-0.5">
-                        <span class="text-ink-text text-sm font-medium">{{ p.label }}</span>
-                        <span class="text-ink-subtle text-xs">{{ p.description }}</span>
+                        <span class="text-ink-text text-sm font-medium">{{ p.label | transloco }}</span>
+                        <span class="text-ink-subtle text-xs">{{ p.description | transloco }}</span>
                       </div>
                     </label>
                   }
@@ -142,20 +133,17 @@
               @if (selectedProvider() === 'anthropic') {
                 <!-- API key de Anthropic -->
                 <div class="flex flex-col gap-1.5">
-                  <label class="text-ink-subtle text-xs font-medium uppercase tracking-wide">
-                    Anthropic API Key
+                  <label class="field-label">
+                    {{ 'SETTINGS.AI.API_KEY_LABEL' | transloco }}
                   </label>
                   <input [(ngModel)]="apiKeyInput" type="password" placeholder="sk-ant-..."
-                         class="w-full px-3 py-2 rounded bg-ink-bg border border-ink-border
-                                text-ink-text text-sm placeholder:text-ink-muted font-mono
-                                focus:outline-none focus:border-ink-accent transition-colors"/>
+                         class="form-input font-mono"/>
                   @if (aiService.hasApiKey()) {
-                    <div class="flex items-center justify-between px-3 py-1.5 rounded
-                                bg-ink-bg border border-ink-success/30 mt-1">
-                      <span class="text-ink-success text-xs">&#x2713; API key configurada</span>
+                    <div class="api-key-indicator">
+                      <span class="text-ink-success text-xs">{{ 'SETTINGS.AI.API_KEY_SET' | transloco }}</span>
                       <button (click)="clearApiKey()"
                               class="text-ink-subtle text-xs hover:text-ink-danger transition-colors">
-                        Eliminar
+                        {{ 'COMMON.DELETE' | transloco }}
                       </button>
                     </div>
                   }
@@ -163,13 +151,11 @@
 
                 <!-- Selector de modelo Anthropic -->
                 <div class="flex flex-col gap-1.5">
-                  <label class="text-ink-subtle text-xs font-medium uppercase tracking-wide">
-                    Modelo
+                  <label class="field-label">
+                    {{ 'SETTINGS.AI.MODEL_LABEL' | transloco }}
                   </label>
                   <select [(ngModel)]="selectedModel"
-                          class="w-full px-3 py-2 rounded bg-ink-bg border border-ink-border
-                                 text-ink-text text-sm focus:outline-none
-                                 focus:border-ink-accent transition-colors">
+                          class="form-input">
                     @for (m of anthropicModels; track m.id) {
                       <option [value]="m.id">{{ m.label }}</option>
                     }
@@ -179,79 +165,69 @@
 
               @if (selectedProvider() === 'ollama') {
                 <div class="flex flex-col gap-1.5">
-                  <label class="text-ink-subtle text-xs font-medium uppercase tracking-wide">
-                    URL de Ollama
+                  <label class="field-label">
+                    {{ 'SETTINGS.AI.OLLAMA_URL_LABEL' | transloco }}
                   </label>
-                  <input [(ngModel)]="ollamaEndpoint" placeholder="http://localhost:11434"
-                         class="w-full px-3 py-2 rounded bg-ink-bg border border-ink-border
-                                text-ink-text text-sm placeholder:text-ink-muted font-mono
-                                focus:outline-none focus:border-ink-accent transition-colors"/>
+                  <input [(ngModel)]="ollamaEndpoint" [placeholder]="'http://localhost:11434'"
+                         class="form-input font-mono"/>
                   <p class="text-ink-muted text-xs leading-relaxed">
-                    URL base de tu instancia de Ollama. Por defecto: http://localhost:11434
+                    {{ 'SETTINGS.AI.OLLAMA_URL_HINT' | transloco }}
                   </p>
                 </div>
                 <div class="flex flex-col gap-1.5">
-                  <label class="text-ink-subtle text-xs font-medium uppercase tracking-wide">
-                    Nombre del modelo
+                  <label class="field-label">
+                    {{ 'SETTINGS.AI.OLLAMA_MODEL_LABEL' | transloco }}
                   </label>
-                  <input [(ngModel)]="selectedModel" placeholder="llama3.2, mistral, qwen2.5..."
-                         class="w-full px-3 py-2 rounded bg-ink-bg border border-ink-border
-                                text-ink-text text-sm placeholder:text-ink-muted font-mono
-                                focus:outline-none focus:border-ink-accent transition-colors"/>
+                  <input [(ngModel)]="selectedModel" [placeholder]="'llama3.2, mistral, qwen2.5...'"
+                         class="form-input font-mono"/>
                   <p class="text-ink-muted text-xs">
-                    Debe estar descargado en tu instancia de Ollama.
+                    {{ 'SETTINGS.AI.OLLAMA_MODEL_HINT' | transloco }}
                     Ejecuta <code class="bg-ink-bg px-1 rounded">ollama list</code> para ver los disponibles.
                   </p>
                 </div>
                 <ink-button variant="secondary" [fullWidth]="true" (clicked)="testConnection()">
-                  Probar conexión
+                  {{ 'SETTINGS.AI.TEST_CONNECTION' | transloco }}
                 </ink-button>
               }
 
               @if (selectedProvider() === 'openai-compatible') {
                 <div class="flex flex-col gap-1.5">
-                  <label class="text-ink-subtle text-xs font-medium uppercase tracking-wide">
-                    URL del servidor *
+                  <label class="field-label">
+                    {{ 'SETTINGS.AI.LOCAL_URL_LABEL' | transloco }}
                   </label>
-                  <input [(ngModel)]="openAiEndpoint" placeholder="http://localhost:1234"
-                         class="w-full px-3 py-2 rounded bg-ink-bg border border-ink-border
-                                text-ink-text text-sm placeholder:text-ink-muted font-mono
-                                focus:outline-none focus:border-ink-accent transition-colors"/>
+                  <input [(ngModel)]="openAiEndpoint" [placeholder]="'http://localhost:1234'"
+                         class="form-input font-mono"/>
                   <p class="text-ink-muted text-xs leading-relaxed">
-                    Compatible con llama.cpp (llama-server), LM Studio, LocalAI, vLLM, Jan, etc.
+                    {{ 'SETTINGS.AI.LOCAL_URL_HINT' | transloco }}
                     La app añade automáticamente <code class="bg-ink-bg px-1 rounded">/v1/chat/completions</code>.
                   </p>
                 </div>
                 <div class="flex flex-col gap-1.5">
-                  <label class="text-ink-subtle text-xs font-medium uppercase tracking-wide">
-                    Nombre del modelo
+                  <label class="field-label">
+                    {{ 'SETTINGS.AI.LOCAL_MODEL_LABEL' | transloco }}
                   </label>
                   <input [(ngModel)]="selectedModel"
-                         placeholder="qwen2.5-7b-instruct, llama-3.2-3b..."
-                         class="w-full px-3 py-2 rounded bg-ink-bg border border-ink-border
-                                text-ink-text text-sm placeholder:text-ink-muted font-mono
-                                focus:outline-none focus:border-ink-accent transition-colors"/>
+                         [placeholder]="'qwen2.5-7b-instruct, llama-3.2-3b...'"
+                         class="form-input font-mono"/>
                   <p class="text-ink-muted text-xs">
-                    El nombre exacto depende de tu servidor. Muchos aceptan cualquier cadena.
+                    {{ 'SETTINGS.AI.LOCAL_MODEL_HINT' | transloco }}
                   </p>
                 </div>
                 <div class="flex flex-col gap-1.5">
-                  <label class="text-ink-subtle text-xs font-medium uppercase tracking-wide">
-                    API key <span class="normal-case font-normal">(si tu servidor la requiere)</span>
+                  <label class="field-label">
+                    {{ 'SETTINGS.AI.LOCAL_KEY_LABEL' | transloco }}
                   </label>
-                  <input [(ngModel)]="openAiCustomKey" type="password" placeholder="opcional"
-                         class="w-full px-3 py-2 rounded bg-ink-bg border border-ink-border
-                                text-ink-text text-sm placeholder:text-ink-muted font-mono
-                                focus:outline-none focus:border-ink-accent transition-colors"/>
+                  <input [(ngModel)]="openAiCustomKey" type="password" [placeholder]="'opcional'"
+                         class="form-input font-mono"/>
                 </div>
                 <ink-button variant="secondary" [fullWidth]="true" (clicked)="testConnection()">
-                  Probar conexión
+                  {{ 'SETTINGS.AI.TEST_CONNECTION' | transloco }}
                 </ink-button>
               }
 
               <!-- Estado de la conexión tras el test -->
               @if (connectionStatus()) {
-                <div class="flex items-center gap-2 px-3 py-2 rounded border text-xs"
+                <div class="connection-status"
                      [class]="connectionStatus()!.ok
                        ? 'border-ink-success/30 text-ink-success bg-ink-bg'
                        : 'border-ink-danger/30 text-ink-danger bg-ink-bg'">
@@ -262,74 +238,62 @@
             </div>
 
             <!-- Columna derecha: Imágenes + Transcripción -->
-            <div class="flex flex-col gap-4 pl-6 border-l border-ink-border">
+            <div class="ai-right-col">
 
               <!-- Generación de imágenes -->
-              <p class="text-ink-subtle text-xs font-medium uppercase tracking-widest">
-                Generación de imágenes
+              <p class="section-heading">
+                {{ 'SETTINGS.IMAGES.TITLE' | transloco }}
               </p>
 
               <div class="flex flex-col gap-3">
                 <div class="flex flex-col gap-1.5">
-                  <label class="text-ink-subtle text-xs">Proveedor de imágenes</label>
+                  <label class="text-ink-subtle text-xs">{{ 'SETTINGS.IMAGES.PROVIDER_LABEL' | transloco }}</label>
                   <select [(ngModel)]="imageProvider"
-                          class="w-full px-3 py-2 rounded bg-ink-bg border border-ink-border
-                                 text-ink-text text-sm focus:outline-none
-                                 focus:border-ink-accent transition-colors">
-                    <option value="">Sin configurar</option>
+                          class="form-input">
+                    <option value="">{{ 'SETTINGS.IMAGES.PROVIDER_NONE' | transloco }}</option>
                     <option value="dalle">DALL-E 3 (OpenAI)</option>
-                    <option value="openai-compatible-image">Servidor local (LocalAI, ComfyUI...)</option>
+                    <option value="openai-compatible-image">{{ 'SETTINGS.IMAGES.PROVIDER_LOCAL' | transloco }}</option>
                   </select>
                 </div>
 
                 @if (imageProvider === 'dalle') {
                   <div class="flex flex-col gap-1.5">
-                    <label class="text-ink-subtle text-xs">API key de OpenAI</label>
+                    <label class="text-ink-subtle text-xs">{{ 'SETTINGS.IMAGES.OPENAI_KEY_LABEL' | transloco }}</label>
                     <input [(ngModel)]="imageApiKey" type="password" placeholder="sk-..."
-                           class="w-full px-3 py-2 rounded bg-ink-bg border border-ink-border
-                                  text-ink-text text-sm placeholder:text-ink-muted font-mono
-                                  focus:outline-none focus:border-ink-accent transition-colors"/>
+                           class="form-input font-mono"/>
                     <p class="text-ink-muted text-xs">
-                      Distinta de la API key de Anthropic. Obtener en platform.openai.com.
+                      {{ 'SETTINGS.IMAGES.OPENAI_KEY_HINT' | transloco }}
                     </p>
                   </div>
                   <div class="flex flex-col gap-1.5">
-                    <label class="text-ink-subtle text-xs">Tamaño de imagen</label>
+                    <label class="text-ink-subtle text-xs">{{ 'SETTINGS.IMAGES.SIZE_LABEL' | transloco }}</label>
                     <select [(ngModel)]="imageSize"
-                            class="w-full px-3 py-2 rounded bg-ink-bg border border-ink-border
-                                   text-ink-text text-sm focus:outline-none
-                                   focus:border-ink-accent transition-colors">
-                      <option value="1024x1024">1024×1024 (alta calidad, más lento)</option>
-                      <option value="512x512">512×512 (rápido)</option>
+                            class="form-input">
+                      <option value="1024x1024">{{ 'SETTINGS.IMAGES.SIZE_1024' | transloco }}</option>
+                      <option value="512x512">{{ 'SETTINGS.IMAGES.SIZE_512' | transloco }}</option>
                     </select>
                   </div>
                 }
 
                 @if (imageProvider === 'openai-compatible-image') {
                   <div class="flex flex-col gap-1.5">
-                    <label class="text-ink-subtle text-xs">URL del servidor</label>
-                    <input [(ngModel)]="imageEndpoint" placeholder="http://localhost:7860"
-                           class="w-full px-3 py-2 rounded bg-ink-bg border border-ink-border
-                                  text-ink-text text-sm placeholder:text-ink-muted font-mono
-                                  focus:outline-none focus:border-ink-accent transition-colors"/>
+                    <label class="text-ink-subtle text-xs">{{ 'SETTINGS.IMAGES.LOCAL_URL_LABEL' | transloco }}</label>
+                    <input [(ngModel)]="imageEndpoint" [placeholder]="'http://localhost:7860'"
+                           class="form-input font-mono"/>
                     <p class="text-ink-muted text-xs leading-relaxed">
-                      Servidor que implementa <code class="bg-ink-bg px-1 rounded">/v1/images/generations</code>.
+                      {{ 'SETTINGS.IMAGES.LOCAL_URL_HINT' | transloco }}
                       Compatible con LocalAI, ComfyUI (con plugin OpenAI), A1111 (con extensión), etc.
                     </p>
                   </div>
                   <div class="flex flex-col gap-1.5">
-                    <label class="text-ink-subtle text-xs">Modelo</label>
-                    <input [(ngModel)]="imageModel" placeholder="stable-diffusion-xl, flux..."
-                           class="w-full px-3 py-2 rounded bg-ink-bg border border-ink-border
-                                  text-ink-text text-sm placeholder:text-ink-muted font-mono
-                                  focus:outline-none focus:border-ink-accent transition-colors"/>
+                    <label class="text-ink-subtle text-xs">{{ 'SETTINGS.IMAGES.LOCAL_MODEL_LABEL' | transloco }}</label>
+                    <input [(ngModel)]="imageModel" [placeholder]="'stable-diffusion-xl, flux...'"
+                           class="form-input font-mono"/>
                   </div>
                   <div class="flex flex-col gap-1.5">
-                    <label class="text-ink-subtle text-xs">Tamaño de imagen</label>
+                    <label class="text-ink-subtle text-xs">{{ 'SETTINGS.IMAGES.LOCAL_SIZE_LABEL' | transloco }}</label>
                     <select [(ngModel)]="imageSize"
-                            class="w-full px-3 py-2 rounded bg-ink-bg border border-ink-border
-                                   text-ink-text text-sm focus:outline-none
-                                   focus:border-ink-accent transition-colors">
+                            class="form-input">
                       <option value="512x512">512×512</option>
                       <option value="768x768">768×768</option>
                       <option value="1024x1024">1024×1024</option>
@@ -340,63 +304,53 @@
 
               <!-- Transcripción de audio -->
               <div class="pt-3 border-t border-ink-border">
-                <p class="text-ink-subtle text-xs font-medium uppercase tracking-widest mb-3">
-                  Transcripción de audio
+                <p class="section-heading mb-3">
+                  {{ 'SETTINGS.TRANSCRIPTION.TITLE' | transloco }}
                 </p>
 
                 <div class="flex flex-col gap-3">
 
                   <div class="flex flex-col gap-1.5">
-                    <label class="text-ink-subtle text-xs">Proveedor</label>
+                    <label class="text-ink-subtle text-xs">{{ 'SETTINGS.TRANSCRIPTION.PROVIDER_LABEL' | transloco }}</label>
                     <select [(ngModel)]="transcriptionProvider"
-                            class="w-full px-3 py-2 rounded bg-ink-bg border border-ink-border
-                                   text-ink-text text-sm focus:outline-none
-                                   focus:border-ink-accent transition-colors">
-                      <option value="">Sin configurar</option>
-                      <option value="openai">OpenAI Whisper</option>
-                      <option value="groq">Groq (rápido, tier gratuito)</option>
-                      <option value="local">Servidor local (whisper.cpp, etc.)</option>
+                            class="form-input">
+                      <option value="">{{ 'SETTINGS.TRANSCRIPTION.PROVIDER_NONE' | transloco }}</option>
+                      <option value="openai">{{ 'SETTINGS.TRANSCRIPTION.PROVIDER_OPENAI' | transloco }}</option>
+                      <option value="groq">{{ 'SETTINGS.TRANSCRIPTION.PROVIDER_GROQ' | transloco }}</option>
+                      <option value="local">{{ 'SETTINGS.TRANSCRIPTION.PROVIDER_LOCAL' | transloco }}</option>
                     </select>
                   </div>
 
                   @if (transcriptionProvider === 'openai') {
                     <div class="flex flex-col gap-1.5">
-                      <label class="text-ink-subtle text-xs">API key de OpenAI</label>
+                      <label class="text-ink-subtle text-xs">{{ 'SETTINGS.TRANSCRIPTION.OPENAI_KEY_LABEL' | transloco }}</label>
                       <input [(ngModel)]="transcriptionApiKey" type="password"
-                             placeholder="sk-..." class="w-full px-3 py-2 rounded bg-ink-bg
-                                    border border-ink-border text-ink-text text-sm
-                                    placeholder:text-ink-muted font-mono focus:outline-none
-                                    focus:border-ink-accent transition-colors"/>
+                             placeholder="sk-..." class="form-input font-mono"/>
                       <p class="text-ink-muted text-xs">
-                        Distinta de la API key de Anthropic. Obtener en platform.openai.com
+                        {{ 'SETTINGS.TRANSCRIPTION.OPENAI_KEY_HINT' | transloco }}
                       </p>
                     </div>
                   }
 
                   @if (transcriptionProvider === 'groq') {
                     <div class="flex flex-col gap-1.5">
-                      <label class="text-ink-subtle text-xs">API key de Groq</label>
+                      <label class="text-ink-subtle text-xs">{{ 'SETTINGS.TRANSCRIPTION.GROQ_KEY_LABEL' | transloco }}</label>
                       <input [(ngModel)]="transcriptionApiKey" type="password"
-                             placeholder="gsk_..." class="w-full px-3 py-2 rounded bg-ink-bg
-                                    border border-ink-border text-ink-text text-sm
-                                    placeholder:text-ink-muted font-mono focus:outline-none
-                                    focus:border-ink-accent transition-colors"/>
+                             placeholder="gsk_..." class="form-input font-mono"/>
                       <p class="text-ink-muted text-xs">
-                        Obtener en console.groq.com · Tier gratuito disponible.
+                        {{ 'SETTINGS.TRANSCRIPTION.GROQ_KEY_HINT' | transloco }}
                       </p>
                     </div>
                   }
 
                   @if (transcriptionProvider === 'local') {
                     <div class="flex flex-col gap-1.5">
-                      <label class="text-ink-subtle text-xs">URL del servidor</label>
+                      <label class="text-ink-subtle text-xs">{{ 'SETTINGS.TRANSCRIPTION.LOCAL_URL_LABEL' | transloco }}</label>
                       <input [(ngModel)]="transcriptionEndpoint"
-                             placeholder="http://localhost:8080"
-                             class="w-full px-3 py-2 rounded bg-ink-bg border border-ink-border
-                                    text-ink-text text-sm placeholder:text-ink-muted font-mono
-                                    focus:outline-none focus:border-ink-accent transition-colors"/>
+                             [placeholder]="'http://localhost:8080'"
+                             class="form-input font-mono"/>
                       <p class="text-ink-muted text-xs leading-relaxed">
-                        Servidor con endpoint
+                        {{ 'SETTINGS.TRANSCRIPTION.LOCAL_URL_HINT' | transloco }}
                         <code class="bg-ink-bg px-1 rounded">/v1/audio/transcriptions</code>.
                         Compatible con whisper.cpp en modo servidor.
                       </p>
@@ -405,20 +359,17 @@
 
                   <div class="flex flex-col gap-1.5">
                     <label class="text-ink-subtle text-xs">
-                      Idioma por defecto
-                      <span class="normal-case font-normal">(opcional)</span>
+                      {{ 'SETTINGS.TRANSCRIPTION.LANG_LABEL' | transloco }}
                     </label>
                     <select [(ngModel)]="transcriptionLanguage"
-                            class="w-full px-3 py-2 rounded bg-ink-bg border border-ink-border
-                                   text-ink-text text-sm focus:outline-none
-                                   focus:border-ink-accent transition-colors">
-                      <option value="">Autodetección</option>
-                      <option value="es">Español</option>
-                      <option value="en">English</option>
-                      <option value="fr">Français</option>
-                      <option value="de">Deutsch</option>
-                      <option value="it">Italiano</option>
-                      <option value="pt">Português</option>
+                            class="form-input">
+                      <option value="">{{ 'SETTINGS.TRANSCRIPTION.LANG_AUTO' | transloco }}</option>
+                      <option value="es">{{ 'SETTINGS.TRANSCRIPTION.LANG_ES' | transloco }}</option>
+                      <option value="en">{{ 'SETTINGS.TRANSCRIPTION.LANG_EN' | transloco }}</option>
+                      <option value="fr">{{ 'SETTINGS.TRANSCRIPTION.LANG_FR' | transloco }}</option>
+                      <option value="de">{{ 'SETTINGS.TRANSCRIPTION.LANG_DE' | transloco }}</option>
+                      <option value="it">{{ 'SETTINGS.TRANSCRIPTION.LANG_IT' | transloco }}</option>
+                      <option value="pt">{{ 'SETTINGS.TRANSCRIPTION.LANG_PT' | transloco }}</option>
                     </select>
                   </div>
 
@@ -431,7 +382,7 @@
           <!-- Guardar -->
           <div class="pt-4 border-t border-ink-border">
             <ink-button variant="primary" (clicked)="saveAiSettings()">
-              Guardar configuración de IA
+              {{ 'SETTINGS.AI.SAVE_BTN' | transloco }}
             </ink-button>
           </div>
 
@@ -443,29 +394,29 @@
         <div class="flex flex-col gap-5">
 
           <div class="flex flex-col gap-2">
-            <label class="text-ink-subtle text-xs font-medium uppercase tracking-wide">
-              Tema
+            <label class="field-label">
+              {{ 'SETTINGS.APPEARANCE.THEME_LABEL' | transloco }}
             </label>
             <div class="flex gap-3">
               @for (t of themes; track t.id) {
                 <button
                   (click)="themeService.setTheme(t.id)"
-                  class="flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all"
+                  class="theme-btn"
                   [class]="
                     themeService.theme() === t.id
                       ? 'border-ink-accent bg-ink-surface'
                       : 'border-ink-border hover:border-ink-muted'
                   ">
                   <!-- Preview del tema -->
-                  <div class="w-16 h-10 rounded border border-black/10 overflow-hidden">
+                  <div class="theme-preview-card">
                     <div class="h-3 w-full" [style.background]="t.bg"></div>
-                    <div class="h-7 w-full flex gap-1 p-1" [style.background]="t.surface">
+                    <div class="theme-preview-body" [style.background]="t.surface">
                       <div
                         class="w-3 rounded-sm"
                         [style.background]="t.accent"
                         style="opacity: 0.7">
                       </div>
-                      <div class="flex-1 flex flex-col gap-0.5 pt-0.5">
+                      <div class="theme-preview-content">
                         <div
                           class="h-1 w-full rounded"
                           [style.background]="t.text"
@@ -479,10 +430,26 @@
                       </div>
                     </div>
                   </div>
-                  <span class="text-ink-text text-xs">{{ t.label }}</span>
+                  <span class="text-ink-text text-xs">{{ t.label | transloco }}</span>
                 </button>
               }
             </div>
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label class="text-xs font-medium text-ink-text-secondary">{{ 'SETTINGS.APPEARANCE.FONT_SIZE_LABEL' | transloco }}</label>
+            <div class="flex gap-2">
+              @for (opt of fontScaleOptions; track opt.value) {
+                <button
+                  class="font-scale-btn"
+                  [class]="currentFontScale() === opt.value
+                    ? 'border-ink-accent bg-ink-accent/10 text-ink-accent'
+                    : 'border-ink-border text-ink-text-secondary hover:bg-ink-hover'"
+                  (click)="settingsService.setUiFontScale(opt.value)"
+                >{{ opt.label | transloco }}</button>
+              }
+            </div>
+            <p class="text-xs text-ink-text-muted">{{ 'SETTINGS.APPEARANCE.FONT_SIZE_HINT' | transloco }}</p>
           </div>
 
         </div>

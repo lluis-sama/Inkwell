@@ -9,14 +9,7 @@ import { ShortcutsModalComponent } from "./shared/components/shortcuts-modal.com
   standalone: true,
   imports: [RouterOutlet, InkToastComponent, ShortcutsModalComponent],
   templateUrl: "./app.component.html",
-  styles: [
-    `
-      :host {
-        display: block;
-        height: 100vh;
-      }
-    `,
-  ],
+  styleUrl: "./app.component.css",
 })
 export class AppComponent implements OnInit {
   private themeService = inject(ThemeService);

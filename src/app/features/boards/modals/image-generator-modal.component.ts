@@ -4,11 +4,12 @@ import { Card } from '../../../core/models/board.model';
 import { ImageService } from '../../../core/services/image.service';
 import { InkModalComponent }  from '../../../shared/components/ink-modal.component';
 import { InkButtonComponent } from '../../../shared/components/ink-button.component';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-image-generator-modal',
   standalone: true,
-  imports: [InkModalComponent, InkButtonComponent, FormsModule],
+  imports: [InkModalComponent, InkButtonComponent, FormsModule, TranslocoPipe],
   templateUrl: './image-generator-modal.component.html',
   styleUrl:    './image-generator-modal.component.css',
 })

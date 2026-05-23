@@ -1,0 +1,64 @@
+<div class="flex flex-col h-full bg-ink-panel border-r border-ink-border">
+
+  <div class="flex items-center justify-between px-3 py-3 border-b border-ink-border shrink-0">
+    <span class="text-ink-subtle text-xs font-medium uppercase tracking-widest">
+      {{ 'DESK.BINDER_TITLE' | transloco }}
+    </span>
+    <button
+      (click)="newDocument()"
+      [title]="'DESK.NEW_NOTE' | transloco"
+      class="p-1 rounded text-ink-subtle hover:text-ink-text hover:bg-ink-border transition-colors">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14,2 14,8 20,8"/>
+        <line x1="12" y1="18" x2="12" y2="12"/>
+        <line x1="9" y1="15" x2="15" y2="15"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="flex-1 overflow-y-auto py-2 px-1">
+    @if (tree().length === 0) {
+      <p class="text-ink-subtle text-xs text-center mt-8 px-4 leading-relaxed">
+        {{ 'DESK.EMPTY_STATE' | transloco }}
+      </p>
+    } @else {
+      @for (node of tree(); track node.id) {
+        @if (node.type === 'document') {
+          <div
+            class="group flex items-center justify-between px-2 py-1.5 rounded cursor-pointer transition-colors"
+            [class]="activeId() === node.id
+              ? 'bg-ink-border text-ink-text'
+              : 'text-ink-text-secondary hover:bg-ink-hover'"
+            (click)="selectDocument(node.id)">
+            <span class="text-xs truncate flex-1">{{ node.title }}</span>
+            <button
+              (click)="$event.stopPropagation(); deleteNode(node)"
+              [title]="'DESK.DELETE_NOTE' | transloco"
+              class="opacity-0 group-hover:opacity-100 p-0.5 rounded text-ink-subtle
+                     hover:text-red-400 hover:bg-ink-border transition-all ml-1 shrink-0">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2">
+                <polyline points="3,6 5,6 21,6"/>
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                <path d="M10 11v6"/>
+                <path d="M14 11v6"/>
+                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+              </svg>
+            </button>
+          </div>
+        } @else {
+          <div class="flex items-center px-2 py-1.5 text-ink-subtle">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" class="mr-1.5 shrink-0">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span class="text-xs truncate">{{ node.title }}</span>
+          </div>
+        }
+      }
+    }
+  </div>
+
+</div>

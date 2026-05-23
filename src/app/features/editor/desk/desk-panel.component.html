@@ -1,0 +1,91 @@
+<div
+  class="panel-root"
+  [class.border-t]="position() === 'bottom'"
+  [class.border-r]="position() === 'left'"
+  [class.border-l]="position() === 'right'"
+>
+  <div
+    #resizeHandle
+    class="panel-resize-handle"
+    [class]="resizeHandleClass()"
+  ></div>
+
+  <div class="panel-toolbar">
+    <span class="panel-toolbar-title">{{ 'DESK.TITLE' | transloco }}</span>
+
+    <button
+      (click)="pinLeft()"
+      class="panel-action-btn"
+      [title]="'DESK.ANCHOR_LEFT' | transloco"
+    >
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="1" y="1" width="4" height="12" rx="1" fill="currentColor"/>
+        <rect x="7" y="1" width="6" height="2" rx="0.5" fill="currentColor" opacity="0.5"/>
+        <rect x="7" y="6" width="6" height="2" rx="0.5" fill="currentColor" opacity="0.5"/>
+        <rect x="7" y="11" width="6" height="2" rx="0.5" fill="currentColor" opacity="0.5"/>
+      </svg>
+    </button>
+
+    <button
+      (click)="pinBottom()"
+      class="panel-action-btn"
+      [title]="'DESK.ANCHOR_BOTTOM' | transloco"
+    >
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="1" y="9" width="12" height="4" rx="1" fill="currentColor"/>
+        <rect x="1" y="1" width="2" height="6" rx="0.5" fill="currentColor" opacity="0.5"/>
+        <rect x="6" y="1" width="2" height="6" rx="0.5" fill="currentColor" opacity="0.5"/>
+        <rect x="11" y="1" width="2" height="6" rx="0.5" fill="currentColor" opacity="0.5"/>
+      </svg>
+    </button>
+
+    <button
+      (click)="pinRight()"
+      class="panel-action-btn"
+      [title]="'DESK.ANCHOR_RIGHT' | transloco"
+    >
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="9" y="1" width="4" height="12" rx="1" fill="currentColor"/>
+        <rect x="1" y="1" width="6" height="2" rx="0.5" fill="currentColor" opacity="0.5"/>
+        <rect x="1" y="6" width="6" height="2" rx="0.5" fill="currentColor" opacity="0.5"/>
+        <rect x="1" y="11" width="6" height="2" rx="0.5" fill="currentColor" opacity="0.5"/>
+      </svg>
+    </button>
+
+    <button
+      (click)="close()"
+      class="panel-action-btn"
+      [title]="'DESK.CLOSE' | transloco"
+    >
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M2 2L12 12M12 2L2 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="flex flex-1 overflow-hidden">
+    <div class="panel-binder-container">
+      <ink-desk-binder
+        [tree]="deskTree()"
+        [activeId]="activeDocId()"
+        (documentSelected)="activeDocId.set($event)"
+        (treeChanged)="loadDeskTree()"
+      />
+    </div>
+
+    <div class="flex-1 overflow-hidden">
+      @if (activeDocId()) {
+        <app-tiptap-editor
+          [content]="activeDocContent()"
+          [placeholder]="'DESK.PLACEHOLDER' | transloco"
+          [compact]="true"
+          (contentChanged)="onContentChanged($event)"
+        />
+      } @else {
+        <div class="panel-empty-state">
+          {{ 'DESK.EMPTY_STATE' | transloco }}
+        </div>
+      }
+    </div>
+  </div>
+</div>

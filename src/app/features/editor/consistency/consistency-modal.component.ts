@@ -7,11 +7,12 @@ import { ConsistencyReport, ISSUE_TYPE_LABELS, ISSUE_SEVERITY_CONFIG }
 import { AiService }          from '../../../core/services/ai.service';
 import { InkModalComponent }  from '../../../shared/components/ink-modal.component';
 import { InkButtonComponent } from '../../../shared/components/ink-button.component';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 @Component({
   selector:    'app-consistency-modal',
   standalone:  true,
-  imports:     [InkModalComponent, InkButtonComponent],
+  imports:     [InkModalComponent, InkButtonComponent, TranslocoPipe],
   templateUrl: './consistency-modal.component.html',
   styleUrl:    './consistency-modal.component.css',
 })

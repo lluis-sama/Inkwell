@@ -1,0 +1,30 @@
+:host { display: flex; height: 100%; }
+.nav-icon { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; color: var(--ink-subtle); transition: color 0.15s, background-color 0.15s; cursor: pointer; text-decoration: none; }
+.nav-icon:hover { color: var(--ink-text); background: var(--ink-border); }
+.nav-icon.active { color: var(--ink-accent); background: var(--ink-border); }
+
+.lang-toggle {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--ink-subtle);
+  cursor: pointer;
+  background: transparent;
+  border: none;
+}
+
+.lang-toggle:hover {
+  background: var(--ink-overlay);
+}
+
+.lang-sep {
+  color: var(--ink-border);
+}
+
+.lang-active {
+  color: var(--ink-accent);
+}

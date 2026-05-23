@@ -1,0 +1,89 @@
+<div class="flex flex-col gap-4">
+  <div class="grid grid-cols-2 gap-3">
+
+    <div class="flex flex-col gap-1 col-span-2">
+      <label class="text-ink-subtle text-xs font-medium uppercase tracking-wide">
+        {{ 'EXPORT.METADATA.LEGAL_NAME' | transloco }}
+      </label>
+      <input [(ngModel)]="legalNameVal" (ngModelChange)="emitChange()"
+        [placeholder]="'EXPORT.METADATA.PH_LEGAL_NAME' | transloco"
+        class="input-field"/>
+    </div>
+
+    <div class="flex flex-col gap-1 col-span-2">
+      <label class="text-ink-subtle text-xs font-medium uppercase tracking-wide">
+        {{ 'EXPORT.METADATA.PEN_NAME' | transloco }}
+      </label>
+      <input [(ngModel)]="penNameVal" (ngModelChange)="emitChange()"
+        [placeholder]="'EXPORT.METADATA.PH_PEN_NAME' | transloco"
+        class="input-field"/>
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label class="text-ink-subtle text-xs font-medium uppercase tracking-wide">
+        {{ 'EXPORT.METADATA.EMAIL' | transloco }}
+      </label>
+      <input [(ngModel)]="emailVal" (ngModelChange)="emitChange()"
+        type="email" [placeholder]="'EXPORT.METADATA.PH_EMAIL' | transloco"
+        class="input-field"/>
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label class="text-ink-subtle text-xs font-medium uppercase tracking-wide">
+        {{ 'EXPORT.METADATA.PHONE' | transloco }}
+      </label>
+      <input [(ngModel)]="phoneVal" (ngModelChange)="emitChange()"
+        [placeholder]="'EXPORT.METADATA.PH_PHONE' | transloco"
+        class="input-field"/>
+    </div>
+
+    <div class="flex flex-col gap-1 col-span-2">
+      <label class="text-ink-subtle text-xs font-medium uppercase tracking-wide">
+        {{ 'EXPORT.METADATA.CITY_COUNTRY' | transloco }}
+      </label>
+      <input [(ngModel)]="addressVal" (ngModelChange)="emitChange()"
+        [placeholder]="'EXPORT.METADATA.PH_CITY_COUNTRY' | transloco"
+        class="input-field"/>
+    </div>
+
+    <div class="flex flex-col gap-1 col-span-2">
+      <label class="text-ink-subtle text-xs font-medium uppercase tracking-wide">
+        {{ 'EXPORT.METADATA.AGENT' | transloco }}
+      </label>
+      <input [(ngModel)]="agentVal" (ngModelChange)="emitChange()"
+        [placeholder]="'EXPORT.METADATA.PH_AGENT' | transloco"
+        class="input-field"/>
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label class="text-ink-subtle text-xs font-medium uppercase tracking-wide">
+        {{ 'EXPORT.METADATA.GENRE' | transloco }}
+      </label>
+      <input [(ngModel)]="genreVal" (ngModelChange)="emitChange()"
+        [placeholder]="'EXPORT.METADATA.PH_GENRE' | transloco"
+        class="input-field"/>
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label class="text-ink-subtle text-xs font-medium uppercase tracking-wide">
+        {{ 'EXPORT.METADATA.COPYRIGHT_YEAR' | transloco }}
+      </label>
+      <input [(ngModel)]="copyrightYearVal" (ngModelChange)="emitChange()"
+        type="number" [min]="2000" [max]="2100"
+        class="input-field"/>
+    </div>
+
+  </div>
+
+  @if (format() === 'epub') {
+    <div class="flex flex-col gap-1">
+      <label class="text-ink-subtle text-xs font-medium uppercase tracking-wide">
+        {{ 'EXPORT.METADATA.SYNOPSIS' | transloco }}
+      </label>
+      <textarea [(ngModel)]="synopsisVal" (ngModelChange)="emitChange()"
+        rows="4" [placeholder]="'EXPORT.METADATA.PH_SYNOPSIS' | transloco"
+        class="input-field resize-none">
+      </textarea>
+    </div>
+  }
+</div>

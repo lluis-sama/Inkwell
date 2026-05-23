@@ -1,0 +1,26 @@
+@reference "../../../styles.css";
+
+/* Contenedor raíz de la tarjeta narrativa */
+.narrative-card {
+  @apply flex flex-col overflow-hidden rounded-lg border border-ink-border
+         bg-ink-surface transition-all cursor-pointer hover:border-ink-accent;
+}
+
+/* Textarea de edición de sinopsis */
+.synopsis-textarea {
+  @apply w-full resize-none rounded border border-ink-border bg-ink-surface
+         text-ink-text text-xs leading-relaxed px-2 py-1
+         focus:outline-none focus:border-ink-accent;
+}
+
+/* Botón de guardar sinopsis */
+.synopsis-save-btn {
+  @apply text-xs px-2 py-0.5 rounded bg-ink-accent text-ink-bg
+         hover:opacity-90 transition-opacity;
+}
+
+/* Botón de cancelar edición */
+.synopsis-cancel-btn {
+  @apply text-xs px-2 py-0.5 rounded border border-ink-border
+         text-ink-muted hover:text-ink-text transition-colors;
+}

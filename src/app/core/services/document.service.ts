@@ -1,10 +1,14 @@
 import { Injectable, inject } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
+import { parse as parseMarkdown } from 'marked';
+import { generateJSON } from '@tiptap/core';
+import StarterKit from '@tiptap/starter-kit';
 import { TauriBridgeService } from './tauri-bridge.service';
 import { ProjectService } from './project.service';
 import { SearchService } from './search.service';
 import { DocumentFile, Snapshot, EMPTY_TIPTAP_CONTENT } from '../models/document.model';
-import { documentPath } from '../../shared/utils/project-paths';
+import { TreeNode } from '../models/project.model';
+import { documentPath, deskNotePath } from '../../shared/utils/project-paths';
 import { tiptapToText } from '../../shared/utils/tiptap-to-text';
 
 @Injectable({ providedIn: 'root' })
@@ -93,6 +97,42 @@ export class DocumentService {
       ...doc,
       snapshots: doc.snapshots.filter(s => s.id !== snapshotId),
     };
+  }
+
+  async createDocumentInDesk(title: string, content: string): Promise<TreeNode> {
+    const basePath = this.project.basePath();
+    if (!basePath) throw new Error('No project open');
+    const id = crypto.randomUUID();
+    const html = parseMarkdown(content) as string;
+    const tiptapContent = generateJSON(html, [StarterKit]);
+    const doc: DocumentFile = {
+      id,
+      title,
+      content: tiptapContent,
+      snapshots: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    await this.bridge.writeJsonFile(deskNotePath(basePath, id), JSON.stringify(doc, null, 2));
+    return { id, title, type: 'document', children: [] };
+  }
+
+  async loadDeskDocument(id: string): Promise<DocumentFile> {
+    const basePath = this.requireBasePath();
+    const raw = await this.bridge.readJsonFile(deskNotePath(basePath, id));
+    return JSON.parse(raw) as DocumentFile;
+  }
+
+  async saveDeskDocument(doc: DocumentFile): Promise<void> {
+    const basePath = this.requireBasePath();
+    const updated = { ...doc, updatedAt: new Date().toISOString() };
+    await this.bridge.writeJsonFile(deskNotePath(basePath, updated.id), JSON.stringify(updated, null, 2));
+  }
+
+  async deleteDeskDocument(id: string): Promise<void> {
+    const basePath = this.project.basePath();
+    if (!basePath) throw new Error('No project open');
+    await this.bridge.deleteJsonFile(deskNotePath(basePath, id));
   }
 
   private requireBasePath(): string {

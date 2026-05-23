@@ -25,3 +25,13 @@ export function statsPath(basePath: string): string {
 export function consistencyReportPath(basePath: string): string {
   return `${basePath}/consistency-report.json`;
 }
+
+export const DESK_NOTES_FOLDER = 'desk_notes';
+
+export function deskNotesFolderPath(basePath: string): string {
+  return `${basePath}/${DESK_NOTES_FOLDER}`;
+}
+
+export function deskNotePath(basePath: string, id: string): string {
+  return `${basePath}/${DESK_NOTES_FOLDER}/${id}.json`;
+}

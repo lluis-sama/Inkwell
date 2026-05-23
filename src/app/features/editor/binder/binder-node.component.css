@@ -1,0 +1,24 @@
+@reference "../../../../styles.css";
+
+.node-item {
+  @apply relative flex items-center gap-1.5 px-2 py-1.5
+         rounded cursor-pointer select-none transition-colors text-sm;
+}
+
+.node-input {
+  @apply flex-1 bg-ink-bg border border-ink-accent rounded
+         px-1 py-0 text-ink-text text-sm focus:outline-none w-full;
+}
+
+.node-pencil-btn {
+  @apply opacity-0 group-hover:opacity-100 flex items-center justify-center
+         w-5 h-5 rounded hover:bg-ink-surface transition-opacity shrink-0;
+}
+
+.node-drop-indicator {
+  @apply absolute bottom-0 left-0 right-0 h-1.5 rounded-b transition-colors;
+}
+
+.node-chevron {
+  @apply w-4 h-4 flex items-center justify-center shrink-0;
+}

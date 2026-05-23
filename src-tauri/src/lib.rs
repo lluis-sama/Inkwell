@@ -22,6 +22,8 @@ pub fn run() {
             commands::fs_commands::open_files_dialog,
             commands::fs_commands::read_file_bytes,
             commands::fs_commands::convert_odt_to_docx,
+            commands::fs_commands::create_folder,
+            commands::fs_commands::folder_exists,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

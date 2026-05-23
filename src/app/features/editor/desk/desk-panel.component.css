@@ -1,0 +1,36 @@
+@reference "../../../../styles.css";
+
+.panel-action-btn {
+  @apply w-6 h-6 flex items-center justify-center rounded
+         hover:bg-ink-overlay text-ink-subtle hover:text-ink-text transition-colors;
+}
+
+.panel-root {
+  @apply h-full w-full bg-ink-surface border-ink-border flex flex-col overflow-hidden;
+  box-shadow: 0 -2px 12px 0 rgba(0, 0, 0, 0.08);
+}
+
+:host-context(.dark) .panel-root {
+  box-shadow: 0 -2px 12px 0 rgba(0, 0, 0, 0.18);
+}
+
+.panel-resize-handle {
+  @apply absolute z-10 transition-colors duration-150 bg-transparent
+         hover:bg-ink-accent/25 active:bg-ink-accent/50;
+}
+
+.panel-toolbar {
+  @apply flex items-center h-9 shrink-0 px-2 border-b border-ink-border gap-1;
+}
+
+.panel-toolbar-title {
+  @apply text-xs font-semibold text-ink-subtle flex-1 select-none;
+}
+
+.panel-binder-container {
+  @apply w-[180px] shrink-0 border-r border-ink-border overflow-hidden;
+}
+
+.panel-empty-state {
+  @apply flex items-center justify-center h-full text-ink-muted text-sm select-none;
+}

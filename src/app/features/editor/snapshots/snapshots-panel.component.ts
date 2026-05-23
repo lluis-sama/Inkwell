@@ -1,4 +1,5 @@
 import { Component, inject, input, output, signal, computed } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { DocumentFile, Snapshot } from '../../../core/models/document.model';
 import { DocumentService } from '../../../core/services/document.service';
 import { ToastService } from '../../../shared/services/toast.service';
@@ -7,8 +8,9 @@ import { tiptapToText } from '../../../shared/utils/tiptap-to-text';
 @Component({
   selector: 'app-snapshots-panel',
   standalone: true,
-  imports: [],
+  imports: [TranslocoPipe],
   templateUrl: './snapshots-panel.component.html',
+  styleUrl: './snapshots-panel.component.css',
 })
 export class SnapshotsPanelComponent {
   private docService = inject(DocumentService);

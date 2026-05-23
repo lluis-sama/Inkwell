@@ -1,0 +1,196 @@
+<aside
+  class="ai-panel-aside"
+  [style.width.px]="panelWidth()">
+
+  <!-- Resize handle -->
+  <div
+    #resizeHandle
+    class="absolute left-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-ink-accent/40 transition-colors z-10"
+  ></div>
+
+  <!-- Header -->
+  <div class="ai-panel-header">
+    <span class="text-ink-subtle text-xs font-medium uppercase tracking-widest">
+      {{ 'AI.TITLE' | transloco }}
+    </span>
+    <div class="flex gap-1">
+      <!-- Botón settings (API key) -->
+      <button
+        (click)="showSettings.set(true)"
+        [title]="'AI.CONFIGURE_API_KEY' | transloco"
+        class="ai-icon-btn"
+        [class.text-ink-warning]="!ai.isProviderReady()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83
+                   2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1
+                   1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65
+                   0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65
+                   0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65
+                   1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1
+                   2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51
+                   V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0
+                   1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0
+                   19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65
+                   1.65 0 0 0-1.51 1z"/>
+        </svg>
+      </button>
+      <!-- Botón limpiar historial -->
+      <button
+        (click)="clearHistory()"
+        [title]="'AI.CLEAR_CONVERSATION' | transloco"
+        [disabled]="messages().length === 0"
+        class="ai-icon-btn disabled:opacity-30 disabled:cursor-not-allowed">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2">
+          <polyline points="3,6 5,6 21,6"/>
+          <path d="M19,6l-1,14a2,2,0,0,1-2,2H8a2,2,0,0,1-2-2L5,6"/>
+        </svg>
+      </button>
+      <!-- Cerrar panel -->
+      <button
+        (click)="closed.emit()"
+        class="ai-icon-btn">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M12.207 4.207a1 1 0 0 0-1.414-1.414L8 5.586 5.207
+                   2.793a1 1 0 0 0-1.414 1.414L6.586 7l-2.793 2.793a1
+                   1 0 1 0 1.414 1.414L8 8.414l2.793 2.793a1 1 0 0 0
+                   1.414-1.414L9.414 7l2.793-2.793z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Sin proveedor configurado -->
+  @if (!ai.isProviderReady()) {
+    <div class="ai-provider-warning">
+      <p class="text-ink-warning text-xs text-center leading-relaxed">
+        {{ ai.providerStatusMessage() }}
+      </p>
+      <button (click)="showSettings.set(true)"
+              class="text-ink-accent text-xs hover:underline">
+        {{ 'AI.OPEN_SETTINGS' | transloco }}
+      </button>
+    </div>
+  }
+
+  <!-- Selector de modo -->
+  <div class="flex gap-1 px-3 py-2 border-b border-ink-border shrink-0">
+    @for (modeKey of modeKeys; track modeKey) {
+      <button
+        (click)="activeMode.set(modeKey)"
+        class="flex-1 px-2 py-1.5 rounded text-xs font-medium transition-colors"
+        [class]="activeMode() === modeKey
+          ? 'bg-ink-surface text-ink-accent border border-ink-accent/30'
+          : 'text-ink-subtle hover:text-ink-text hover:bg-ink-surface'">
+        {{ modeLabels[modeKey] }}
+      </button>
+    }
+  </div>
+
+  <!-- Historial de mensajes -->
+  <div
+    #messagesEl
+    class="flex-1 overflow-y-auto px-4 py-3 flex flex-col gap-4">
+
+    @if (messages().length === 0) {
+      <div class="flex flex-col items-center gap-3 mt-8 opacity-50">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="1.5" class="text-ink-subtle">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+        <p class="text-ink-subtle text-xs text-center leading-relaxed">
+          {{ 'AI.MODE_LABEL' | transloco }} <strong class="text-ink-text">{{ modeLabels[activeMode()] }}</strong><br>
+          {{ modeDescription[activeMode()] }}
+        </p>
+      </div>
+    }
+
+    @for (msg of messages(); track $index; let last = $last) {
+      <div class="flex flex-col gap-1.5"
+           [class]="msg.role === 'user' ? 'items-end' : 'items-start'">
+
+        <!-- Burbuja -->
+        <div
+          [class]="msg.role === 'user' ? 'ai-bubble-user' : 'ai-bubble-assistant'">
+          <p class="whitespace-pre-wrap break-words">{{ msg.content }}</p>
+        </div>
+
+        @if (msg.role === 'assistant' && last) {
+          <div class="flex gap-2 mt-2">
+            <button
+              class="ai-action-btn-secondary"
+              (click)="insertIntoEditor.emit(msg.content)"
+            >
+              {{ 'AI.INSERT_IN_EDITOR' | transloco }}
+            </button>
+            <button
+              class="ai-action-btn-accent"
+              (click)="saveToDesk(msg.content, activeMode())"
+            >
+              {{ 'AI.SAVE_TO_DRAWER' | transloco }}
+            </button>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Respuesta en streaming -->
+    @if (streamingContent()) {
+      <div class="flex flex-col items-start gap-1.5">
+        <div class="ai-bubble-assistant">
+          <p class="whitespace-pre-wrap break-words">{{ streamingContent() }}</p>
+          <span class="inline-block w-1.5 h-3.5 bg-ink-accent ml-0.5
+                       animate-pulse align-middle"></span>
+        </div>
+      </div>
+    }
+
+    <!-- Error -->
+    @if (error()) {
+      <div class="px-3 py-2 rounded-lg bg-ink-bg border border-ink-danger/30">
+        <p class="text-ink-danger text-xs">{{ error() }}</p>
+      </div>
+    }
+  </div>
+
+  <!-- Input de mensaje -->
+  <div class="px-3 py-3 border-t border-ink-border shrink-0">
+    <div class="flex flex-col gap-2">
+      <textarea
+        [(ngModel)]="userInput"
+        [placeholder]="modePlaceholders[activeMode()]"
+        [disabled]="isStreaming()"
+        rows="3"
+        (keydown)="onKeyDown($event)"
+        class="ai-input-textarea">
+      </textarea>
+      <div class="flex items-center justify-between">
+        <span class="text-ink-muted text-xs">{{ 'AI.HINT_SEND' | transloco }}</span>
+        <button
+          (click)="send()"
+          [disabled]="!canSend()"
+          class="ai-send-btn"
+          [class]="canSend()
+            ? 'bg-ink-accent text-ink-panel hover:opacity-90'
+            : 'bg-ink-surface text-ink-subtle'">
+          @if (isStreaming()) {
+            <span class="inline-block w-3 h-3 border border-current
+                         border-t-transparent rounded-full animate-spin"></span>
+          } @else {
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+            </svg>
+          }
+          {{ 'AI.SEND' | transloco }}
+        </button>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- Modal settings -->
+@if (showSettings()) {
+  <ink-settings-modal (closed)="showSettings.set(false)"/>
+}

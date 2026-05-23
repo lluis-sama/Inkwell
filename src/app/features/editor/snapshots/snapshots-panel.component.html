@@ -1,11 +1,11 @@
-<aside class="flex flex-col h-full w-72 border-l border-ink-border bg-ink-panel shrink-0">
+<aside class="panel-aside">
 
   <!-- Header -->
-  <div class="flex items-center justify-between px-4 py-3 border-b border-ink-border shrink-0">
-    <span class="text-ink-subtle text-xs font-medium uppercase tracking-widest">Historial</span>
+  <div class="panel-header">
+    <span class="text-ink-subtle text-xs font-medium uppercase tracking-widest">{{ 'SNAPSHOTS.TITLE' | transloco }}</span>
     <button
       (click)="closed.emit()"
-      class="p-1 rounded text-ink-subtle hover:text-ink-text hover:bg-ink-border transition-colors">
+      class="panel-icon-btn">
       <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
         <path d="M12.207 4.207a1 1 0 0 0-1.414-1.414L8 5.586 5.207 2.793a1 1 0 0 0-1.414 1.414L6.586 7l-2.793 2.793a1 1 0 1 0 1.414 1.414L8 8.414l2.793 2.793a1 1 0 0 0 1.414-1.414L9.414 7l2.793-2.793z"/>
       </svg>
@@ -20,8 +20,8 @@
         <polyline points="12,6 12,12 16,14"/>
       </svg>
       <p class="text-ink-subtle text-xs text-center">
-        Sin snapshots todavía.<br>
-        Usa el botón de la barra superior para guardar una versión.
+        {{ 'SNAPSHOTS.EMPTY_STATE' | transloco }}<br>
+        {{ 'SNAPSHOTS.EMPTY_HINT' | transloco }}
       </p>
     </div>
   } @else {
@@ -42,41 +42,41 @@
               [class.text-ink-muted]="!snapshot.label"
               [class.italic]="!snapshot.label"
               [class.hover:text-ink-subtle]="!snapshot.label"
-              title="Editar etiqueta">
-              {{ snapshot.label || 'Añadir etiqueta...' }}
+              [title]="'COMMON.EDIT_LABEL' | transloco">
+              {{ snapshot.label || ('SNAPSHOTS.LABEL_PLACEHOLDER' | transloco) }}
             </button>
           } @else {
             <!-- Label: modo edición -->
             <div class="flex items-center gap-1 mb-2">
               <input
-                class="flex-1 bg-ink-bg border border-ink-accent rounded px-2 py-0.5 text-ink-text text-xs focus:outline-none"
+                class="label-input"
                 [value]="editingLabel()"
-                placeholder="Etiqueta..."
+                [placeholder]="'SNAPSHOTS.LABEL_PLACEHOLDER' | transloco"
                 maxlength="60"
                 (input)="onLabelInput($event)"
                 (keydown)="onLabelKeydown($event)"
                 (blur)="confirmEdit()" />
-              <button (click)="cancelEdit()" class="text-ink-muted hover:text-ink-subtle text-xs px-1" title="Cancelar">×</button>
+              <button (click)="cancelEdit()" class="text-ink-muted hover:text-ink-subtle text-xs px-1" [title]="'COMMON.CANCEL' | transloco">×</button>
             </div>
           }
 
           <!-- Botones: preview / restaurar / eliminar -->
           <div class="flex items-center gap-2">
             <button (click)="togglePreview(snapshot.id)" class="text-ink-muted hover:text-ink-subtle text-xs transition-colors">
-              {{ expandedId() === snapshot.id ? 'Ocultar preview' : 'Ver preview' }}
+              {{ expandedId() === snapshot.id ? ('SNAPSHOTS.HIDE_PREVIEW' | transloco) : ('SNAPSHOTS.SHOW_PREVIEW' | transloco) }}
             </button>
             <span class="flex-1"></span>
             <!-- Restaurar -->
-            <button (click)="restore(snapshot.id)" title="Restaurar este snapshot"
-              class="p-1 rounded text-ink-subtle hover:text-ink-accent hover:bg-ink-border transition-colors">
+            <button (click)="restore(snapshot.id)" [title]="'COMMON.RESTORE' | transloco"
+              class="panel-icon-btn-accent">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74"/>
                 <polyline points="3,3 3,9 9,9"/>
               </svg>
             </button>
             <!-- Eliminar -->
-            <button (click)="deleteSnapshot(snapshot.id)" title="Eliminar snapshot"
-              class="p-1 rounded text-ink-subtle hover:text-ink-danger hover:bg-ink-border transition-colors">
+            <button (click)="deleteSnapshot(snapshot.id)" [title]="'COMMON.DELETE' | transloco"
+              class="panel-icon-btn-danger">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="3,6 5,6 21,6"/>
                 <path d="M19,6l-1,14a2,2,0,0,1-2,2H8a2,2,0,0,1-2-2L5,6"/>

@@ -3,11 +3,12 @@ import { DecimalPipe } from '@angular/common';
 import { StatsService } from '../../../core/services/stats.service';
 import { StatsEntry }   from '../../../core/models/stats.model';
 import { InkModalComponent } from '../../../shared/components/ink-modal.component';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-stats-modal',
   standalone: true,
-  imports: [InkModalComponent, DecimalPipe],
+  imports: [InkModalComponent, DecimalPipe, TranslocoPipe],
   templateUrl: './stats-modal.component.html',
   styleUrl:    './stats-modal.component.css',
 })

@@ -4,7 +4,7 @@
   <!-- Botón toggle binder -->
   <button
     (click)="binderToggled.emit()"
-    title="Mostrar/ocultar binder (Ctrl+B)"
+    [title]="'TOP_BAR.TOGGLE_BINDER' | transloco"
     class="p-1.5 rounded text-ink-subtle hover:text-ink-text
            hover:bg-ink-border transition-colors shrink-0">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
@@ -23,14 +23,14 @@
     <input
       [value]="documentTitle()"
       (change)="onTitleChange($event)"
-      placeholder="Sin título"
+      [placeholder]="'EDITOR.UNTITLED' | transloco"
       class="flex-1 bg-transparent text-ink-text text-sm font-medium
              focus:outline-none placeholder:text-ink-muted min-w-0
              border-b border-transparent focus:border-ink-accent
              transition-colors pb-0.5"/>
   } @else {
     <span class="flex-1 text-ink-subtle text-sm italic">
-      Ningún documento abierto
+      {{ 'EDITOR.NO_DOCUMENT_OPEN' | transloco }}
     </span>
   }
 
@@ -39,20 +39,20 @@
     @switch (saveStatus()) {
       @case ('saved') {
         <span class="text-ink-success">✓</span>
-        <span class="text-ink-subtle">Guardado</span>
+        <span class="text-ink-subtle">{{ 'EDITOR.SAVE_SAVED' | transloco }}</span>
       }
       @case ('saving') {
         <span class="inline-block w-3 h-3 border border-ink-subtle
                      border-t-transparent rounded-full animate-spin"></span>
-        <span class="text-ink-subtle">Guardando...</span>
+        <span class="text-ink-subtle">{{ 'EDITOR.SAVE_SAVING' | transloco }}</span>
       }
       @case ('unsaved') {
         <span class="text-ink-warning">●</span>
-        <span class="text-ink-subtle">Sin guardar</span>
+        <span class="text-ink-subtle">{{ 'EDITOR.SAVE_UNSAVED' | transloco }}</span>
       }
       @case ('error') {
         <span class="text-ink-danger">✕</span>
-        <span class="text-ink-danger">Error al guardar</span>
+        <span class="text-ink-danger">{{ 'EDITOR.SAVE_ERROR' | transloco }}</span>
       }
     }
   </div>
@@ -64,7 +64,7 @@
   <button
     (click)="snapshotRequested.emit()"
     [disabled]="!documentTitle()"
-    title="Crear snapshot"
+    [title]="'TOP_BAR.SNAPSHOT' | transloco"
     class="p-1.5 rounded text-ink-subtle hover:text-ink-text
            hover:bg-ink-border transition-colors disabled:opacity-30
            disabled:cursor-not-allowed">
@@ -81,7 +81,7 @@
   <!-- Botón toggle panel snapshots -->
   <button
     (click)="snapshotsPanelToggled.emit()"
-    title="Historial de versiones"
+    [title]="'TOP_BAR.SNAPSHOTS_HISTORY' | transloco"
     [disabled]="!documentTitle()"
     class="p-1.5 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
     [class.text-ink-accent]="showSnapshots()"
@@ -101,7 +101,7 @@
   <!-- Botón toggle panel IA -->
   <button
     (click)="aiPanelToggled.emit()"
-    title="Asistente IA (Ctrl+Shift+A)"
+    [title]="'TOP_BAR.AI_ASSISTANT' | transloco"
     class="p-1.5 rounded transition-colors"
     [class.text-ink-accent]="showAiPanel()"
     [class.bg-ink-border]="showAiPanel()"
@@ -118,7 +118,7 @@
   <!-- Botón buscar y reemplazar -->
   <button
     (click)="findReplaceToggled.emit()"
-    title="Buscar y reemplazar (Ctrl+H)"
+    [title]="'TOP_BAR.FIND_REPLACE' | transloco"
     class="p-1.5 rounded transition-colors"
     [class]="showFindReplace()
       ? 'text-ink-accent bg-ink-border'
@@ -133,7 +133,7 @@
   <!-- Botón exportar -->
   <button
     (click)="exportRequested.emit()"
-    title="Exportar"
+    [title]="'TOP_BAR.EXPORT' | transloco"
     class="p-1.5 rounded text-ink-subtle hover:text-ink-text hover:bg-ink-border transition-colors">
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
          stroke="currentColor" stroke-width="2">
@@ -146,7 +146,7 @@
   <!-- Botón modo máquina de escribir -->
   <button
     (click)="typewriterToggled.emit()"
-    title="Modo máquina de escribir"
+    [title]="'TOP_BAR.TYPEWRITER' | transloco"
     class="p-1.5 rounded transition-colors"
     [class]="typewriterMode()
       ? 'text-ink-accent bg-ink-border'
@@ -162,7 +162,7 @@
   <!-- Botón modo focus -->
   <button
     (click)="focusToggled.emit()"
-    title="Modo focus (Ctrl+Shift+F)"
+    [title]="'TOP_BAR.FOCUS' | transloco"
     class="p-1.5 rounded text-ink-subtle hover:text-ink-text
            hover:bg-ink-border transition-colors">
     @if (focusMode()) {

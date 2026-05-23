@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { TranslocoPipe } from '@jsverse/transloco';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 import { ProjectService } from '../../core/services/project.service';
 import { BoardService } from '../../core/services/board.service';
@@ -29,6 +29,7 @@ import { ImageGeneratorModalComponent } from './modals/image-generator-modal.com
   templateUrl: './boards-layout.component.html',
 })
 export class BoardsLayoutComponent implements OnInit {
+  readonly #transloco    = inject(TranslocoService);
   private projectService = inject(ProjectService);
   private boardService   = inject(BoardService);
   private toast          = inject(ToastService);
@@ -55,7 +56,7 @@ export class BoardsLayoutComponent implements OnInit {
       const loaded = await Promise.all(ids.map(id => this.boardService.loadBoard(id)));
       this.boards.set(loaded);
     } catch {
-      this.toast.error('Error al cargar los tableros');
+      this.toast.error(this.#transloco.translate('BOARDS.ERROR_LOAD'));
     }
   }
 
@@ -77,7 +78,7 @@ export class BoardsLayoutComponent implements OnInit {
         this.activeBoard.set(null);
       }
     } catch {
-      this.toast.error('Error al eliminar el tablero');
+      this.toast.error(this.#transloco.translate('BOARDS.ERROR_DELETE'));
     }
   }
 
@@ -160,7 +161,7 @@ export class BoardsLayoutComponent implements OnInit {
       this.activeBoard.set(saved);
       this.boards.update(bs => bs.map(b => b.id === saved.id ? saved : b));
     } catch {
-      this.toast.error('Error al guardar el tablero');
+      this.toast.error(this.#transloco.translate('BOARDS.ERROR_SAVE'));
     }
   }
 }

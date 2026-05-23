@@ -1,5 +1,6 @@
 import { Component, output } from "@angular/core";
 import { InkModalComponent } from "./ink-modal.component";
+import { TranslocoPipe } from "@jsverse/transloco";
 
 interface ShortcutGroup {
   title: string;
@@ -74,55 +75,9 @@ const SHORTCUTS: ShortcutGroup[] = [
 @Component({
   selector: "app-shortcuts-modal",
   standalone: true,
-  imports: [InkModalComponent],
+  imports: [InkModalComponent, TranslocoPipe],
   host: { "(document:keydown.escape)": "closed.emit()" },
-  template: `
-    <ink-modal
-      title="Atajos de teclado"
-      [hasActions]="false"
-      (closed)="closed.emit()"
-    >
-      <div class="flex flex-col gap-6 max-h-[60vh] overflow-y-auto pr-1">
-        @for (group of shortcuts; track group.title) {
-          <div>
-            <p
-              class="text-ink-subtle text-xs font-medium uppercase tracking-widest mb-3"
-            >
-              {{ group.title }}
-            </p>
-            <div class="flex flex-col gap-2">
-              @for (shortcut of group.shortcuts; track shortcut.description) {
-                <div class="flex items-center justify-between">
-                  <span class="text-ink-text text-sm">{{
-                    shortcut.description
-                  }}</span>
-                  <span class="flex items-center gap-1">
-                    @if (
-                      shortcut.keys.length === 1 && shortcut.keys[0] === "—"
-                    ) {
-                      <kbd class="text-ink-subtle text-sm">—</kbd>
-                    } @else {
-                      @for (key of shortcut.keys; track key; let last = $last) {
-                        <kbd
-                          class="inline-flex items-center justify-center rounded border border-ink-border
-                                    bg-ink-surface px-1.5 py-0.5 text-ink-text text-xs font-mono
-                                    shadow-sm min-w-[1.5rem]"
-                          >{{ key }}</kbd
-                        >
-                        @if (!last) {
-                          <span class="text-ink-subtle text-xs">+</span>
-                        }
-                      }
-                    }
-                  </span>
-                </div>
-              }
-            </div>
-          </div>
-        }
-      </div>
-    </ink-modal>
-  `,
+  templateUrl: './shortcuts-modal.component.html',
 })
 export class ShortcutsModalComponent {
   closed = output<void>();

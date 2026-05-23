@@ -1,16 +1,21 @@
 <div class="tiptap-host h-full flex flex-col">
-  @if (!focusMode()) {
+  @if (!focusMode() && !compact()) {
     <app-editor-toolbar [editor]="editorReady()" />
   }
   <div
     #editorEl
     [attr.spellcheck]="spellcheck()"
-    class="flex-1 overflow-y-auto px-16 py-12 focus:outline-none"
+    [style.font-family]="editorFontFamily()"
+    [style.font-size.px]="editorFontSize()"
+    class="flex-1 overflow-y-auto focus:outline-none"
+    [class]="compact() ? 'px-3 py-2' : 'px-16 py-12'"
   ></div>
 
-  <div class="flex justify-end px-16 py-2 border-t border-ink-border">
-    <span class="text-ink-subtle text-xs">
-      {{ wordCount() }} palabras · {{ charCount() }} caracteres
-    </span>
-  </div>
+  @if (!compact()) {
+    <div class="flex justify-end px-16 py-2 border-t border-ink-border">
+      <span class="text-ink-subtle text-xs">
+        {{ wordCount() }} palabras · {{ charCount() }} caracteres
+      </span>
+    </div>
+  }
 </div>

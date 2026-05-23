@@ -10,33 +10,7 @@ import { InkButtonComponent } from "./ink-button.component";
   selector: "ink-author-profile-modal",
   standalone: true,
   imports: [InkModalComponent, InkButtonComponent, FormsModule, TranslocoPipe],
-  styles: [
-    `
-      .field-label {
-        color: var(--ink-subtle);
-        font-size: 0.7rem;
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-      }
-      .field-input {
-        width: 100%;
-        padding: 0.4rem 0.6rem;
-        border-radius: 0.25rem;
-        background: var(--ink-bg);
-        border: 1px solid var(--ink-border);
-        color: var(--ink-text);
-        font-size: 0.8rem;
-      }
-      .field-input:focus {
-        outline: none;
-        border-color: var(--ink-accent);
-      }
-      .field-input::placeholder {
-        color: var(--ink-muted);
-      }
-    `,
-  ],
+  styleUrl: "./author-profile-modal.component.css",
   templateUrl: "./author-profile-modal.component.html",
 })
 export class AuthorProfileModalComponent implements OnInit {

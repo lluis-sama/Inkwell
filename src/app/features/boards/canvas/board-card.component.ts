@@ -7,19 +7,7 @@ import { Card, CardType, CARD_TYPE_ICONS } from '../../../core/models/board.mode
   standalone: true,
   imports: [],
   templateUrl: './board-card.component.html',
-  styles: [
-    `
-      :host {
-        display: contents;
-      }
-      div:hover .card-delete {
-        opacity: 1 !important;
-      }
-      div:hover .card-image {
-        opacity: 1 !important;
-      }
-    `,
-  ],
+  styleUrl: './board-card.component.css',
 })
 export class BoardCardComponent implements OnInit, OnDestroy {
   @ViewChild('cardEl', { static: true }) cardEl!: ElementRef<HTMLDivElement>;
