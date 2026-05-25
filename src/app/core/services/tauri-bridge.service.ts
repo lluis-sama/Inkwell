@@ -1,6 +1,12 @@
 import { Injectable } from '@angular/core';
 import { invoke } from '@tauri-apps/api/core';
 
+export interface UpdateInfo {
+  version: string;
+  release_notes: string;
+  url: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class TauriBridgeService {
 
@@ -77,5 +83,13 @@ export class TauriBridgeService {
 
   writeAppConfig(content: string): Promise<void> {
     return invoke<void>('write_app_config', { content });
+  }
+
+  checkForUpdate(): Promise<UpdateInfo | null> {
+    return invoke<UpdateInfo | null>('check_for_update');
+  }
+
+  openReleasesPage(url: string): Promise<void> {
+    return invoke<void>('open_releases_page', { url });
   }
 }

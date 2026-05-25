@@ -1,4 +1,5 @@
 mod commands;
+mod updater;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -26,6 +27,8 @@ pub fn run() {
             commands::fs_commands::folder_exists,
             commands::fs_commands::read_app_config,
             commands::fs_commands::write_app_config,
+            updater::check_for_update,
+            updater::open_releases_page,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

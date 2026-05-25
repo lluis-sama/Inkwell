@@ -445,5 +445,10 @@
   "EXPORT.ERROR_EXPORT": "Error al exportar: {{ error }}",
   "BINDER.IMPORT_SUCCESS_SINGLE": "\"{{ title }}\" importado correctamente.",
   "BINDER.IMPORT_SUCCESS_MULTI": "{{ count }} documentos importados correctamente.",
-  "BINDER.IMPORT_WARNINGS": "Importado con advertencias: {{ warnings }}"
+  "BINDER.IMPORT_WARNINGS": "Importado con advertencias: {{ warnings }}",
+  "UPDATE.TITLE": "Inkwell {{ version }} disponible",
+  "UPDATE.BODY": "Hay una nueva versión de Inkwell disponible. Visita la página de releases para descargar el instalador para tu sistema.",
+  "UPDATE.RELEASE_NOTES": "Novedades",
+  "UPDATE.DISMISS": "Ahora no",
+  "UPDATE.VIEW_RELEASES": "Ver en Codeberg"
 }
