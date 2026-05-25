@@ -387,6 +387,7 @@
   "EXPORT.SELECTOR.WORD_COUNT": "palabras",
   "EXPORT.SELECTOR.DOCS_SELECTED": "documentos seleccionados",
   "AI.CLEAR_CONVERSATION": "Limpiar conversación",
+  "AI.NEW_CONVERSATION": "Nueva conversación",
   "AI.HINT_SEND": "Enter envía · Shift+Enter nueva línea",
   "COMMON.LOADING": "Cargando...",
   "NARRATIVE.EMPTY_STATE": "El proyecto no tiene documentos todavía.",

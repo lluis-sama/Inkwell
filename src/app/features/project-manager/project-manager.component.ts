@@ -4,6 +4,7 @@ import { TranslocoService, TranslocoPipe } from '@jsverse/transloco';
 import { ThemeService } from '../../core/services/theme.service';
 import { ProjectService } from '../../core/services/project.service';
 import { TauriBridgeService } from '../../core/services/tauri-bridge.service';
+import { AppConfigService } from '../../core/services/app-config.service';
 import { NewProjectModalComponent } from './new-project-modal.component';
 import { InkButtonComponent } from '../../shared/components/ink-button.component';
 
@@ -26,6 +27,7 @@ export class ProjectManagerComponent implements OnInit {
   private projectService = inject(ProjectService);
   private bridge         = inject(TauriBridgeService);
   private router         = inject(Router);
+  private appConfig      = inject(AppConfigService);
 
   showNewProjectModal = signal(false);
   opening             = signal(false);
@@ -46,7 +48,7 @@ export class ProjectManagerComponent implements OnInit {
     this.opening.set(true);
     try {
       await this.projectService.openProject(basePath);
-      this.projectService.addRecentProject(
+      await this.projectService.addRecentProject(
         this.projectService.project()!.name,
         basePath,
       );
@@ -65,14 +67,14 @@ export class ProjectManagerComponent implements OnInit {
     this.opening.set(true);
     try {
       await this.projectService.openProject(project.basePath);
-      this.projectService.addRecentProject(project.name, project.basePath);
+      await this.projectService.addRecentProject(project.name, project.basePath);
       this.recentProjects.set(this.projectService.getRecentProjects());
       this.router.navigate(['/editor']);
     } catch {
       this.openError.set(
         this.translocoService.translate('PM.ERROR_OPEN', { name: project.name })
       );
-      this.projectService.removeRecentProject(project.basePath);
+      await this.projectService.removeRecentProject(project.basePath);
       this.recentProjects.set(this.projectService.getRecentProjects());
     } finally {
       this.opening.set(false);
@@ -89,9 +91,9 @@ export class ProjectManagerComponent implements OnInit {
 
   // ─── Recientes ────────────────────────────────────────────────────────────
 
-  removeFromRecents(event: MouseEvent, basePath: string): void {
+  async removeFromRecents(event: MouseEvent, basePath: string): Promise<void> {
     event.stopPropagation();
-    this.projectService.removeRecentProject(basePath);
+    await this.projectService.removeRecentProject(basePath);
     this.recentProjects.set(this.projectService.getRecentProjects());
   }
 
@@ -110,9 +112,9 @@ export class ProjectManagerComponent implements OnInit {
     return date.toLocaleDateString(locale, { day: 'numeric', month: 'short' });
   }
 
-  toggleLanguage(): void {
+  async toggleLanguage(): Promise<void> {
     const next = this.translocoService.getActiveLang() === 'es' ? 'en' : 'es';
     this.translocoService.setActiveLang(next);
-    localStorage.setItem('inkwell-lang', next);
+    await this.appConfig.setLang(next);
   }
 }

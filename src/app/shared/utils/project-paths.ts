@@ -35,3 +35,7 @@ export function deskNotesFolderPath(basePath: string): string {
 export function deskNotePath(basePath: string, id: string): string {
   return `${basePath}/${DESK_NOTES_FOLDER}/${id}.json`;
 }
+
+export function aiSessionPath(basePath: string): string {
+  return `${basePath}/ai_session.json`;
+}

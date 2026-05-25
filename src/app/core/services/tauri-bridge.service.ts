@@ -70,4 +70,12 @@ export class TauriBridgeService {
   async folderExists(path: string): Promise<boolean> {
     return invoke('folder_exists', { path });
   }
+
+  readAppConfig(): Promise<string> {
+    return invoke<string>('read_app_config');
+  }
+
+  writeAppConfig(content: string): Promise<void> {
+    return invoke<void>('write_app_config', { content });
+  }
 }

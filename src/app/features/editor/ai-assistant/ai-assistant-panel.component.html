@@ -40,12 +40,26 @@
       <button
         (click)="clearHistory()"
         [title]="'AI.CLEAR_CONVERSATION' | transloco"
-        [disabled]="messages().length === 0"
+        [disabled]="ai.messages().length === 0"
         class="ai-icon-btn disabled:opacity-30 disabled:cursor-not-allowed">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
              stroke="currentColor" stroke-width="2">
           <polyline points="3,6 5,6 21,6"/>
           <path d="M19,6l-1,14a2,2,0,0,1-2,2H8a2,2,0,0,1-2-2L5,6"/>
+        </svg>
+      </button>
+      <!-- Botón nueva conversación -->
+      <button
+        (click)="onNewConversation()"
+        [title]="'AI.NEW_CONVERSATION' | transloco"
+        [disabled]="ai.messages().length === 0"
+        class="ai-icon-btn disabled:opacity-30 disabled:cursor-not-allowed">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14,2 14,8 20,8"/>
+          <line x1="12" y1="18" x2="12" y2="12"/>
+          <line x1="9" y1="15" x2="15" y2="15"/>
         </svg>
       </button>
       <!-- Cerrar panel -->
@@ -79,9 +93,9 @@
   <div class="flex gap-1 px-3 py-2 border-b border-ink-border shrink-0">
     @for (modeKey of modeKeys; track modeKey) {
       <button
-        (click)="activeMode.set(modeKey)"
+        (click)="ai.currentMode.set(modeKey)"
         class="flex-1 px-2 py-1.5 rounded text-xs font-medium transition-colors"
-        [class]="activeMode() === modeKey
+        [class]="ai.currentMode() === modeKey
           ? 'bg-ink-surface text-ink-accent border border-ink-accent/30'
           : 'text-ink-subtle hover:text-ink-text hover:bg-ink-surface'">
         {{ modeLabels[modeKey] }}
@@ -94,20 +108,20 @@
     #messagesEl
     class="flex-1 overflow-y-auto px-4 py-3 flex flex-col gap-4">
 
-    @if (messages().length === 0) {
+    @if (ai.messages().length === 0) {
       <div class="flex flex-col items-center gap-3 mt-8 opacity-50">
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
              stroke="currentColor" stroke-width="1.5" class="text-ink-subtle">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
         </svg>
         <p class="text-ink-subtle text-xs text-center leading-relaxed">
-          {{ 'AI.MODE_LABEL' | transloco }} <strong class="text-ink-text">{{ modeLabels[activeMode()] }}</strong><br>
-          {{ modeDescription[activeMode()] }}
+          {{ 'AI.MODE_LABEL' | transloco }} <strong class="text-ink-text">{{ modeLabels[ai.currentMode()] }}</strong><br>
+          {{ modeDescription[ai.currentMode()] }}
         </p>
       </div>
     }
 
-    @for (msg of messages(); track $index; let last = $last) {
+    @for (msg of ai.messages(); track $index; let last = $last) {
       <div class="flex flex-col gap-1.5"
            [class]="msg.role === 'user' ? 'items-end' : 'items-start'">
 
@@ -127,7 +141,7 @@
             </button>
             <button
               class="ai-action-btn-accent"
-              (click)="saveToDesk(msg.content, activeMode())"
+              (click)="saveToDesk(msg.content, ai.currentMode())"
             >
               {{ 'AI.SAVE_TO_DRAWER' | transloco }}
             </button>
@@ -137,10 +151,10 @@
     }
 
     <!-- Respuesta en streaming -->
-    @if (streamingContent()) {
+    @if (ai.streamingContent()) {
       <div class="flex flex-col items-start gap-1.5">
         <div class="ai-bubble-assistant">
-          <p class="whitespace-pre-wrap break-words">{{ streamingContent() }}</p>
+          <p class="whitespace-pre-wrap break-words">{{ ai.streamingContent() }}</p>
           <span class="inline-block w-1.5 h-3.5 bg-ink-accent ml-0.5
                        animate-pulse align-middle"></span>
         </div>
@@ -160,8 +174,8 @@
     <div class="flex flex-col gap-2">
       <textarea
         [(ngModel)]="userInput"
-        [placeholder]="modePlaceholders[activeMode()]"
-        [disabled]="isStreaming()"
+        [placeholder]="modePlaceholders[ai.currentMode()]"
+        [disabled]="ai.isStreaming()"
         rows="3"
         (keydown)="onKeyDown($event)"
         class="ai-input-textarea">
@@ -175,7 +189,7 @@
           [class]="canSend()
             ? 'bg-ink-accent text-ink-panel hover:opacity-90'
             : 'bg-ink-surface text-ink-subtle'">
-          @if (isStreaming()) {
+          @if (ai.isStreaming()) {
             <span class="inline-block w-3 h-3 border border-current
                          border-t-transparent rounded-full animate-spin"></span>
           } @else {

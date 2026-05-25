@@ -1,11 +1,15 @@
-import { Injectable, inject, signal, computed } from '@angular/core';
+import { Injectable, inject, signal, computed, Injector } from '@angular/core';
 import { TauriBridgeService } from './tauri-bridge.service';
+import { AiService } from './ai.service';
+import { AppConfigService } from './app-config.service';
 import { Project, TreeNode, DEFAULT_PROJECT_SETTINGS, AuthorProfile, DocumentStatus } from '../models/project.model';
 import { projectJsonPath, deskNotesFolderPath, deskNotePath } from '../../shared/utils/project-paths';
 
 @Injectable({ providedIn: 'root' })
 export class ProjectService {
   private bridge = inject(TauriBridgeService);
+  private appConfig = inject(AppConfigService);
+  private injector = inject(Injector);
 
   readonly project   = signal<Project | null>(null);
   readonly basePath  = signal<string | null>(null);
@@ -24,6 +28,8 @@ export class ProjectService {
     this.basePath.set(basePath);
     this.project.set(project);
     await this.ensureDeskNotesFolder();
+    const aiService = this.injector.get(AiService);
+    await aiService.loadSession(basePath, project.id);
   }
 
   async createProject(basePath: string, name: string, description = ''): Promise<Project> {
@@ -149,27 +155,23 @@ export class ProjectService {
   }
 
   closeProject(): void {
+    const aiService = this.injector.get(AiService);
+    aiService.messages.set([]);
+    aiService.currentMode.set('analyze');
     this.project.set(null);
     this.basePath.set(null);
   }
 
   getRecentProjects(): Array<{ name: string; basePath: string; openedAt: string }> {
-    const raw = localStorage.getItem('inkwell-recent-projects');
-    if (!raw) return [];
-    try { return JSON.parse(raw); } catch { return []; }
+    return this.appConfig.getRecentProjects();
   }
 
-  addRecentProject(name: string, basePath: string): void {
-    const recent = this.getRecentProjects()
-      .filter(p => p.basePath !== basePath)
-      .slice(0, 9);
-    recent.unshift({ name, basePath, openedAt: new Date().toISOString() });
-    localStorage.setItem('inkwell-recent-projects', JSON.stringify(recent));
+  async addRecentProject(name: string, basePath: string): Promise<void> {
+    await this.appConfig.addRecentProject(name, basePath);
   }
 
-  removeRecentProject(basePath: string): void {
-    const recent = this.getRecentProjects().filter(p => p.basePath !== basePath);
-    localStorage.setItem('inkwell-recent-projects', JSON.stringify(recent));
+  async removeRecentProject(basePath: string): Promise<void> {
+    await this.appConfig.removeRecentProject(basePath);
   }
 
   async ensureDeskNotesFolder(): Promise<void> {

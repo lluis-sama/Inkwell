@@ -5,7 +5,7 @@ import {
 } from '@angular/core';
 import interact from 'interactjs';
 import { FormsModule } from '@angular/forms';
-import { AiService, AiMessage, AiMode } from '../../../core/services/ai.service';
+import { AiService, AiMode } from '../../../core/services/ai.service';
 import { ProjectService }  from '../../../core/services/project.service';
 import { DocumentService } from '../../../core/services/document.service';
 import { DeskService }     from '../../../core/services/desk.service';
@@ -57,13 +57,9 @@ export class AiAssistantPanelComponent implements AfterViewChecked, OnDestroy {
 
   private interactable: ReturnType<typeof interact> | null = null;
 
-  activeMode       = signal<AiMode>('analyze');
-  messages         = signal<AiMessage[]>([]);
-  streamingContent = signal<string>('');
-  isStreaming      = signal(false);
-  error            = signal<string | null>(null);
-  showSettings     = signal(false);
-  userInput        = '';
+  error        = signal<string | null>(null);
+  showSettings = signal(false);
+  userInput    = '';
 
   readonly modeKeys         = ['analyze', 'review', 'brainstorm'] as AiMode[];
   readonly modeLabels       = MODE_LABELS;
@@ -100,7 +96,7 @@ export class AiAssistantPanelComponent implements AfterViewChecked, OnDestroy {
 
   canSend = () =>
     this.userInput.trim().length > 0 &&
-    !this.isStreaming() &&
+    !this.ai.isStreaming() &&
     this.ai.isProviderReady();
 
   ngAfterViewChecked(): void {
@@ -123,44 +119,18 @@ export class AiAssistantPanelComponent implements AfterViewChecked, OnDestroy {
     const content = this.userInput.trim();
     this.userInput = '';
     this.error.set(null);
-
-    // Añadir mensaje del usuario al historial
-    this.messages.update(msgs => [...msgs, { role: 'user', content }]);
     this.shouldScrollToBottom = true;
 
-    // Construir contexto del documento activo
-    const context = this.buildContext();
-
-    this.isStreaming.set(true);
-    this.streamingContent.set('');
+    const basePath  = this.project.basePath();
+    const projectId = this.project.project()?.id;
+    if (!basePath || !projectId) return;
 
     try {
-      let fullResponse = '';
-
-      for await (const chunk of this.ai.streamMessage(
-        this.messages(),
-        this.activeMode(),
-        context,
-      )) {
-        fullResponse += chunk;
-        this.streamingContent.set(fullResponse);
-        this.shouldScrollToBottom = true;
-      }
-
-      // Finalizar: mover streaming content al historial
-      this.messages.update(msgs => [
-        ...msgs,
-        { role: 'assistant', content: fullResponse },
-      ]);
-      this.streamingContent.set('');
-
+      await this.ai.sendMessage(content, this.buildContext(), basePath, projectId);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
       this.error.set(msg);
-      // Eliminar el mensaje de usuario si falló
-      this.messages.update(msgs => msgs.slice(0, -1));
     } finally {
-      this.isStreaming.set(false);
       this.shouldScrollToBottom = true;
     }
   }
@@ -190,8 +160,16 @@ export class AiAssistantPanelComponent implements AfterViewChecked, OnDestroy {
   }
 
   clearHistory(): void {
-    this.messages.set([]);
-    this.streamingContent.set('');
+    this.ai.messages.set([]);
+    this.ai.streamingContent.set('');
+    this.error.set(null);
+  }
+
+  async onNewConversation(): Promise<void> {
+    const basePath  = this.project.basePath();
+    const projectId = this.project.project()?.id;
+    if (!basePath || !projectId) return;
+    await this.ai.clearSession(basePath, projectId);
     this.error.set(null);
   }
 

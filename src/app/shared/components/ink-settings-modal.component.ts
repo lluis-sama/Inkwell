@@ -161,9 +161,9 @@ export class InkSettingsModalComponent implements OnInit {
     this.closed.emit();
   }
 
-  saveAiSettings(): void {
+  async saveAiSettings(): Promise<void> {
     if (this.apiKeyInput.trim()) {
-      this.aiService.saveApiKey(this.apiKeyInput);
+      await this.aiService.saveApiKey(this.apiKeyInput);
     }
 
     const provider = this.selectedProvider();
@@ -191,8 +191,8 @@ export class InkSettingsModalComponent implements OnInit {
     this.closed.emit();
   }
 
-  clearApiKey(): void {
-    this.aiService.clearApiKey();
+  async clearApiKey(): Promise<void> {
+    await this.aiService.clearApiKey();
     this.apiKeyInput = '';
   }
 
