@@ -40,7 +40,7 @@ export class BinderNodeComponent {
   dropped           = output<DropEvent>();
   synopsisRequested = output<TreeNode>();
 
-  statusFilter = input<DocumentStatus | 'all'>('all');
+  statusFilter = input<DocumentStatus | null>(null);
 
   expanded       = signal<boolean>(true);
   isActive       = computed(() => this.activeId() === this.node().id);
@@ -50,7 +50,7 @@ export class BinderNodeComponent {
 
   isVisible = computed(() => {
     const filter = this.statusFilter();
-    if (filter === 'all') return true;
+    if (!filter) return true;
     const n = this.node();
     if (n.type === 'folder') return this.hasMatchingDescendant(n, filter);
     return n.status === filter;
@@ -60,7 +60,10 @@ export class BinderNodeComponent {
     // Auto-focus the rename input when it appears
     effect(() => {
       if (this.renaming() && this.renameInputEl?.nativeElement) {
-        setTimeout(() => this.renameInputEl?.nativeElement.focus(), 0);
+        setTimeout(() => {
+          this.renameInputEl?.nativeElement.focus();
+          this.renameInputEl?.nativeElement.select();
+        }, 0);
       }
     });
   }
@@ -109,10 +112,8 @@ export class BinderNodeComponent {
     event.stopPropagation();
     event.dataTransfer!.dropEffect = 'move';
     if (this.node().type === 'folder') {
-      const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
-      const relY = (event.clientY - rect.top) / rect.height;
-      this.isDragOverInner.set(relY > 0.6);
-      this.isDragOver.set(relY <= 0.6);
+      this.isDragOverInner.set(true);
+      this.isDragOver.set(false);
     } else {
       this.isDragOver.set(true);
       this.isDragOverInner.set(false);
@@ -125,9 +126,7 @@ export class BinderNodeComponent {
     const draggedId = event.dataTransfer!.getData('text/plain');
     if (!draggedId || draggedId === this.node().id) return;
     const position: 'after' | 'inside' =
-      this.node().type === 'folder' && this.isDragOverInner()
-        ? 'inside'
-        : 'after';
+      this.node().type === 'folder' ? 'inside' : 'after';
     this.dropped.emit({ draggedId, targetId: this.node().id, position });
     this.isDragOver.set(false);
     this.isDragOverInner.set(false);

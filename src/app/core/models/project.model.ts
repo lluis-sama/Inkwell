@@ -19,6 +19,7 @@ export interface Project {
   createdAt: string;
   updatedAt: string;
   tree: TreeNode[];
+  deskTree?: TreeNode[];
   settings: ProjectSettings;
   wordCountCache: Record<string, number>;
   authorProfile?: AuthorProfile;
