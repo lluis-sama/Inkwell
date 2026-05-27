@@ -37,7 +37,7 @@
     "homepage": "https://codeberg.org/frozenfangkb/inkwell",
     "shortDescription": "Entorno de escritura creativa para escritores serios",
     "longDescription": "Inkwell es una alternativa open source a Scrivener para Linux, Windows y macOS. Editor de texto, binder, tableros de corcho, asistente de IA y más.",
-    "category": "Office",
+    "category": "Productivity",
     "license": "MIT",
     "linux": {
       "deb": {
