@@ -55,7 +55,7 @@
       <!-- Botón de filtros -->
       <div class="relative">
         <button
-          (click)="toggleFilterDropdown()"
+          (click)="toggleFilterDropdown(); $event.stopPropagation()"
           class="binder-icon-btn flex items-center gap-1">
           @if (activeFilterEntry(); as entry) {
             <span class="w-1.5 h-1.5 rounded-full shrink-0"
@@ -69,7 +69,7 @@
 
         <!-- Dropdown -->
         @if (filterDropdownOpen()) {
-          <div class="absolute right-0 top-full mt-1 z-50 min-w-44 rounded-lg border border-ink-border bg-ink-surface shadow-xl py-1">
+          <div class="absolute right-0 top-full mt-1 z-50 min-w-44 rounded-lg border border-ink-border bg-ink-surface shadow-xl py-1" (click)="$event.stopPropagation()">
             <!-- Sin filtro -->
             <button
               (click)="selectFilter(null)"

@@ -32,6 +32,38 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "publisher": "David Rodriguez Miranda",
+    "homepage": "https://codeberg.org/frozenfangkb/inkwell",
+    "shortDescription": "Entorno de escritura creativa para escritores serios",
+    "longDescription": "Inkwell es una alternativa open source a Scrivener para Linux, Windows y macOS. Editor de texto, binder, tableros de corcho, asistente de IA y más.",
+    "category": "Office",
+    "license": "MIT",
+    "linux": {
+      "deb": {
+        "files": {
+          "/usr/share/metainfo/org.codeberg.frozenfangkb.inkwell.metainfo.xml": "assets/linux/metainfo/org.codeberg.frozenfangkb.inkwell.metainfo.xml",
+          "/usr/share/icons/hicolor/16x16/apps/inkwell.png": "assets/linux/icons/16x16.png",
+          "/usr/share/icons/hicolor/32x32/apps/inkwell.png": "assets/linux/icons/32x32.png",
+          "/usr/share/icons/hicolor/64x64/apps/inkwell.png": "assets/linux/icons/64x64.png",
+          "/usr/share/icons/hicolor/128x128/apps/inkwell.png": "assets/linux/icons/128x128.png",
+          "/usr/share/icons/hicolor/256x256/apps/inkwell.png": "assets/linux/icons/256x256.png",
+          "/usr/share/icons/hicolor/512x512/apps/inkwell.png": "assets/linux/icons/512x512.png"
+        },
+        "section": "editors",
+        "priority": "optional"
+      },
+      "rpm": {
+        "files": {
+          "/usr/share/metainfo/org.codeberg.frozenfangkb.inkwell.metainfo.xml": "assets/linux/metainfo/org.codeberg.frozenfangkb.inkwell.metainfo.xml",
+          "/usr/share/icons/hicolor/16x16/apps/inkwell.png": "assets/linux/icons/16x16.png",
+          "/usr/share/icons/hicolor/32x32/apps/inkwell.png": "assets/linux/icons/32x32.png",
+          "/usr/share/icons/hicolor/64x64/apps/inkwell.png": "assets/linux/icons/64x64.png",
+          "/usr/share/icons/hicolor/128x128/apps/inkwell.png": "assets/linux/icons/128x128.png",
+          "/usr/share/icons/hicolor/256x256/apps/inkwell.png": "assets/linux/icons/256x256.png",
+          "/usr/share/icons/hicolor/512x512/apps/inkwell.png": "assets/linux/icons/512x512.png"
+        }
+      }
+    }
   }
 }
