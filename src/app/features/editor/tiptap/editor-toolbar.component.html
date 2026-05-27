@@ -1,5 +1,5 @@
 @if (editor()) {
-  <div class="flex items-center gap-0.5 px-3 py-1.5 border-b border-ink-border bg-ink-panel flex-wrap shrink-0"
+  <div        class="flex items-center gap-0.5 px-3 py-1.5 border-b border-ink-border bg-ink-panel shrink-0"
        (mousedown)="$event.preventDefault()">
 
     <!-- Headings -->
@@ -204,5 +204,43 @@
       >+</button>
     </div>
 
+    <!-- Spacer -->
+    <div class="flex-1"></div>
+
+    <!-- LT Status Indicator -->
+    <app-lt-status-indicator (clicked)="onLtIndicatorClicked($event)" />
+
   </div>
+
+  <!-- LT Install Modal -->
+  @if (showLtInstallModal()) {
+    <app-lt-install-modal (closed)="showLtInstallModal.set(false)" />
+  }
+
+  <!-- LT Running Modal -->
+  @if (showLtRunningModal()) {
+    <ink-modal [title]="'LT.RUNNING_TITLE' | transloco" (closed)="showLtRunningModal.set(false)">
+      <div class="flex flex-col gap-4">
+        <p class="text-sm text-ink-text">{{ 'LT.RUNNING_BODY' | transloco }}</p>
+        <p class="text-xs text-ink-subtle">{{ 'LT.RUNNING_MEMORY' | transloco }}</p>
+        <div class="flex justify-end gap-2">
+          <ink-button variant="ghost" (clicked)="stopLt()">{{ 'LT.RUNNING_STOP' | transloco }}</ink-button>
+          <ink-button variant="primary" (clicked)="showLtRunningModal.set(false)">{{ 'LT.CLOSE' | transloco }}</ink-button>
+        </div>
+      </div>
+    </ink-modal>
+  }
+
+  <!-- LT Stopped Modal -->
+  @if (showLtStoppedModal()) {
+    <ink-modal [title]="'LT.STOPPED_TITLE' | transloco" (closed)="showLtStoppedModal.set(false)">
+      <div class="flex flex-col gap-4">
+        <p class="text-sm text-ink-text">{{ 'LT.STOPPED_BODY' | transloco }}</p>
+        <div class="flex justify-end gap-2">
+          <ink-button variant="ghost" (clicked)="showLtStoppedModal.set(false)">{{ 'LT.CANCEL' | transloco }}</ink-button>
+          <ink-button variant="primary" (clicked)="startLt()">{{ 'LT.STOPPED_START' | transloco }}</ink-button>
+        </div>
+      </div>
+    </ink-modal>
+  }
 }

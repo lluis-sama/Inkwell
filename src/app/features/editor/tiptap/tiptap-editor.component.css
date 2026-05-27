@@ -98,3 +98,95 @@
   color: var(--ink-panel, #1e1e2e);
   border-radius: 2px;
 }
+
+/* ─── LanguageTool inline decorations ─── */
+::ng-deep .tiptap-host .ProseMirror .lt {
+  text-decoration: underline wavy;
+  text-decoration-color: var(--ink-warning, #f9e2af);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+  cursor: help;
+}
+
+::ng-deep .tiptap-host .ProseMirror .lt-typographical {
+  text-decoration-color: var(--ink-warning, #f9e2af);
+}
+
+::ng-deep .tiptap-host .ProseMirror .lt-uncategorized {
+  text-decoration-color: var(--ink-warning, #f9e2af);
+}
+
+::ng-deep .tiptap-host .ProseMirror .lt-grammar {
+  text-decoration-color: var(--ink-danger, #f38ba8);
+}
+
+::ng-deep .tiptap-host .ProseMirror .lt-style {
+  text-decoration-color: var(--ink-info, #89b4fa);
+}
+
+::ng-deep .tiptap-host .ProseMirror .lt-spelling {
+  text-decoration-color: var(--ink-success, #a6e3a1);
+}
+
+/* ─── LanguageTool tooltip ─── */
+::ng-deep .lt-tooltip {
+  position: absolute;
+  z-index: 9999;
+  background: var(--ink-panel, #1e1e2e);
+  border: 1px solid var(--ink-border, #313244);
+  border-radius: 8px;
+  padding: 10px 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  font-family: system-ui, sans-serif;
+  font-size: 13px;
+  color: var(--ink-text, #cdd6f4);
+  max-width: 280px;
+  pointer-events: auto;
+}
+
+::ng-deep .lt-tooltip-message {
+  font-weight: 500;
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+::ng-deep .lt-tooltip-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+::ng-deep .lt-tooltip-suggestion {
+  background: var(--ink-surface, #181825);
+  border: 1px solid var(--ink-border, #313244);
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 12px;
+  color: var(--ink-accent, #cba6f7);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+::ng-deep .lt-tooltip-suggestion:hover {
+  background: var(--ink-hover, #313244);
+}
+
+::ng-deep .lt-tooltip-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+::ng-deep .lt-tooltip-ignore {
+  background: transparent;
+  border: none;
+  color: var(--ink-subtle, #a6adc8);
+  font-size: 11px;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+
+::ng-deep .lt-tooltip-ignore:hover {
+  color: var(--ink-text, #cdd6f4);
+}

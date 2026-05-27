@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal, OnInit, output } from '@angular/core';
+import { Component, computed, effect, inject, signal, OnInit, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { fetch } from '@tauri-apps/plugin-http';
 import { AiService } from '../../core/services/ai.service';
@@ -6,13 +6,16 @@ import { BackupService } from '../../core/services/backup.service';
 import { ProjectService } from '../../core/services/project.service';
 import { SettingsService } from '../../core/services/settings.service';
 import { ThemeService } from '../../core/services/theme.service';
+import { LanguageToolService } from '../../core/services/language-tool.service';
+import { AppConfigService } from '../../core/services/app-config.service';
 import { AiProvider, ImageProvider, ImageSize, TranscriptionProvider } from '../../core/models/project.model';
 import { UiFontScale } from '../../core/models/app-settings.model';
 import { InkModalComponent } from './ink-modal.component';
 import { InkButtonComponent } from './ink-button.component';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { LtInstallModalComponent } from './lt-install-modal/lt-install-modal.component';
 
-type SettingsSection = 'editor' | 'ai' | 'appearance';
+type SettingsSection = 'editor' | 'ai' | 'appearance' | 'corrector';
 
 const AI_MODELS = [
   { id: 'claude-sonnet-4-20250514', label: 'Claude Sonnet 4 (recomendado)' },
@@ -23,7 +26,7 @@ const AI_MODELS = [
 @Component({
   selector: 'ink-settings-modal',
   standalone: true,
-  imports: [InkModalComponent, InkButtonComponent, FormsModule, TranslocoPipe],
+  imports: [InkModalComponent, InkButtonComponent, FormsModule, TranslocoPipe, LtInstallModalComponent],
   templateUrl: './ink-settings-modal.component.html',
   styleUrl: './ink-settings-modal.component.css',
 })
@@ -33,10 +36,13 @@ export class InkSettingsModalComponent implements OnInit {
   projectService = inject(ProjectService);
   readonly settingsService = inject(SettingsService);
   themeService = inject(ThemeService);
+  readonly ltService = inject(LanguageToolService);
+  readonly appConfigSvc = inject(AppConfigService);
 
   closed = output<void>();
 
   activeSection = signal<SettingsSection>('editor');
+  showLtInstallModal = signal(false);
 
   // Editor settings
   autosaveInterval = 30;
@@ -94,6 +100,7 @@ export class InkSettingsModalComponent implements OnInit {
     { id: 'editor' as SettingsSection, label: 'SETTINGS.SECTION_EDITOR' },
     { id: 'ai' as SettingsSection, label: 'SETTINGS.SECTION_AI' },
     { id: 'appearance' as SettingsSection, label: 'SETTINGS.SECTION_APPEARANCE' },
+    { id: 'corrector' as SettingsSection, label: 'SETTINGS.SECTION_CORRECTOR' },
   ];
 
   readonly aiModels = AI_MODELS;
@@ -161,9 +168,9 @@ export class InkSettingsModalComponent implements OnInit {
     this.closed.emit();
   }
 
-  saveAiSettings(): void {
+  async saveAiSettings(): Promise<void> {
     if (this.apiKeyInput.trim()) {
-      this.aiService.saveApiKey(this.apiKeyInput);
+      await this.aiService.saveApiKey(this.apiKeyInput);
     }
 
     const provider = this.selectedProvider();
@@ -191,8 +198,8 @@ export class InkSettingsModalComponent implements OnInit {
     this.closed.emit();
   }
 
-  clearApiKey(): void {
-    this.aiService.clearApiKey();
+  async clearApiKey(): Promise<void> {
+    await this.aiService.clearApiKey();
     this.apiKeyInput = '';
   }
 
@@ -248,4 +255,39 @@ export class InkSettingsModalComponent implements OnInit {
     this.closed.emit();
     setTimeout(() => this.backupService.createBackup(), 100);
   }
+
+  toggleLtEnabled(): void {
+    const currentlyEnabled = this.appConfigSvc.config().ltEnabled;
+    if (!currentlyEnabled) {
+      // Intentar activar
+      if (this.ltService.installState() === 'not-installed') {
+        this.showLtInstallModal.set(true);
+      } else {
+        this.ltService.startServer().then(() => {
+          this.appConfigSvc.setLtEnabled(true);
+        });
+      }
+    } else {
+      // Desactivar
+      this.ltService.stopServer();
+      this.appConfigSvc.setLtEnabled(false);
+    }
+  }
+
+  onLtInstallModalClosed(): void {
+    this.showLtInstallModal.set(false);
+  }
+
+  uninstallLt(): void {
+    this.ltService.uninstall();
+    this.appConfigSvc.setLtEnabled(false);
+  }
+
+  // Efecto: cuando termina la instalación desde settings, activar ltEnabled automáticamente
+  private _ltInstallEffect = effect(() => {
+    if (this.ltService.installState() === 'ready' && this.showLtInstallModal()) {
+      this.appConfigSvc.setLtEnabled(true);
+      this.showLtInstallModal.set(false);
+    }
+  });
 }

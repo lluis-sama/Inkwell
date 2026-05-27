@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>org.codeberg.frozenfangkb.inkwell</id>
+
+  <name>Inkwell</name>
+  <summary>Entorno de escritura creativa para escritores serios</summary>
+
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+
+  <description>
+    <p>
+      Inkwell es una alternativa open source a Scrivener, diseñada para Linux,
+      Windows y macOS. Ofrece un entorno completo para escritores de novelas,
+      guiones y proyectos de escritura larga.
+    </p>
+    <p>Características principales:</p>
+    <ul>
+      <li>Editor de texto enriquecido con modo máquina de escribir y modo foco</li>
+      <li>Binder para organizar documentos, carpetas y escenas</li>
+      <li>Tableros de corcho para visualizar la estructura narrativa</li>
+      <li>Snapshots para guardar versiones de cada documento</li>
+      <li>Asistente de IA integrado con soporte para Anthropic, Ollama y proveedores compatibles con OpenAI</li>
+      <li>Transcripción de audio</li>
+      <li>Exportación a DOCX, PDF, Markdown y otros formatos</li>
+      <li>Objetivos de escritura y estadísticas de sesión</li>
+      <li>Corrector gramatical avanzado con LanguageTool (descarga opcional)</li>
+      <li>Temas claro y oscuro basados en Catppuccin</li>
+      <li>Interfaz completamente en español e inglés</li>
+    </ul>
+  </description>
+
+  <launchable type="desktop-id">net.neocodelabs.inkwell.desktop</launchable>
+
+  <url type="homepage">https://codeberg.org/frozenfangkb/inkwell</url>
+  <url type="bugtracker">https://codeberg.org/frozenfangkb/inkwell/issues</url>
+  <url type="vcs-browser">https://codeberg.org/frozenfangkb/inkwell</url>
+
+  <developer id="org.codeberg.frozenfangkb">
+    <name>David Rodriguez Miranda</name>
+  </developer>
+
+  <categories>
+    <category>Office</category>
+    <category>WordProcessor</category>
+  </categories>
+
+  <keywords>
+    <keyword>escritura</keyword>
+    <keyword>novela</keyword>
+    <keyword>scrivener</keyword>
+    <keyword>editor</keyword>
+    <keyword>writing</keyword>
+    <keyword>novel</keyword>
+    <keyword>markdown</keyword>
+    <keyword>creative writing</keyword>
+  </keywords>
+
+  <screenshots>
+    <screenshot type="default">
+      <caption>Editor principal con tema oscuro Catppuccin Mocha</caption>
+      <image type="source">https://codeberg.org/frozenfangkb/inkwell/raw/branch/main/src-tauri/assets/linux/screenshots/01-editor.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Binder de documentos y estructura del proyecto</caption>
+      <image type="source">https://codeberg.org/frozenfangkb/inkwell/raw/branch/main/src-tauri/assets/linux/screenshots/02-binder.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Asistente de IA integrado</caption>
+      <image type="source">https://codeberg.org/frozenfangkb/inkwell/raw/branch/main/src-tauri/assets/linux/screenshots/03-ai-assistant.png</image>
+    </screenshot>
+  </screenshots>
+
+  <content_rating type="oars-1.1" />
+
+  <releases>
+    <release version="1.0.0" date="2026-01-01">
+      <description>
+        <p>Primera versión estable de Inkwell.</p>
+      </description>
+    </release>
+  </releases>
+
+  <supports>
+    <control>pointing</control>
+    <control>keyboard</control>
+  </supports>
+</component>

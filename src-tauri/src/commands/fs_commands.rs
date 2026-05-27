@@ -216,6 +216,34 @@ pub fn read_file_bytes(path: String) -> Result<Vec<u8>, String> {
     std::fs::read(&path).map_err(|e| format!("Error leyendo {}: {}", path, e))
 }
 
+// ─── Configuración de la aplicación ─────────────────────────────────────────
+
+#[tauri::command]
+pub async fn read_app_config(app: AppHandle) -> Result<String, String> {
+    let config_path = app.path().app_data_dir()
+        .map_err(|e| e.to_string())?
+        .join("config.json");
+
+    if !config_path.exists() {
+        return Ok(String::new());
+    }
+
+    std::fs::read_to_string(&config_path)
+        .map_err(|e| format!("Error leyendo config.json: {}", e))
+}
+
+#[tauri::command]
+pub async fn write_app_config(app: AppHandle, content: String) -> Result<(), String> {
+    let app_data_dir = app.path().app_data_dir()
+        .map_err(|e| e.to_string())?;
+
+    std::fs::create_dir_all(&app_data_dir)
+        .map_err(|e| format!("Error creando directorio de datos: {}", e))?;
+
+    std::fs::write(app_data_dir.join("config.json"), content)
+        .map_err(|e| format!("Error escribiendo config.json: {}", e))
+}
+
 /// Convierte un archivo ODT a DOCX usando LibreOffice CLI y retorna la ruta del DOCX temporal.
 /// Retorna error descriptivo si LibreOffice no está instalado.
 #[tauri::command]

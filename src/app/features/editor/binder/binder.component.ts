@@ -48,7 +48,22 @@ export class BinderComponent {
   showSearch    = signal(false);
   importing     = signal(false);
 
-  statusFilter = signal<DocumentStatus | 'all'>('all');
+  activeFilter = signal<DocumentStatus | null>(null);
+  filterDropdownOpen = signal(false);
+
+  selectFilter(status: DocumentStatus | null): void {
+    this.activeFilter.set(status);
+    this.filterDropdownOpen.set(false);
+  }
+
+  toggleFilterDropdown(): void {
+    this.filterDropdownOpen.update(v => !v);
+  }
+
+  readonly activeFilterEntry = computed(() => {
+    const filter = this.activeFilter();
+    return filter ? (this.statusEntries.find(e => e.key === filter) ?? null) : null;
+  });
 
   readonly statusEntries = Object.entries(DOCUMENT_STATUS_CONFIG).map(([key, val]) => ({
     key:   key as DocumentStatus,

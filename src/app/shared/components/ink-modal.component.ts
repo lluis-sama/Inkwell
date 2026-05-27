@@ -9,6 +9,7 @@ export class InkModalComponent {
   title          = input<string>('');
   hasActions     = input<boolean>(true);
   closeOnOverlay = input<boolean>(true);
+  showCloseButton = input<boolean>(true);
   widthClass     = input<string>('max-w-md');
 
   closed = output<void>();

@@ -1,11 +1,15 @@
-import { Injectable, inject, signal, computed } from '@angular/core';
+import { Injectable, inject, signal, computed, Injector } from '@angular/core';
 import { TauriBridgeService } from './tauri-bridge.service';
+import { AiService } from './ai.service';
+import { AppConfigService } from './app-config.service';
 import { Project, TreeNode, DEFAULT_PROJECT_SETTINGS, AuthorProfile, DocumentStatus } from '../models/project.model';
 import { projectJsonPath, deskNotesFolderPath, deskNotePath } from '../../shared/utils/project-paths';
 
 @Injectable({ providedIn: 'root' })
 export class ProjectService {
   private bridge = inject(TauriBridgeService);
+  private appConfig = inject(AppConfigService);
+  private injector = inject(Injector);
 
   readonly project   = signal<Project | null>(null);
   readonly basePath  = signal<string | null>(null);
@@ -24,6 +28,8 @@ export class ProjectService {
     this.basePath.set(basePath);
     this.project.set(project);
     await this.ensureDeskNotesFolder();
+    const aiService = this.injector.get(AiService);
+    await aiService.loadSession(basePath, project.id);
   }
 
   async createProject(basePath: string, name: string, description = ''): Promise<Project> {
@@ -149,27 +155,23 @@ export class ProjectService {
   }
 
   closeProject(): void {
+    const aiService = this.injector.get(AiService);
+    aiService.messages.set([]);
+    aiService.currentMode.set('analyze');
     this.project.set(null);
     this.basePath.set(null);
   }
 
   getRecentProjects(): Array<{ name: string; basePath: string; openedAt: string }> {
-    const raw = localStorage.getItem('inkwell-recent-projects');
-    if (!raw) return [];
-    try { return JSON.parse(raw); } catch { return []; }
+    return this.appConfig.getRecentProjects();
   }
 
-  addRecentProject(name: string, basePath: string): void {
-    const recent = this.getRecentProjects()
-      .filter(p => p.basePath !== basePath)
-      .slice(0, 9);
-    recent.unshift({ name, basePath, openedAt: new Date().toISOString() });
-    localStorage.setItem('inkwell-recent-projects', JSON.stringify(recent));
+  async addRecentProject(name: string, basePath: string): Promise<void> {
+    await this.appConfig.addRecentProject(name, basePath);
   }
 
-  removeRecentProject(basePath: string): void {
-    const recent = this.getRecentProjects().filter(p => p.basePath !== basePath);
-    localStorage.setItem('inkwell-recent-projects', JSON.stringify(recent));
+  async removeRecentProject(basePath: string): Promise<void> {
+    await this.appConfig.removeRecentProject(basePath);
   }
 
   async ensureDeskNotesFolder(): Promise<void> {
@@ -182,6 +184,11 @@ export class ProjectService {
   }
 
   async loadDeskNotesTree(): Promise<TreeNode[]> {
+    const project = this.project();
+    if (project?.deskTree && project.deskTree.length > 0) {
+      return project.deskTree;
+    }
+
     const basePath = this.basePath();
     if (!basePath) return [];
     const ids = await this.bridge.listJsonFiles(deskNotesFolderPath(basePath));
@@ -194,11 +201,84 @@ export class ProjectService {
       } catch {
       }
     }
+
+    if (nodes.length > 0) {
+      await this.updateDeskTree(nodes);
+    }
     return nodes;
+  }
+
+  async updateDeskTree(tree: TreeNode[]): Promise<void> {
+    this.project.update(p => p ? { ...p, deskTree: tree } : p);
+    await this.save();
+  }
+
+  async addDeskNode(
+    type: 'folder' | 'document',
+    title: string,
+    parentId: string | null = null,
+  ): Promise<TreeNode> {
+    const node: TreeNode = {
+      id: crypto.randomUUID(),
+      title,
+      type,
+      children: [],
+    };
+
+    this.project.update(p => {
+      if (!p) return p;
+      const deskTree = p.deskTree ?? [];
+      const tree = parentId
+        ? insertNode(deskTree, parentId, node)
+        : [...deskTree, node];
+      return { ...p, deskTree: tree };
+    });
+
+    await this.save();
+    return node;
+  }
+
+  async removeDeskNode(id: string): Promise<void> {
+    this.project.update(p => {
+      if (!p) return p;
+      const deskTree = p.deskTree ?? [];
+      return { ...p, deskTree: this.deleteDeskNodeAndFlatten(deskTree, id) };
+    });
+    await this.save();
+  }
+
+  async renameDeskNode(id: string, title: string): Promise<void> {
+    this.project.update(p => {
+      if (!p) return p;
+      const deskTree = p.deskTree ?? [];
+      return { ...p, deskTree: renameNode(deskTree, id, title) };
+    });
+    await this.save();
+  }
+
+  private flattenDocuments(nodes: TreeNode[]): TreeNode[] {
+    const result: TreeNode[] = [];
+    for (const n of nodes) {
+      if (n.type === 'document') result.push({ ...n, children: [] });
+      else result.push(...this.flattenDocuments(n.children));
+    }
+    return result;
+  }
+
+  private deleteDeskNodeAndFlatten(tree: TreeNode[], id: string): TreeNode[] {
+    const result: TreeNode[] = [];
+    for (const n of tree) {
+      if (n.id === id) {
+        result.push(...this.flattenDocuments(n.children));
+      } else {
+        result.push({ ...n, children: this.deleteDeskNodeAndFlatten(n.children, id) });
+      }
+    }
+    return result;
   }
 }
 
-function insertNode(tree: TreeNode[], parentId: string, node: TreeNode): TreeNode[] {
+export function insertNode(tree: TreeNode[], parentId: string, node: TreeNode): TreeNode[] {
   return tree.map(n => {
     if (n.id === parentId) {
       if (n.type === 'document') throw new Error('No se pueden añadir hijos a un documento');

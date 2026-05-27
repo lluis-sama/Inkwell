@@ -73,7 +73,7 @@ export class NewProjectModalComponent {
         this.name().trim(),
         this.description.trim(),
       );
-      this.projectService.addRecentProject(this.name().trim(), fullPath);
+      await this.projectService.addRecentProject(this.name().trim(), fullPath);
 
       // Aplicar la plantilla
       const template  = this.selectedTemplate();

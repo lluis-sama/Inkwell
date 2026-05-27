@@ -1,76 +1,69 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, computed } from '@angular/core';
 import {
   AppSettings,
-  DEFAULT_APP_SETTINGS,
   DeskPosition,
   UiFontScale,
 } from '../models/app-settings.model';
-
-const STORAGE_KEY = 'inkwell-app-settings';
+import { AppConfigService } from './app-config.service';
 
 @Injectable({ providedIn: 'root' })
 export class SettingsService {
-  readonly settings = signal<AppSettings>(this.loadSettings());
+  private appConfig = inject(AppConfigService);
 
-  private loadSettings(): AppSettings {
-    let stored: Partial<AppSettings> | null = null;
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        stored = JSON.parse(raw) as Partial<AppSettings>;
-      }
-    } catch {
-      // Corrupted storage — fall back to defaults
-    }
+  readonly settings = computed(() => this.appConfig.config().appSettings);
 
-    return {
-      ...DEFAULT_APP_SETTINGS,
-      ...stored,
-      editor: { ...DEFAULT_APP_SETTINGS.editor, ...stored?.editor },
-      appearance: { ...DEFAULT_APP_SETTINGS.appearance, ...stored?.appearance },
-      aiPanel: { ...DEFAULT_APP_SETTINGS.aiPanel, ...stored?.aiPanel },
-      deskPanel: { ...DEFAULT_APP_SETTINGS.deskPanel, ...stored?.deskPanel },
-    };
+  async setEditorFontFamily(fontFamily: string): Promise<void> {
+    await this.appConfig.setAppSettings({
+      ...this.settings(),
+      editor: { ...this.settings().editor, fontFamily },
+    });
   }
 
-  private updateSettings(partial: Partial<AppSettings>): void {
-    const current = this.settings();
-    const next: AppSettings = { ...current, ...partial };
-    this.settings.set(next);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-  }
-
-  setEditorFontFamily(fontFamily: string): void {
-    this.updateSettings({ editor: { ...this.settings().editor, fontFamily } });
-  }
-
-  setEditorFontSize(fontSize: number): void {
+  async setEditorFontSize(fontSize: number): Promise<void> {
     const clamped = Math.min(Math.max(fontSize, 12), 32);
-    this.updateSettings({ editor: { ...this.settings().editor, fontSize: clamped } });
+    await this.appConfig.setAppSettings({
+      ...this.settings(),
+      editor: { ...this.settings().editor, fontSize: clamped },
+    });
   }
 
-  setUiFontScale(uiFontScale: UiFontScale): void {
-    this.updateSettings({ appearance: { ...this.settings().appearance, uiFontScale } });
+  async setUiFontScale(uiFontScale: UiFontScale): Promise<void> {
+    await this.appConfig.setAppSettings({
+      ...this.settings(),
+      appearance: { ...this.settings().appearance, uiFontScale },
+    });
   }
 
-  setAiPanelWidth(width: number): void {
+  async setAiPanelWidth(width: number): Promise<void> {
     const clamped = Math.min(Math.max(width, 240), 600);
-    this.updateSettings({ aiPanel: { width: clamped } });
+    await this.appConfig.setAppSettings({
+      ...this.settings(),
+      aiPanel: { width: clamped },
+    });
   }
 
-  setDeskPosition(position: DeskPosition): void {
-    this.updateSettings({ deskPanel: { ...this.settings().deskPanel, position } });
+  async setDeskPosition(position: DeskPosition): Promise<void> {
+    await this.appConfig.setAppSettings({
+      ...this.settings(),
+      deskPanel: { ...this.settings().deskPanel, position },
+    });
   }
 
-  setDeskBottomHeight(height: number): void {
+  async setDeskBottomHeight(height: number): Promise<void> {
     const max = Math.floor(window.innerHeight * 0.70);
     const clamped = Math.min(Math.max(height, 150), max);
-    this.updateSettings({ deskPanel: { ...this.settings().deskPanel, bottomHeight: clamped } });
+    await this.appConfig.setAppSettings({
+      ...this.settings(),
+      deskPanel: { ...this.settings().deskPanel, bottomHeight: clamped },
+    });
   }
 
-  setDeskSideWidth(width: number): void {
+  async setDeskSideWidth(width: number): Promise<void> {
     const max = Math.floor(window.innerWidth * 0.60);
     const clamped = Math.min(Math.max(width, 240), max);
-    this.updateSettings({ deskPanel: { ...this.settings().deskPanel, sideWidth: clamped } });
+    await this.appConfig.setAppSettings({
+      ...this.settings(),
+      deskPanel: { ...this.settings().deskPanel, sideWidth: clamped },
+    });
   }
 }

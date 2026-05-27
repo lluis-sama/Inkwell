@@ -3,6 +3,7 @@ import { RouterLink, Router } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { ThemeService } from '../../core/services/theme.service';
 import { ProjectService } from '../../core/services/project.service';
+import { AppConfigService } from '../../core/services/app-config.service';
 import { InkSettingsModalComponent } from './ink-settings-modal.component';
 import { AuthorProfileModalComponent } from './author-profile-modal.component';
 import { ShortcutsModalComponent } from './shortcuts-modal.component';
@@ -27,6 +28,7 @@ export class InkNavComponent {
   protected consistencySvc   = inject(ConsistencyService);
   protected transcriptionSvc = inject(TranscriptionService);
   readonly #transloco = inject(TranslocoService);
+  readonly #appConfig = inject(AppConfigService);
   readonly activeLang = signal(this.#transloco.getActiveLang());
 
   showSettings      = signal(false);
@@ -49,10 +51,10 @@ export class InkNavComponent {
     this.showAuthorProfile.set(false);
   }
 
-  toggleLang(): void {
+  async toggleLang(): Promise<void> {
     const next = this.activeLang() === 'es' ? 'en' : 'es';
     this.#transloco.setActiveLang(next);
     this.activeLang.set(next);
-    localStorage.setItem('inkwell-lang', next);
+    await this.#appConfig.setLang(next);
   }
 }

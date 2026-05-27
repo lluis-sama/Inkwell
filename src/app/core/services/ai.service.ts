@@ -1,7 +1,11 @@
-import { Injectable, signal, inject } from '@angular/core';
+import { Injectable, signal, inject, computed } from '@angular/core';
 import { fetch } from '@tauri-apps/plugin-http';
 import { ProjectService } from './project.service';
 import { AiProvider } from '../models/project.model';
+import { TauriBridgeService } from './tauri-bridge.service';
+import { AiSession } from '../models/ai-session.model';
+import { aiSessionPath } from '../../shared/utils/project-paths';
+import { AppConfigService } from './app-config.service';
 
 export type AiMode = 'analyze' | 'review' | 'brainstorm' | 'synopsis';
 
@@ -43,19 +47,97 @@ const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
 @Injectable({ providedIn: 'root' })
 export class AiService {
   private projectService = inject(ProjectService);
+  private bridge         = inject(TauriBridgeService);
+  private appConfig      = inject(AppConfigService);
 
-  // API key de Anthropic (global, en localStorage)
-  readonly apiKey    = signal<string>(localStorage.getItem('inkwell-api-key') ?? '');
+  // API key de Anthropic (global, delegada a AppConfigService)
+  readonly apiKey    = computed(() => this.appConfig.config().apiKey);
   readonly hasApiKey = () => this.apiKey().trim().length > 0;
 
-  saveApiKey(key: string): void {
-    this.apiKey.set(key.trim());
-    localStorage.setItem('inkwell-api-key', key.trim());
+  // ─── Estado de conversación ──────────────────────────────────────────────
+  readonly messages         = signal<AiMessage[]>([]);
+  readonly currentMode      = signal<AiMode>('analyze');
+  readonly isStreaming      = signal<boolean>(false);
+  readonly streamingContent = signal<string>('');
+
+  async saveApiKey(key: string): Promise<void> {
+    await this.appConfig.setApiKey(key);
   }
 
-  clearApiKey(): void {
-    this.apiKey.set('');
-    localStorage.removeItem('inkwell-api-key');
+  async clearApiKey(): Promise<void> {
+    await this.appConfig.clearApiKey();
+  }
+
+  // ─── Persistencia de sesión ──────────────────────────────────────────────
+
+  async loadSession(basePath: string, projectId: string): Promise<void> {
+    try {
+      const raw = await this.bridge.readJsonFile(aiSessionPath(basePath));
+      const session = JSON.parse(raw) as AiSession;
+      if (session?.projectId === projectId) {
+        this.messages.set(session.messages ?? []);
+        this.currentMode.set(session.mode ?? 'analyze');
+      }
+    } catch {
+      // Fichero no existe o es inválido — estado inicial, sin error
+    }
+  }
+
+  async clearSession(basePath: string, projectId: string): Promise<void> {
+    this.messages.set([]);
+    this.currentMode.set('analyze');
+    this.streamingContent.set('');
+    await this.persistSession(basePath, projectId);
+  }
+
+  private async persistSession(basePath: string, projectId: string): Promise<void> {
+    const session: AiSession = {
+      projectId,
+      mode:      this.currentMode(),
+      messages:  this.messages(),
+      updatedAt: new Date().toISOString(),
+    };
+    await this.bridge.writeJsonFile(aiSessionPath(basePath), JSON.stringify(session, null, 2));
+  }
+
+  // ─── Envío de mensajes ───────────────────────────────────────────────────
+
+  async sendMessage(userInput: string, context: string, basePath: string, projectId: string): Promise<void> {
+    // Añadir mensaje del usuario
+    this.messages.update(msgs => [...msgs, { role: 'user', content: userInput }]);
+    this.isStreaming.set(true);
+    this.streamingContent.set('');
+
+    try {
+      let fullResponse = '';
+
+      for await (const chunk of this.streamMessage(
+        this.messages(),
+        this.currentMode(),
+        context,
+      )) {
+        fullResponse += chunk;
+        this.streamingContent.set(fullResponse);
+      }
+
+      // Mover streaming content al historial
+      this.messages.update(msgs => [
+        ...msgs,
+        { role: 'assistant', content: fullResponse },
+      ]);
+      this.streamingContent.set('');
+
+      // Persistir tras cada intercambio
+      await this.persistSession(basePath, projectId);
+
+    } catch (e: unknown) {
+      // Eliminar el mensaje de usuario si falló
+      this.messages.update(msgs => msgs.slice(0, -1));
+      this.streamingContent.set('');
+      throw e; // relanzar para que el componente pueda mostrar el error
+    } finally {
+      this.isStreaming.set(false);
+    }
   }
 
   // ─── Estado del proveedor activo ─────────────────────────────────────────

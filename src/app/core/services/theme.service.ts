@@ -1,4 +1,5 @@
-import { Injectable, signal, effect, inject } from '@angular/core';
+import { Injectable, inject, computed, effect } from '@angular/core';
+import { AppConfigService } from './app-config.service';
 import { SettingsService } from './settings.service';
 import { UiFontScale } from '../models/app-settings.model';
 
@@ -6,9 +7,10 @@ export type Theme = 'dark' | 'light';
 
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
-  private readonly settingsService = inject(SettingsService);
+  private appConfig       = inject(AppConfigService);
+  private settingsService = inject(SettingsService);
 
-  readonly theme = signal<Theme>(this.getInitialTheme());
+  readonly theme = computed(() => this.appConfig.config().theme as Theme);
 
   private readonly FONT_SCALE_MAP: Record<UiFontScale, string> = {
     sm: '14px',
@@ -18,11 +20,12 @@ export class ThemeService {
   };
 
   constructor() {
+    // Aplica el tema al DOM cuando cambia el config
     effect(() => {
       document.documentElement.setAttribute('data-theme', this.theme());
-      localStorage.setItem('inkwell-theme', this.theme());
     });
 
+    // Aplica la escala de fuente cuando cambia
     effect(() => {
       this.applyFontScale(this.settingsService.settings().appearance.uiFontScale);
     });
@@ -32,17 +35,11 @@ export class ThemeService {
     document.documentElement.style.fontSize = this.FONT_SCALE_MAP[scale];
   }
 
-  toggle(): void {
-    this.theme.update(t => t === 'dark' ? 'light' : 'dark');
+  async toggle(): Promise<void> {
+    await this.appConfig.setTheme(this.theme() === 'dark' ? 'light' : 'dark');
   }
 
-  setTheme(theme: Theme): void {
-    this.theme.set(theme);
-  }
-
-  private getInitialTheme(): Theme {
-    const stored = localStorage.getItem('inkwell-theme') as Theme | null;
-    if (stored === 'dark' || stored === 'light') return stored;
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  async setTheme(theme: Theme): Promise<void> {
+    await this.appConfig.setTheme(theme);
   }
 }
