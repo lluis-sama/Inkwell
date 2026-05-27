@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { invoke } from '@tauri-apps/api/core';
+import { listen } from '@tauri-apps/api/event';
 
 export interface UpdateInfo {
   version: string;
@@ -91,5 +92,37 @@ export class TauriBridgeService {
 
   openReleasesPage(url: string): Promise<void> {
     return invoke<void>('open_releases_page', { url });
+  }
+
+  ltIsInstalled(): Promise<boolean> {
+    return invoke<boolean>('lt_is_installed');
+  }
+
+  ltDownloadAndInstall(): Promise<void> {
+    return invoke<void>('lt_download_and_install');
+  }
+
+  ltStartServer(): Promise<void> {
+    return invoke<void>('lt_start_server');
+  }
+
+  ltStopServer(): Promise<void> {
+    return invoke<void>('lt_stop_server');
+  }
+
+  ltServerReady(): Promise<boolean> {
+    return invoke<boolean>('lt_server_ready');
+  }
+
+  ltUninstall(): Promise<void> {
+    return invoke<void>('lt_uninstall');
+  }
+
+  ltOnProgress(callback: (payload: { phase: string; percent: number; message: string }) => void): Promise<() => void> {
+    return listen<{ phase: string; percent: number; message: string }>('lt-progress', (event) => callback(event.payload));
+  }
+
+  ltOnInstallComplete(callback: () => void): Promise<() => void> {
+    return listen<void>('lt-install-complete', () => callback());
   }
 }

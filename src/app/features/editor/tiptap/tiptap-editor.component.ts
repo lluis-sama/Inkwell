@@ -20,6 +20,9 @@ import { Plugin, PluginKey } from "prosemirror-state";
 import { Decoration, DecorationSet } from "prosemirror-view";
 import { EditorToolbarComponent } from "./editor-toolbar.component";
 import { SettingsService } from "../../../core/services/settings.service";
+import { LanguageToolService } from "../../../core/services/language-tool.service";
+import { AppConfigService } from "../../../core/services/app-config.service";
+import { LanguageTool } from "../../../shared/utils/tiptap-languagetool";
 
 interface SearchState {
   term: string;
@@ -97,6 +100,8 @@ export class TiptapEditorComponent
   implements AfterViewInit, OnChanges, OnDestroy
 {
   private readonly settingsService = inject(SettingsService);
+  readonly ltService = inject(LanguageToolService);
+  private readonly appConfigSvc = inject(AppConfigService);
 
   readonly editorFontFamily = computed(() => this.settingsService.settings().editor.fontFamily);
   readonly editorFontSize   = computed(() => this.settingsService.settings().editor.fontSize);
@@ -127,14 +132,30 @@ export class TiptapEditorComponent
       addProseMirrorPlugins: () => [buildSearchPlugin()],
     });
 
+    const extensions = [
+      StarterKit,
+      Placeholder.configure({ placeholder: this.placeholder() }),
+      CharacterCount,
+      SearchPlugin,
+    ];
+
+    // CRÍTICO-4: solo añadir la extensión LanguageTool si el servidor ya está listo
+    if (this.ltService.serverReady()) {
+      extensions.push(LanguageTool.configure({
+        language: 'auto',
+        apiUrl: this.ltService.apiUrl,
+        automaticMode: true,
+        documentId: undefined,
+        disabledRules: this.appConfigSvc.config().ltDisabledRules,
+        onIgnoreRule: (ruleId: string) => {
+          this.appConfigSvc.addLtDisabledRule(ruleId);
+        },
+      }));
+    }
+
     this.editor = new Editor({
       element: this.editorEl.nativeElement,
-      extensions: [
-        StarterKit,
-        Placeholder.configure({ placeholder: this.placeholder() }),
-        CharacterCount,
-        SearchPlugin,
-      ],
+      extensions,
       content: this.content(),
       editable: this.editable(),
     });

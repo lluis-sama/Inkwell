@@ -4,3 +4,9 @@
   <app-shortcuts-modal (closed)="showShortcuts.set(false)"/>
 }
 <app-update-modal />
+@if (showLtWelcomeModal()) {
+  <app-lt-welcome-modal (closed)="onLtWelcomeClosed($event)" />
+}
+@if (showLtInstallModal()) {
+  <app-lt-install-modal (closed)="showLtInstallModal.set(false)" />
+}

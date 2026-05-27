@@ -13,6 +13,9 @@ export interface AppConfig {
   lang:           'es' | 'en';
   appSettings:    AppSettings;
   recentProjects: RecentProject[];
+  ltPromptShown:  boolean;
+  ltEnabled:      boolean;
+  ltDisabledRules: string[];
 }
 
 export const DEFAULT_APP_CONFIG: AppConfig = {
@@ -22,4 +25,7 @@ export const DEFAULT_APP_CONFIG: AppConfig = {
   lang:           'es',
   appSettings:    DEFAULT_APP_SETTINGS,
   recentProjects: [],
+  ltPromptShown:  false,
+  ltEnabled:      false,
+  ltDisabledRules: [],
 };

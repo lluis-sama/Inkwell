@@ -87,6 +87,26 @@ export class AppConfigService {
     await this.persist();
   }
 
+  async setLtPromptShown(value: boolean): Promise<void> {
+    this.config.update(c => ({ ...c, ltPromptShown: value }));
+    await this.persist();
+  }
+
+  async setLtEnabled(value: boolean): Promise<void> {
+    this.config.update(c => ({ ...c, ltEnabled: value }));
+    await this.persist();
+  }
+
+  async addLtDisabledRule(ruleId: string): Promise<void> {
+    this.config.update(c => ({
+      ...c,
+      ltDisabledRules: c.ltDisabledRules.includes(ruleId)
+        ? c.ltDisabledRules
+        : [...c.ltDisabledRules, ruleId],
+    }));
+    await this.persist();
+  }
+
   getRecentProjects(): RecentProject[] {
     return this.config().recentProjects;
   }
@@ -178,7 +198,10 @@ export class AppConfigService {
       theme:          stored.theme          ?? DEFAULT_APP_CONFIG.theme,
       lang:           stored.lang           ?? DEFAULT_APP_CONFIG.lang,
       appSettings,
-      recentProjects: stored.recentProjects ?? DEFAULT_APP_CONFIG.recentProjects,
+      recentProjects:   stored.recentProjects   ?? DEFAULT_APP_CONFIG.recentProjects,
+      ltPromptShown:    stored.ltPromptShown    ?? DEFAULT_APP_CONFIG.ltPromptShown,
+      ltEnabled:        stored.ltEnabled        ?? DEFAULT_APP_CONFIG.ltEnabled,
+      ltDisabledRules:  stored.ltDisabledRules  ?? DEFAULT_APP_CONFIG.ltDisabledRules,
     };
   }
 }
