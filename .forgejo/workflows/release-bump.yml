@@ -1,0 +1,77 @@
+name: Release — version bump
+
+on:
+  push:
+    branches:
+      - 'release/v*'
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: https://data.forgejo.org/actions/checkout@v3
+        with:
+          token: ${{ secrets.RELEASE_TOKEN }}
+          fetch-depth: 0
+
+      - name: Extraer versión del nombre de rama
+        id: version
+        run: |
+          BRANCH="${{ github.ref_name }}"
+          VERSION="${BRANCH#release/v}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Versión detectada: $VERSION"
+
+      - name: Actualizar package.json
+        run: |
+          jq --arg v "${{ steps.version.outputs.version }}" '.version = $v' \
+            package.json > tmp.json && mv tmp.json package.json
+
+      - name: Actualizar tauri.conf.json
+        run: |
+          jq --arg v "${{ steps.version.outputs.version }}" '.version = $v' \
+            src-tauri/tauri.conf.json > tmp.json && mv tmp.json src-tauri/tauri.conf.json
+
+      - name: Actualizar Cargo.toml
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          sed -i '/^\[package\]/,/^\[/{s/^version = "[^"]*"/version = "'"$VERSION"'"/}' \
+            src-tauri/Cargo.toml
+
+      - name: Instalar Rust
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Actualizar Cargo.lock
+        run: |
+          cargo update --manifest-path src-tauri/Cargo.toml 2>/dev/null || true
+
+      - name: Commit y push
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          git config user.name "Forgejo Actions"
+          git config user.email "actions@forgejo"
+          git add \
+            package.json \
+            src-tauri/tauri.conf.json \
+            src-tauri/Cargo.toml \
+            src-tauri/Cargo.lock
+          git commit -m "chore: bump version to $VERSION [skip ci]"
+          git push origin HEAD
+
+      - name: Crear Pull Request
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          BRANCH="${{ github.ref_name }}"
+          PAYLOAD=$(jq -n \
+            --arg title "Release v$VERSION" \
+            --arg head "$BRANCH" \
+            --arg body "Version bump automático a \`$VERSION\`.\n\nRevisar los cambios de versión en \`package.json\`, \`tauri.conf.json\` y \`Cargo.toml\`, y mergear para continuar con la release.\n\nTras el merge: crear y pushear el tag \`v$VERSION\` sobre main para disparar el build de producción." \
+            '{title: $title, head: $head, base: "main", body: $body}')
+          curl -s -X POST \
+            "https://codeberg.org/api/v1/repos/frozenfangkb/inkwell/pulls" \
+            -H "Authorization: token ${{ secrets.RELEASE_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD"
