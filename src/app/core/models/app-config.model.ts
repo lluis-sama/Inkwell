@@ -16,6 +16,7 @@ export interface AppConfig {
   ltPromptShown:  boolean;
   ltEnabled:      boolean;
   ltDisabledRules: string[];
+  ltLanguage?:    string;
 }
 
 export const DEFAULT_APP_CONFIG: AppConfig = {
@@ -28,4 +29,5 @@ export const DEFAULT_APP_CONFIG: AppConfig = {
   ltPromptShown:  false,
   ltEnabled:      false,
   ltDisabledRules: [],
+  ltLanguage:     undefined,
 };

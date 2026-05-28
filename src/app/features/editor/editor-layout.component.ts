@@ -18,6 +18,7 @@ import { AiAssistantPanelComponent } from './ai-assistant/ai-assistant-panel.com
 import { InkNavComponent } from '../../shared/components/ink-nav.component';
 import { TauriBridgeService } from '../../core/services/tauri-bridge.service';
 import { ToastService } from '../../shared/services/toast.service';
+import { LanguageToolService } from '../../core/services/language-tool.service';
 import { ExportModalComponent } from '../export/export-modal.component';
 import { SynopsisModalComponent } from './synopsis/synopsis-modal.component';
 import { FindReplaceBarComponent } from './find-replace-bar/find-replace-bar.component';
@@ -46,8 +47,10 @@ export class EditorLayoutComponent implements OnInit, OnDestroy {
   private toast            = inject(ToastService);
   private statsService     = inject(StatsService);
   private settingsService  = inject(SettingsService);
+  readonly ltService       = inject(LanguageToolService);
 
   showBinder          = signal(true);
+  editorRebuildKey    = signal(0);
   focusMode           = signal(false);
   saveStatus          = signal<SaveStatus>('saved');
   activeDocumentId    = signal<string | null>(null);
@@ -114,6 +117,26 @@ export class EditorLayoutComponent implements OnInit, OnDestroy {
           },
         },
       });
+    });
+
+    // Efecto: cuando cambia el idioma de LanguageTool, guardar documento y recrear editor
+    let prevLang: string | undefined;
+    effect(() => {
+      const lang = this.ltService.resolvedLanguage();
+      if (prevLang === undefined) {
+        prevLang = lang;
+        return;
+      }
+      if (lang === prevLang) return;
+      prevLang = lang;
+
+      if (this.isDirty && this.activeDocument()) {
+        this.saveCurrentDocument()
+          .then(() => this.editorRebuildKey.update(k => k + 1))
+          .catch(() => this.editorRebuildKey.update(k => k + 1));
+      } else {
+        this.editorRebuildKey.update(k => k + 1);
+      }
     });
   }
 

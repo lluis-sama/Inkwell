@@ -124,6 +124,7 @@ export interface LanguageToolOptions {
   documentId: string | number | undefined;
   disabledRules?: string[];
   onIgnoreRule?: (ruleId: string) => void;
+  motherTongue?: string;
 }
 
 interface LanguageToolStorage {
@@ -155,6 +156,8 @@ let decorationSet: DecorationSet;
 let apiUrl = '';
 
 let language = 'auto';
+
+let motherTongue: string | undefined;
 
 let textNodesWithPosition: TextNodesWithPosition[] = [];
 
@@ -387,6 +390,9 @@ const moreThan500Words = (s: string) => s.trim().split(/\s+/).length >= 500;
 const getMatchAndSetDecorations = async (doc: any, text: string, originalFrom: number) => {
   try {
     let body = `text=${encodeURIComponent(text)}&language=${encodeURIComponent(language)}&enabledOnly=false`;
+    if (motherTongue) {
+      body += `&motherTongue=${encodeURIComponent(motherTongue)}`;
+    }
     if (ignoredRuleIds.length) {
       body += `&disabledRules=${encodeURIComponent(ignoredRuleIds.join(','))}`;
     }
@@ -635,10 +641,11 @@ export const LanguageTool = Extension.create<LanguageToolOptions, LanguageToolSt
   },
 
   addProseMirrorPlugins() {
-    const { apiUrl: optionsApiUrl, language: optionsLanguage, disabledRules: optionsDisabledRules, onIgnoreRule: optionsOnIgnoreRule } = this.options;
+    const { apiUrl: optionsApiUrl, language: optionsLanguage, disabledRules: optionsDisabledRules, onIgnoreRule: optionsOnIgnoreRule, motherTongue: optionsMotherTongue } = this.options;
 
     apiUrl = optionsApiUrl;
     language = optionsLanguage;
+    motherTongue = optionsMotherTongue;
     ignoredRuleIds = optionsDisabledRules ?? [];
     onIgnoreRuleCallback = optionsOnIgnoreRule;
 

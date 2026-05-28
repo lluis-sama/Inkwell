@@ -11,6 +11,7 @@ import {
   signal,
   computed,
   inject,
+  effect,
 } from "@angular/core";
 import { Editor, Extension } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
@@ -115,6 +116,7 @@ export class TiptapEditorComponent
   typewriterMode = input<boolean>(false);
   spellcheck = input<boolean>(true);
   compact = input<boolean>(false);
+  rebuildKey = input<number>(0);
 
   contentChanged = output<object>();
 
@@ -127,6 +129,36 @@ export class TiptapEditorComponent
   charCount = signal<number>(0);
 
   ngAfterViewInit(): void {
+    this.createEditor();
+
+    // Recrear el editor cuando cambia el idioma de LanguageTool
+    // (disparado desde editor-layout.component.ts tras guardar)
+    let prevRebuildKey = this.rebuildKey();
+    effect(() => {
+      const key = this.rebuildKey();
+      if (key === prevRebuildKey) return;
+      prevRebuildKey = key;
+
+      // Emitir contenido pendiente inmediatamente antes de destruir
+      if (this.debounceTimer) {
+        clearTimeout(this.debounceTimer);
+        this.debounceTimer = null;
+      }
+      if (this.editor) {
+        const json = this.editor.getJSON();
+        const serialized = JSON.stringify(json);
+        if (serialized !== this.lastEmittedContent) {
+          this.lastEmittedContent = serialized;
+          this.contentChanged.emit(json);
+        }
+      }
+
+      this.destroyEditor();
+      this.createEditor();
+    });
+  }
+
+  private createEditor(): void {
     const SearchPlugin = Extension.create({
       name: 'inkwellSearch',
       addProseMirrorPlugins: () => [buildSearchPlugin()],
@@ -141,11 +173,13 @@ export class TiptapEditorComponent
 
     // CRÍTICO-4: solo añadir la extensión LanguageTool si el servidor ya está listo
     if (this.ltService.serverReady()) {
+      const lang = this.ltService.resolvedLanguage();
       extensions.push(LanguageTool.configure({
-        language: 'auto',
+        language: lang,
         apiUrl: this.ltService.apiUrl,
         automaticMode: true,
         documentId: undefined,
+        motherTongue: lang,
         disabledRules: this.appConfigSvc.config().ltDisabledRules,
         onIgnoreRule: (ruleId: string) => {
           this.appConfigSvc.addLtDisabledRule(ruleId);
@@ -180,6 +214,12 @@ export class TiptapEditorComponent
     });
   }
 
+  private destroyEditor(): void {
+    this.editorReady.set(null);
+    this.editor?.destroy();
+    this.editor = null;
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
     if (changes["content"] && this.editor && !changes["content"].firstChange) {
       const incoming = JSON.stringify(changes["content"].currentValue);
@@ -194,8 +234,7 @@ export class TiptapEditorComponent
 
   ngOnDestroy(): void {
     if (this.debounceTimer) clearTimeout(this.debounceTimer);
-    this.editorReady.set(null);
-    this.editor?.destroy();
+    this.destroyEditor();
   }
 
   find(query: string, caseSensitive = false): void {

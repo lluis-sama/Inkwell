@@ -107,6 +107,11 @@ export class AppConfigService {
     await this.persist();
   }
 
+  async setLtLanguage(value: string | undefined): Promise<void> {
+    this.config.update(c => ({ ...c, ltLanguage: value }));
+    await this.persist();
+  }
+
   getRecentProjects(): RecentProject[] {
     return this.config().recentProjects;
   }
@@ -202,6 +207,7 @@ export class AppConfigService {
       ltPromptShown:    stored.ltPromptShown    ?? DEFAULT_APP_CONFIG.ltPromptShown,
       ltEnabled:        stored.ltEnabled        ?? DEFAULT_APP_CONFIG.ltEnabled,
       ltDisabledRules:  stored.ltDisabledRules  ?? DEFAULT_APP_CONFIG.ltDisabledRules,
+      ltLanguage:       stored.ltLanguage       ?? DEFAULT_APP_CONFIG.ltLanguage,
     };
   }
 }
