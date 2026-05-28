@@ -84,6 +84,7 @@
               [focusMode]="focusMode()"
               [typewriterMode]="typewriterMode()"
               [spellcheck]="projectService.project()?.settings?.spellcheck ?? true"
+              [rebuildKey]="editorRebuildKey()"
               (contentChanged)="onContentChanged($event)"/>
           } @else {
             <!-- Estado vacío -->

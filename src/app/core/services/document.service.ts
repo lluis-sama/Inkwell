@@ -114,7 +114,9 @@ export class DocumentService {
       updatedAt: new Date().toISOString(),
     };
     await this.bridge.writeJsonFile(deskNotePath(basePath, id), JSON.stringify(doc, null, 2));
-    return { id, title, type: 'document', children: [] };
+    const node: TreeNode = { id, title, type: 'document', children: [] };
+    await this.project.addDeskDocumentNode(node);
+    return node;
   }
 
   async loadDeskDocument(id: string): Promise<DocumentFile> {

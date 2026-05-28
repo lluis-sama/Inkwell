@@ -473,6 +473,24 @@
             </label>
           </div>
 
+          <!-- Idioma del corrector -->
+          <div class="flex flex-col gap-1.5">
+            <label class="field-label">
+              {{ 'SETTINGS.LT.LANGUAGE_LABEL' | transloco }}
+            </label>
+            <select
+              [(ngModel)]="ltLanguage"
+              (change)="onLtLanguageChanged(ltLanguage)"
+              class="form-input">
+              @for (opt of ltLanguageOptions; track opt.value) {
+                <option [value]="opt.value">{{ opt.label | transloco }}</option>
+              }
+            </select>
+            <p class="text-ink-muted text-xs">
+              {{ 'SETTINGS.LT.LANGUAGE_HINT' | transloco }}
+            </p>
+          </div>
+
           <!-- Estado actual -->
           <div class="text-xs text-ink-subtle">
             {{ 'SETTINGS.LT.STATUS' | transloco }}:

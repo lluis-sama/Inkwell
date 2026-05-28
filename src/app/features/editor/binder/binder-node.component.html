@@ -106,7 +106,7 @@
           class="node-input"
         />
       } @else {
-        <span class="flex-1 truncate">{{ node().title }}</span>
+        <span class="flex-1 truncate" [title]="node().title">{{ node().title }}</span>
       }
 
       <!-- Botón lápiz (solo documentos, visible en hover) -->

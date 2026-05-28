@@ -96,6 +96,22 @@ export class InkSettingsModalComponent implements OnInit {
   transcriptionEndpoint = '';
   transcriptionLanguage = '';
 
+  // LanguageTool language settings
+  ltLanguage = '';
+
+  readonly ltLanguageOptions = [
+    { value: '', label: 'SETTINGS.LT.LANGUAGE_AUTO' },
+    { value: 'es', label: 'AUTHOR_PROFILE.LANG_ES' },
+    { value: 'en', label: 'AUTHOR_PROFILE.LANG_EN' },
+    { value: 'ca-ES', label: 'AUTHOR_PROFILE.LANG_CA' },
+    { value: 'gl', label: 'AUTHOR_PROFILE.LANG_GL' },
+    { value: 'eu', label: 'AUTHOR_PROFILE.LANG_EU' },
+    { value: 'fr', label: 'AUTHOR_PROFILE.LANG_FR' },
+    { value: 'de', label: 'AUTHOR_PROFILE.LANG_DE' },
+    { value: 'it', label: 'AUTHOR_PROFILE.LANG_IT' },
+    { value: 'pt-PT', label: 'AUTHOR_PROFILE.LANG_PT' },
+  ];
+
   readonly sections = [
     { id: 'editor' as SettingsSection, label: 'SETTINGS.SECTION_EDITOR' },
     { id: 'ai' as SettingsSection, label: 'SETTINGS.SECTION_AI' },
@@ -157,6 +173,7 @@ export class InkSettingsModalComponent implements OnInit {
       this.transcriptionEndpoint = settings.transcriptionEndpoint ?? '';
       this.transcriptionLanguage = settings.transcriptionLanguage ?? '';
     }
+    this.ltLanguage = this.appConfigSvc.config().ltLanguage ?? '';
   }
 
   async saveEditorSettings(): Promise<void> {
@@ -281,6 +298,11 @@ export class InkSettingsModalComponent implements OnInit {
   uninstallLt(): void {
     this.ltService.uninstall();
     this.appConfigSvc.setLtEnabled(false);
+  }
+
+  async onLtLanguageChanged(value: string): Promise<void> {
+    this.ltLanguage = value;
+    await this.appConfigSvc.setLtLanguage(value || undefined);
   }
 
   // Efecto: cuando termina la instalación desde settings, activar ltEnabled automáticamente

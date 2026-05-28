@@ -256,6 +256,15 @@ export class ProjectService {
     await this.save();
   }
 
+  async addDeskDocumentNode(node: TreeNode): Promise<void> {
+    this.project.update(p => {
+      if (!p) return p;
+      const deskTree = p.deskTree ?? [];
+      return { ...p, deskTree: [...deskTree, node] };
+    });
+    await this.save();
+  }
+
   private flattenDocuments(nodes: TreeNode[]): TreeNode[] {
     const result: TreeNode[] = [];
     for (const n of nodes) {
