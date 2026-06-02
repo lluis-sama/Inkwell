@@ -1,120 +1,118 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import { AiService, AiMessage, AiMode } from './ai.service';
+import { signal, provideZonelessChangeDetection } from '@angular/core';
+
+import { AiService } from './ai.service';
 import { ProjectService } from './project.service';
 import { TauriBridgeService } from './tauri-bridge.service';
+import { AppConfigService } from './app-config.service';
+import { DEFAULT_APP_CONFIG } from '../models/app-config.model';
+import { aiSessionPath } from '../../shared/utils/project-paths';
 
-describe('AiService — INK-25 session persistence', () => {
+const BASE_PATH = '/test/project';
+const PROJECT_ID = 'proj-123';
+
+describe('AiService', () => {
   let aiService: AiService;
-  let mockBridge: jasmine.SpyObj<TauriBridgeService>;
-
-  beforeEach(() => {
-    mockBridge = jasmine.createSpyObj('TauriBridgeService', [
-      'readJsonFile', 'writeJsonFile', 'folderExists', 'createFolder',
-    ]);
-
-    // folderExists/createFolder son llamados por ProjectService.ensureDeskNotesFolder
-    // en openProject(); no se invocan en estos tests pero los stubs evitan errores
-    mockBridge.folderExists.and.returnValue(Promise.resolve(true));
-    mockBridge.createFolder.and.returnValue(Promise.resolve());
-
-    TestBed.configureTestingModule({
-      providers: [
-        AiService,
-        ProjectService,
-        { provide: TauriBridgeService, useValue: mockBridge },
-      ],
-    });
-
-    aiService = TestBed.inject(AiService);
-  });
-
-  it('loadSession() restaura messages y mode cuando el fichero existe y el projectId coincide', async () => {
-    const messages: AiMessage[] = [
-      { role: 'user', content: 'Hola' },
-      { role: 'assistant', content: 'Hola, ¿en qué te ayudo?' },
-    ];
-    const session = {
-      projectId: 'proj-1',
-      mode: 'brainstorm' as AiMode,
-      messages,
-      updatedAt: new Date().toISOString(),
-    };
-    mockBridge.readJsonFile.and.returnValue(Promise.resolve(JSON.stringify(session)));
-
-    await aiService.loadSession('/path/to/project', 'proj-1');
-
-    expect(aiService.messages()).toEqual(messages);
-    expect(aiService.currentMode()).toBe('brainstorm');
-  });
-
-  it('loadSession() no lanza error cuando el fichero no existe, estado queda vacío', async () => {
-    mockBridge.readJsonFile.and.returnValue(Promise.reject(new Error('file not found')));
-
-    await expectAsync(aiService.loadSession('/path/to/project', 'proj-1')).toBeResolved();
-    expect(aiService.messages()).toEqual([]);
-    expect(aiService.currentMode()).toBe('analyze');
-  });
-
-  it('loadSession() ignora el fichero cuando el projectId no coincide', async () => {
-    const session = {
-      projectId: 'other-proj',
-      mode: 'review' as AiMode,
-      messages: [{ role: 'user' as const, content: 'texto' }],
-      updatedAt: new Date().toISOString(),
-    };
-    mockBridge.readJsonFile.and.returnValue(Promise.resolve(JSON.stringify(session)));
-
-    await aiService.loadSession('/path/to/project', 'proj-1');
-
-    expect(aiService.messages()).toEqual([]);
-    expect(aiService.currentMode()).toBe('analyze');
-  });
-
-  it('clearSession() deja messages vacío y llama a writeJsonFile', async () => {
-    // Prepopular estado
-    aiService.messages.set([{ role: 'user', content: 'test' }]);
-    mockBridge.writeJsonFile.and.returnValue(Promise.resolve());
-
-    await aiService.clearSession('/path/to/project', 'proj-1');
-
-    expect(aiService.messages()).toEqual([]);
-    expect(mockBridge.writeJsonFile).toHaveBeenCalledOnceWith(
-      '/path/to/project/ai_session.json',
-      jasmine.any(String),
-    );
-  });
-});
-
-describe('ProjectService.closeProject() — INK-25', () => {
   let projectService: ProjectService;
-  let aiService: AiService;
-  let mockBridge: jasmine.SpyObj<TauriBridgeService>;
+  let mockBridge: TauriBridgeService;
+  let mockAppConfig: AppConfigService;
 
   beforeEach(() => {
-    mockBridge = jasmine.createSpyObj('TauriBridgeService', [
-      'readJsonFile', 'writeJsonFile', 'folderExists', 'createFolder',
-    ]);
+    mockBridge = {
+      readJsonFile: vi.fn(),
+      writeJsonFile: vi.fn().mockResolvedValue(undefined),
+      folderExists: vi.fn().mockResolvedValue(true),
+      createFolder: vi.fn().mockResolvedValue(undefined),
+    } as unknown as TauriBridgeService;
 
-    mockBridge.folderExists.and.returnValue(Promise.resolve(true));
-    mockBridge.createFolder.and.returnValue(Promise.resolve());
+    mockAppConfig = {
+      config: signal({ ...DEFAULT_APP_CONFIG }),
+    } as unknown as AppConfigService;
 
     TestBed.configureTestingModule({
       providers: [
-        ProjectService,
+        provideZonelessChangeDetection(),
         AiService,
+        ProjectService,
         { provide: TauriBridgeService, useValue: mockBridge },
+        { provide: AppConfigService, useValue: mockAppConfig },
       ],
     });
 
-    projectService = TestBed.inject(ProjectService);
     aiService = TestBed.inject(AiService);
+    projectService = TestBed.inject(ProjectService);
   });
 
-  it('closeProject() deja AiService.messages() vacío', () => {
-    aiService.messages.set([{ role: 'user', content: 'algo' }]);
+  describe('loadSession', () => {
+    it('restaura mensajes cuando projectId coincide', async () => {
+      const session = {
+        projectId: PROJECT_ID,
+        mode: 'brainstorm',
+        messages: [{ role: 'user', content: 'hola' }],
+        updatedAt: new Date().toISOString(),
+      };
+      vi.mocked(mockBridge.readJsonFile).mockResolvedValue(JSON.stringify(session));
 
-    projectService.closeProject();
+      await aiService.loadSession(BASE_PATH, PROJECT_ID);
 
-    expect(aiService.messages()).toEqual([]);
+      expect(aiService.messages()).toEqual(session.messages);
+      expect(aiService.currentMode()).toBe('brainstorm');
+    });
+
+    it('no lanza cuando el fichero no existe', async () => {
+      vi.mocked(mockBridge.readJsonFile).mockRejectedValue(new Error('not found'));
+
+      await expect(aiService.loadSession(BASE_PATH, PROJECT_ID)).resolves.toBeUndefined();
+      expect(aiService.messages()).toEqual([]);
+      expect(aiService.currentMode()).toBe('analyze');
+    });
+
+    it('ignora sesión cuyo projectId no coincide', async () => {
+      const session = {
+        projectId: 'otro-id',
+        mode: 'review',
+        messages: [{ role: 'user', content: 'test' }],
+        updatedAt: new Date().toISOString(),
+      };
+      vi.mocked(mockBridge.readJsonFile).mockResolvedValue(JSON.stringify(session));
+
+      await aiService.loadSession(BASE_PATH, PROJECT_ID);
+
+      expect(aiService.messages()).toEqual([]);
+      expect(aiService.currentMode()).toBe('analyze');
+    });
+  });
+
+  describe('clearSession', () => {
+    it('vacía messages y resetea modo', async () => {
+      aiService.messages.set([{ role: 'user', content: 'hello' }]);
+      aiService.currentMode.set('review');
+
+      await aiService.clearSession(BASE_PATH, PROJECT_ID);
+
+      expect(aiService.messages()).toEqual([]);
+      expect(aiService.currentMode()).toBe('analyze');
+    });
+
+    it('persiste sesión vacía en disco', async () => {
+      await aiService.clearSession(BASE_PATH, PROJECT_ID);
+
+      expect(mockBridge.writeJsonFile).toHaveBeenCalledOnce();
+      const [pathArg] = vi.mocked(mockBridge.writeJsonFile).mock.calls[0];
+      expect(pathArg).toBe(aiSessionPath(BASE_PATH));
+    });
+  });
+
+  describe('closeProject', () => {
+    it('limpia AiService al cerrar proyecto', () => {
+      aiService.messages.set([{ role: 'user', content: 'msg' }]);
+      aiService.currentMode.set('synopsis');
+
+      projectService.closeProject();
+
+      expect(aiService.messages()).toEqual([]);
+      expect(aiService.currentMode()).toBe('analyze');
+    });
   });
 });

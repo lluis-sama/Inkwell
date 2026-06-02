@@ -37,10 +37,11 @@ export class ExportModalComponent implements OnInit {
   exporting = signal(false);
 
   currentStep    = signal(1);
-  selectedFormat = signal<ExportFormat>('pdf-manuscript');
-  selectedIds    = signal<string[]>([]);
-  metadata       = signal<ExportMetadata>({ ...DEFAULT_EXPORT_METADATA });
-  flatDocuments  = signal<FlatDocument[]>([]);
+  selectedFormat       = signal<ExportFormat>('pdf-manuscript');
+  prependChapterTitles = signal<boolean>(true);
+  selectedIds          = signal<string[]>([]);
+  metadata             = signal<ExportMetadata>({ ...DEFAULT_EXPORT_METADATA });
+  flatDocuments        = signal<FlatDocument[]>([]);
 
   readonly steps = [
     { n: 1, label: 'EXPORT.STEP_FORMAT' },
@@ -73,6 +74,7 @@ export class ExportModalComponent implements OnInit {
         language:     profile.language     || current.language,
         copyrightYear: profile.copyrightYear || current.copyrightYear,
         publisher:    profile.publisher    ?? current.publisher,
+        synopsis:     profile.synopsis     ?? current.synopsis,
       });
     }
   }
@@ -107,11 +109,30 @@ export class ExportModalComponent implements OnInit {
     this.exporting.set(true);
     try {
       const docs = await this.loadSelectedDocuments();
+      const meta = this.metadata();
+
+      // Persistir metadatos en el proyecto para que estén disponibles la próxima vez
+      await this.projectService.updateAuthorProfile({
+        legalName: meta.legalName,
+        penName: meta.penName || undefined,
+        email: meta.email,
+        phone: meta.phone || undefined,
+        address: meta.address || undefined,
+        agentName: meta.agentName || undefined,
+        agentContact: meta.agentContact || undefined,
+        genre: meta.genre,
+        language: meta.language,
+        copyrightYear: meta.copyrightYear,
+        publisher: meta.publisher || undefined,
+        synopsis: meta.synopsis || undefined,
+      });
+
       await this.exportService.export(
         {
           format: this.selectedFormat(),
           selectedDocumentIds: this.selectedIds(),
-          metadata: this.metadata(),
+          metadata: meta,
+          prependChapterTitles: this.prependChapterTitles(),
         },
         docs,
         this.projectService.project()!.name,

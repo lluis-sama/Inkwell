@@ -16,6 +16,7 @@ export class BackupService {
   private bridge  = inject(TauriBridgeService);
   private projectService = inject(ProjectService);
   private toast   = inject(ToastService);
+  private _JSZip  = JSZip;
 
   async createBackup(): Promise<void> {
     const proj     = this.projectService.project();
@@ -32,7 +33,7 @@ export class BackupService {
     if (!savePath) return;
 
     try {
-      const zip = new JSZip();
+      const zip = new this._JSZip();
 
       // project.json
       const projectJson = await this.bridge.readJsonFile(projectJsonPath(basePath));

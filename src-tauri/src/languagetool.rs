@@ -187,10 +187,14 @@ async fn download_and_extract(
     Ok(())
 }
 
+fn lt_installed_at(base: &std::path::Path) -> bool {
+    base.join("installed").exists()
+}
+
 #[tauri::command]
 pub fn lt_is_installed(app: tauri::AppHandle) -> bool {
     let base = app.path().app_data_dir().unwrap().join("languagetool");
-    base.join("installed").exists()
+    lt_installed_at(&base)
 }
 
 #[tauri::command]
@@ -300,4 +304,115 @@ pub fn lt_uninstall(app: tauri::AppHandle) -> Result<(), String> {
         std::fs::remove_dir_all(&base).map_err(|e| e.to_string())?;
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::TempDir;
+
+    #[test]
+    fn detect_platform_returns_valid_pair() {
+        let (os, arch) = detect_platform().expect("Plataforma no soportada en este entorno de test");
+        assert!(["linux", "windows", "mac"].contains(&os));
+        assert!(["x64", "aarch64"].contains(&arch));
+    }
+
+    #[test]
+    fn find_java_bin_in_structured_dir() {
+        let dir = TempDir::new().unwrap();
+        let jre_root = dir.path();
+        let subdir = jre_root.join("temurin-21.0.3+9");
+
+        let java_path = if cfg!(target_os = "macos") {
+            let p = subdir.join("Contents").join("Home").join("bin").join("java");
+            std::fs::create_dir_all(p.parent().unwrap()).unwrap();
+            p
+        } else if cfg!(target_os = "windows") {
+            let p = subdir.join("bin").join("java.exe");
+            std::fs::create_dir_all(p.parent().unwrap()).unwrap();
+            p
+        } else {
+            let p = subdir.join("bin").join("java");
+            std::fs::create_dir_all(p.parent().unwrap()).unwrap();
+            p
+        };
+
+        std::fs::write(&java_path, "").unwrap();
+
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            std::fs::set_permissions(&java_path, std::fs::Permissions::from_mode(0o755)).unwrap();
+        }
+
+        let result = find_java_bin(jre_root);
+        assert!(result.is_ok(), "find_java_bin debería encontrar el binario: {:?}", result.err());
+        assert!(result.unwrap().exists());
+    }
+
+    #[test]
+    fn find_lt_jar_in_structured_dir() {
+        let dir = TempDir::new().unwrap();
+        let lt_root = dir.path();
+        let lt_dir = lt_root.join("LanguageTool-6.6");
+        std::fs::create_dir_all(&lt_dir).unwrap();
+        std::fs::write(lt_dir.join("languagetool-server.jar"), "").unwrap();
+
+        let result = find_lt_jar(lt_root);
+        assert!(result.is_ok(), "find_lt_jar debería encontrar el JAR: {:?}", result.err());
+        assert!(result.unwrap().exists());
+    }
+
+    #[test]
+    fn find_java_bin_empty_dir_returns_err() {
+        let dir = TempDir::new().unwrap();
+        let result = find_java_bin(dir.path());
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn find_lt_jar_empty_dir_returns_err() {
+        let dir = TempDir::new().unwrap();
+        let result = find_lt_jar(dir.path());
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn port_in_use_false_for_unused_port() {
+        assert!(!port_in_use(19753));
+    }
+
+    #[test]
+    fn port_in_use_true_for_bound_port() {
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let port = listener.local_addr().unwrap().port();
+
+        assert!(port_in_use(port), "El puerto {port} debería estar en uso");
+
+        drop(listener);
+    }
+
+    #[test]
+    fn lt_installed_at_true_when_marker_exists() {
+        let dir = TempDir::new().unwrap();
+        std::fs::write(dir.path().join("installed"), "").unwrap();
+
+        assert!(lt_installed_at(dir.path()));
+    }
+
+    #[test]
+    fn lt_installed_at_false_when_no_marker() {
+        let dir = TempDir::new().unwrap();
+
+        assert!(!lt_installed_at(dir.path()));
+    }
+
+    #[test]
+    fn lt_installed_at_false_when_dir_missing() {
+        let dir = TempDir::new().unwrap();
+        let missing = dir.path().join("languagetool");
+
+        assert!(!lt_installed_at(&missing));
+    }
 }

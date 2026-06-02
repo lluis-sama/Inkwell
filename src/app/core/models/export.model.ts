@@ -27,6 +27,7 @@ export interface ExportOptions {
   format: ExportFormat;
   selectedDocumentIds: string[];   // IDs de los documentos a incluir, en orden
   metadata: ExportMetadata;
+  prependChapterTitles: boolean;
 }
 
 export const DEFAULT_EXPORT_METADATA: ExportMetadata = {

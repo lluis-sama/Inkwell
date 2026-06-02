@@ -25,6 +25,8 @@
       <app-step-format
         [format]="selectedFormat()"
         (formatChange)="selectedFormat.set($event)"
+        [prependChapterTitles]="prependChapterTitles()"
+        (prependChapterTitlesChange)="prependChapterTitles.set($event)"
         (pageSizeChange)="onPageSizeChange($event)"/>
     }
     @case (2) {

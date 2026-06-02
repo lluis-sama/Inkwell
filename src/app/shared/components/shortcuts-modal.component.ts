@@ -1,4 +1,4 @@
-import { Component, output } from "@angular/core";
+import { Component, OnInit, output, signal } from "@angular/core";
 import { InkModalComponent } from "./ink-modal.component";
 import { TranslocoPipe } from "@jsverse/transloco";
 
@@ -7,7 +7,7 @@ interface ShortcutGroup {
   shortcuts: { keys: string[]; description: string }[];
 }
 
-const SHORTCUTS: ShortcutGroup[] = [
+const BASE_SHORTCUTS: ShortcutGroup[] = [
   {
     title: "Navegación",
     shortcuts: [
@@ -72,15 +72,34 @@ const SHORTCUTS: ShortcutGroup[] = [
   },
 ];
 
+function adaptShortcutsForPlatform(groups: ShortcutGroup[]): ShortcutGroup[] {
+  const isMac =
+    typeof navigator !== "undefined" &&
+    /Mac|iPod|iPhone|iPad/.test(navigator.platform);
+  const modifier = isMac ? "⌘" : "Ctrl";
+
+  return groups.map((g) => ({
+    ...g,
+    shortcuts: g.shortcuts.map((s) => ({
+      ...s,
+      keys: s.keys.map((k) => (k === "Ctrl" ? modifier : k)),
+    })),
+  }));
+}
+
 @Component({
   selector: "app-shortcuts-modal",
   standalone: true,
   imports: [InkModalComponent, TranslocoPipe],
   host: { "(document:keydown.escape)": "closed.emit()" },
-  templateUrl: './shortcuts-modal.component.html',
+  templateUrl: "./shortcuts-modal.component.html",
 })
-export class ShortcutsModalComponent {
+export class ShortcutsModalComponent implements OnInit {
   closed = output<void>();
 
-  readonly shortcuts: ShortcutGroup[] = SHORTCUTS;
+  readonly shortcuts = signal<ShortcutGroup[]>([]);
+
+  ngOnInit(): void {
+    this.shortcuts.set(adaptShortcutsForPlatform(BASE_SHORTCUTS));
+  }
 }

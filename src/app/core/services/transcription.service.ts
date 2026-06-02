@@ -28,6 +28,7 @@ export class TranscriptionService {
   private project = inject(ProjectService);
   private docSvc  = inject(DocumentService);
   private bridge  = inject(TauriBridgeService);
+  private _fetch  = fetch;
 
   isTranscribing = signal(false);
   progress       = signal('');
@@ -89,7 +90,7 @@ export class TranscriptionService {
 
       this.progress.set('Transcribiendo...');
 
-      const response = await fetch(url, {
+      const response = await this._fetch(url, {
         method: 'POST',
         headers,
         body: formData,

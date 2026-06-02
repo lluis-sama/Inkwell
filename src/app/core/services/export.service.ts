@@ -14,6 +14,8 @@ import epub from 'epub-gen-memory/dist/bundle.min.js';
 @Injectable({ providedIn: 'root' })
 export class ExportService {
   private bridge = inject(TauriBridgeService);
+  private _epub = epub;
+  private _docxPacker = Packer;
 
   async export(
     options: ExportOptions,
@@ -24,12 +26,14 @@ export class ExportService {
       .map(id => documents.find(d => d.id === id))
       .filter((d): d is DocumentFile => !!d);
 
+    const prependTitles = options.prependChapterTitles;
+
     if (options.format === 'pdf-manuscript') {
-      await this.exportManuscriptPdf(ordered, options.metadata, projectTitle);
+      await this.exportManuscriptPdf(ordered, options.metadata, projectTitle, prependTitles);
     } else if (options.format === 'docx') {
-      await this.exportDocx(ordered, options.metadata, projectTitle);
+      await this.exportDocx(ordered, options.metadata, projectTitle, prependTitles);
     } else {
-      await this.exportEpub(ordered, options.metadata, projectTitle);
+      await this.exportEpub(ordered, options.metadata, projectTitle, prependTitles);
     }
   }
 
@@ -37,9 +41,10 @@ export class ExportService {
     docs: DocumentFile[],
     meta: ExportMetadata,
     title: string,
+    prependTitles: boolean,
   ): Promise<void> {
     const wordCount = this.countWords(docs);
-    const html = this.buildManuscriptHtml(docs, meta, title, wordCount);
+    const html = this.buildManuscriptHtml(docs, meta, title, wordCount, prependTitles);
     await this.bridge.openPrintWindow(html);
   }
 
@@ -48,6 +53,7 @@ export class ExportService {
     meta: ExportMetadata,
     title: string,
     wordCount: number,
+    prependTitles: boolean,
   ): string {
     const pageSize = meta.pageSize === 'a4' ? 'A4' : 'letter';
     const authorLine = meta.penName
@@ -59,7 +65,7 @@ export class ExportService {
       ) + ' palabras';
 
     const chaptersHtml = docs.map((doc, i) =>
-      this.buildChapterHtml(doc, i === 0)
+      this.buildChapterHtml(doc, i === 0, prependTitles)
     ).join('\n');
 
     return `<!DOCTYPE html>
@@ -245,11 +251,12 @@ ${chaptersHtml}
 </html>`;
   }
 
-  private buildChapterHtml(doc: DocumentFile, isFirst: boolean): string {
+  private buildChapterHtml(doc: DocumentFile, isFirst: boolean, prependTitle: boolean): string {
     const html = generateHTML(doc.content as any, [StarterKit]);
+    const titleHtml = prependTitle ? `<div class="chapter-title">${doc.title}</div>` : '';
     return `
 <div class="chapter" ${isFirst ? 'style="page-break-before: avoid"' : ''}>
-  <div class="chapter-title">${doc.title}</div>
+  ${titleHtml}
   ${html}
 </div>`;
   }
@@ -258,6 +265,7 @@ ${chaptersHtml}
     docs: DocumentFile[],
     meta: ExportMetadata,
     title: string,
+    prependTitles: boolean,
   ): Promise<void> {
     const savePath = await this.bridge.saveFileDialog(
       `${title}.epub`,
@@ -270,21 +278,19 @@ ${chaptersHtml}
       content: generateHTML(doc.content as any, [StarterKit]),
     }));
 
-    const buffer = await epub(
+    const blob = await this._epub(
       {
         title,
         author: meta.penName ?? meta.legalName,
         publisher: meta.publisher ?? '',
         description: meta.synopsis ?? '',
         lang: meta.language,
+        prependChapterTitles: prependTitles,
       },
       chapters,
     );
 
-    const arrayBuffer = buffer.buffer.slice(
-      buffer.byteOffset,
-      buffer.byteOffset + buffer.byteLength,
-    ) as ArrayBuffer;
+    const arrayBuffer = await blob.arrayBuffer();
 
     await this.bridge.writeBinaryFile(savePath, arrayBuffer);
   }
@@ -293,13 +299,14 @@ ${chaptersHtml}
     docs: DocumentFile[],
     meta: ExportMetadata,
     title: string,
+    prependTitles: boolean,
   ): Promise<void> {
     const savePath = await this.bridge.saveFileDialog(`${title}.docx`, 'docx');
     if (!savePath) return;
 
     const wordCount = this.countWords(docs);
-    const docxDoc = this.buildDocxDocument(docs, meta, title, wordCount);
-    const blob = await Packer.toBlob(docxDoc);
+    const docxDoc = this.buildDocxDocument(docs, meta, title, wordCount, prependTitles);
+    const blob = await this._docxPacker.toBlob(docxDoc);
     const arrayBuffer = await blob.arrayBuffer();
 
     await this.bridge.writeBinaryFile(savePath, arrayBuffer);
@@ -310,6 +317,7 @@ ${chaptersHtml}
     meta: ExportMetadata,
     title: string,
     wordCount: number,
+    prependTitles: boolean,
   ): Document {
     const authorLine = meta.penName ?? meta.legalName;
     const wordCountFormatted =
@@ -333,14 +341,16 @@ ${chaptersHtml}
 
     // Capítulos
     for (const doc of docs) {
-      children.push(
-        new Paragraph({
-          text:            doc.title,
-          heading:         HeadingLevel.HEADING_1,
-          alignment:       AlignmentType.CENTER,
-          pageBreakBefore: true,
-        }),
-      );
+      if (prependTitles) {
+        children.push(
+          new Paragraph({
+            text:            doc.title,
+            heading:         HeadingLevel.HEADING_1,
+            alignment:       AlignmentType.CENTER,
+            pageBreakBefore: true,
+          }),
+        );
+      }
       children.push(...this.tiptapToDocxParagraphs(doc.content));
     }
 

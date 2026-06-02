@@ -44,7 +44,8 @@
       "Bash(grep -v \"^--$\")",
       "Bash(python3 -c \"import json; json.load\\(open\\('/home/david/dev/inkwell/src/assets/i18n/en.json'\\)\\); print\\('en.json: OK'\\)\")",
       "Bash(python3 -c \"import json; json.load\\(open\\('/home/david/dev/inkwell/src/assets/i18n/es.json'\\)\\); print\\('es.json: OK'\\)\")",
-      "Bash(python3 *)"
+      "Bash(python3 *)",
+      "Bash(cargo test *)"
     ]
   }
 }
