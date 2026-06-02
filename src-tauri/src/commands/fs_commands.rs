@@ -119,11 +119,21 @@ pub async fn open_print_window(app: tauri::AppHandle, html: String) -> Result<()
     let encoded = general_purpose::STANDARD.encode(html);
     let url = format!("data:text/html;base64,{}", encoded);
 
-    tauri::WebviewWindowBuilder::new(&app, "print", tauri::WebviewUrl::External(url.parse().unwrap()))
-        .title("Inkwell — Exportar manuscrito")
-        .inner_size(900.0, 1200.0)
-        .build()
-        .map_err(|e| e.to_string())?;
+    let _window = tauri::WebviewWindowBuilder::new(
+        &app,
+        format!("print-{}", uuid::Uuid::new_v4()),
+        tauri::WebviewUrl::External(url.parse().unwrap()),
+    )
+    .title("Inkwell — Exportar manuscrito")
+    .inner_size(900.0, 1200.0)
+    .build()
+    .map_err(|e| e.to_string())?;
+
+    #[cfg(target_os = "macos")]
+    {
+        tokio::time::sleep(std::time::Duration::from_millis(800)).await;
+        _window.print().map_err(|e| e.to_string())?;
+    }
 
     Ok(())
 }
