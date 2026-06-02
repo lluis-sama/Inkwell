@@ -10,6 +10,7 @@ export interface AuthorProfile {
   language: string;
   copyrightYear: number;
   publisher?: string;
+  synopsis?: string;
 }
 
 export interface Project {

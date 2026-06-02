@@ -29,6 +29,7 @@ export class AuthorProfileModalComponent implements OnInit {
   language = "es";
   copyrightYear = new Date().getFullYear();
   publisher = "";
+  synopsis = "";
 
   saving = signal(false);
 
@@ -46,6 +47,7 @@ export class AuthorProfileModalComponent implements OnInit {
       this.language = p.language;
       this.copyrightYear = p.copyrightYear;
       this.publisher = p.publisher ?? "";
+      this.synopsis = p.synopsis ?? "";
     }
   }
 
@@ -68,6 +70,7 @@ export class AuthorProfileModalComponent implements OnInit {
         language: this.language,
         copyrightYear: this.copyrightYear,
         publisher: this.publisher || undefined,
+        synopsis: this.synopsis || undefined,
       });
       this.closed.emit();
     } finally {

@@ -12,6 +12,7 @@ export interface ImageGenerationOptions {
 @Injectable({ providedIn: 'root' })
 export class ImageService {
   private project = inject(ProjectService);
+  private _fetch = fetch;
 
   isGenerating = signal(false);
 
@@ -69,7 +70,7 @@ export class ImageService {
     apiKey: string,
     size?: ImageSize,
   ): Promise<string> {
-    const response = await fetch('https://api.openai.com/v1/images/generations', {
+    const response = await this._fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: {
         'Content-Type':  'application/json',
@@ -110,7 +111,7 @@ export class ImageService {
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (apiKey) headers['Authorization'] = `Bearer ${apiKey}`;
 
-    const response = await fetch(url, {
+    const response = await this._fetch(url, {
       method: 'POST',
       headers,
       body: JSON.stringify({

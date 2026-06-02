@@ -10,8 +10,9 @@ import { ExportFormat, PageSize } from '../../../core/models/export.model';
   templateUrl: './step-format.component.html',
 })
 export class StepFormatComponent {
-  format        = model<ExportFormat>('pdf-manuscript');
-  pageSizeChange = output<PageSize>();
+  format                = model<ExportFormat>('pdf-manuscript');
+  prependChapterTitles  = model<boolean>(true);
+  pageSizeChange        = output<PageSize>();
 
   pageSizeVal: PageSize = 'a4';
 

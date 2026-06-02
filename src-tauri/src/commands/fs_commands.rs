@@ -114,16 +114,26 @@ pub fn set_window_title(app: AppHandle, title: String) -> Result<(), String> {
 /// Abre una ventana WebView con el HTML del manuscrito para imprimir como PDF.
 #[tauri::command]
 pub async fn open_print_window(app: tauri::AppHandle, html: String) -> Result<(), String> {
-    let temp_path = std::env::temp_dir().join("inkwell_manuscript_print.html");
-    std::fs::write(&temp_path, html)
-        .map_err(|e| e.to_string())?;
+    use base64::{Engine as _, engine::general_purpose};
 
-    let url = format!("file://{}", temp_path.to_string_lossy());
-    tauri::WebviewWindowBuilder::new(&app, "print", tauri::WebviewUrl::External(url.parse().unwrap()))
-        .title("Inkwell — Exportar manuscrito")
-        .inner_size(900.0, 1200.0)
-        .build()
-        .map_err(|e| e.to_string())?;
+    let encoded = general_purpose::STANDARD.encode(html);
+    let url = format!("data:text/html;base64,{}", encoded);
+
+    let _window = tauri::WebviewWindowBuilder::new(
+        &app,
+        format!("print-{}", uuid::Uuid::new_v4()),
+        tauri::WebviewUrl::External(url.parse().unwrap()),
+    )
+    .title("Inkwell — Exportar manuscrito")
+    .inner_size(900.0, 1200.0)
+    .build()
+    .map_err(|e| e.to_string())?;
+
+    #[cfg(target_os = "macos")]
+    {
+        tokio::time::sleep(std::time::Duration::from_millis(800)).await;
+        _window.print().map_err(|e| e.to_string())?;
+    }
 
     Ok(())
 }
@@ -218,31 +228,226 @@ pub fn read_file_bytes(path: String) -> Result<Vec<u8>, String> {
 
 // ─── Configuración de la aplicación ─────────────────────────────────────────
 
+fn read_config_from_path(config_path: &std::path::Path) -> Result<String, String> {
+    if !config_path.exists() {
+        return Ok(String::new());
+    }
+    std::fs::read_to_string(config_path)
+        .map_err(|e| format!("Error leyendo config.json: {}", e))
+}
+
+fn write_config_to_path(config_path: &std::path::Path, content: &str) -> Result<(), String> {
+    if let Some(parent) = config_path.parent() {
+        std::fs::create_dir_all(parent)
+            .map_err(|e| format!("Error creando directorio de datos: {}", e))?;
+    }
+    std::fs::write(config_path, content)
+        .map_err(|e| format!("Error escribiendo config.json: {}", e))
+}
+
 #[tauri::command]
 pub async fn read_app_config(app: AppHandle) -> Result<String, String> {
     let config_path = app.path().app_data_dir()
         .map_err(|e| e.to_string())?
         .join("config.json");
-
-    if !config_path.exists() {
-        return Ok(String::new());
-    }
-
-    std::fs::read_to_string(&config_path)
-        .map_err(|e| format!("Error leyendo config.json: {}", e))
+    read_config_from_path(&config_path)
 }
 
 #[tauri::command]
 pub async fn write_app_config(app: AppHandle, content: String) -> Result<(), String> {
-    let app_data_dir = app.path().app_data_dir()
-        .map_err(|e| e.to_string())?;
-
-    std::fs::create_dir_all(&app_data_dir)
-        .map_err(|e| format!("Error creando directorio de datos: {}", e))?;
-
-    std::fs::write(app_data_dir.join("config.json"), content)
-        .map_err(|e| format!("Error escribiendo config.json: {}", e))
+    let config_path = app.path().app_data_dir()
+        .map_err(|e| e.to_string())?
+        .join("config.json");
+    write_config_to_path(&config_path, &content)
 }
+
+// ─── Tests ────────────────────────────────────────────────────────────────────
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::TempDir;
+
+    #[test]
+    fn write_and_read_json_roundtrip() {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path().join("test.json").to_string_lossy().to_string();
+        let content = r#"{"key": "value"}"#.to_string();
+
+        write_json_file(path.clone(), content.clone()).unwrap();
+        let result = read_json_file(path).unwrap();
+
+        assert_eq!(result, content);
+    }
+
+    #[test]
+    fn write_json_creates_parent_dirs() {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path().join("a/b/c/test.json").to_string_lossy().to_string();
+
+        write_json_file(path.clone(), "{}".to_string()).unwrap();
+
+        assert!(std::path::Path::new(&path).exists());
+    }
+
+    #[test]
+    fn read_json_missing_file_returns_err() {
+        let result = read_json_file("/nonexistent/path/file.json".to_string());
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn list_json_files_returns_ids() {
+        let dir = TempDir::new().unwrap();
+        std::fs::write(dir.path().join("abc.json"), "{}").unwrap();
+        std::fs::write(dir.path().join("def.json"), "{}").unwrap();
+        std::fs::write(dir.path().join("notes.txt"), "hello").unwrap();
+
+        let mut ids = list_json_files(dir.path().to_string_lossy().to_string()).unwrap();
+        ids.sort();
+
+        assert_eq!(ids, vec!["abc", "def"]);
+    }
+
+    #[test]
+    fn list_json_files_empty_dir() {
+        let dir = TempDir::new().unwrap();
+        let ids = list_json_files(dir.path().to_string_lossy().to_string()).unwrap();
+        assert!(ids.is_empty());
+    }
+
+    #[test]
+    fn list_json_files_nonexistent_dir_returns_empty() {
+        let result = list_json_files("/nonexistent/dir/that/does/not/exist".to_string()).unwrap();
+        assert!(result.is_empty());
+    }
+
+    #[test]
+    fn delete_json_file_removes_file() {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path().join("to_delete.json");
+        std::fs::write(&path, "{}").unwrap();
+
+        delete_json_file(path.to_string_lossy().to_string()).unwrap();
+
+        assert!(!path.exists());
+    }
+
+    #[test]
+    fn delete_json_file_nonexistent_is_ok() {
+        let result = delete_json_file("/nonexistent/file.json".to_string());
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn create_project_structure_creates_subdirs() {
+        let dir = TempDir::new().unwrap();
+
+        create_project_structure(dir.path().to_string_lossy().to_string()).unwrap();
+
+        assert!(dir.path().join("documents").is_dir());
+        assert!(dir.path().join("boards").is_dir());
+    }
+
+    #[test]
+    fn create_folder_nested() {
+        let dir = TempDir::new().unwrap();
+        let nested = dir.path().join("a/b/c");
+
+        create_folder(nested.to_string_lossy().to_string()).unwrap();
+
+        assert!(nested.is_dir());
+    }
+
+    #[test]
+    fn folder_exists_true_for_dir() {
+        let dir = TempDir::new().unwrap();
+        assert!(folder_exists(dir.path().to_string_lossy().to_string()));
+    }
+
+    #[test]
+    fn folder_exists_false_for_file() {
+        let dir = TempDir::new().unwrap();
+        let file = dir.path().join("file.txt");
+        std::fs::write(&file, "").unwrap();
+
+        assert!(!folder_exists(file.to_string_lossy().to_string()));
+    }
+
+    #[test]
+    fn folder_exists_false_for_missing() {
+        assert!(!folder_exists("/nonexistent/path/that/does/not/exist".to_string()));
+    }
+
+    #[test]
+    fn write_and_read_binary_roundtrip() {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path().join("data.bin").to_string_lossy().to_string();
+        let data: Vec<u8> = vec![0x00, 0xFF, 0x42, 0x13, 0x37];
+
+        write_binary_file(path.clone(), data.clone()).unwrap();
+        let result = read_file_bytes(path).unwrap();
+
+        assert_eq!(result, data);
+    }
+
+    #[test]
+    fn read_config_returns_empty_when_missing() {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path().join("config.json");
+
+        let result = read_config_from_path(&path).unwrap();
+
+        assert_eq!(result, "");
+    }
+
+    #[test]
+    fn read_config_reads_existing_file() {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path().join("config.json");
+        std::fs::write(&path, r#"{"theme":"dark"}"#).unwrap();
+
+        let result = read_config_from_path(&path).unwrap();
+
+        assert_eq!(result, r#"{"theme":"dark"}"#);
+    }
+
+    #[test]
+    fn write_and_read_config_roundtrip() {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path().join("config.json");
+        let content = r#"{"aiModel":"claude-sonnet-4-6"}"#;
+
+        write_config_to_path(&path, content).unwrap();
+        let result = read_config_from_path(&path).unwrap();
+
+        assert_eq!(result, content);
+    }
+
+    #[test]
+    fn write_config_creates_parent_dirs() {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path().join("app/data/config.json");
+
+        write_config_to_path(&path, "{}").unwrap();
+
+        assert!(path.exists());
+    }
+
+    #[test]
+    fn write_config_overwrites_existing() {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path().join("config.json");
+        std::fs::write(&path, "old content").unwrap();
+
+        write_config_to_path(&path, "new content").unwrap();
+        let result = read_config_from_path(&path).unwrap();
+
+        assert_eq!(result, "new content");
+    }
+}
+
+// ─── Conversión ODT ───────────────────────────────────────────────────────────
 
 /// Convierte un archivo ODT a DOCX usando LibreOffice CLI y retorna la ruta del DOCX temporal.
 /// Retorna error descriptivo si LibreOffice no está instalado.

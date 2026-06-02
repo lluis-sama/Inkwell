@@ -4,7 +4,7 @@
       (closed)="closed.emit()"
     >
       <div class="flex flex-col gap-6 max-h-[60vh] overflow-y-auto pr-1">
-        @for (group of shortcuts; track group.title) {
+        @for (group of shortcuts(); track group.title) {
           <div>
             <p
               class="text-ink-subtle text-xs font-medium uppercase tracking-widest mb-3"

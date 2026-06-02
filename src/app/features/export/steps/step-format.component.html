@@ -72,6 +72,15 @@
     </div>
   </div>
 
+  <div class="flex items-center gap-2">
+    <input type="checkbox" id="prepend-titles"
+      [(ngModel)]="prependChapterTitles"
+      class="accent-ink-accent w-4 h-4 cursor-pointer"/>
+    <label for="prepend-titles" class="text-ink-text text-sm cursor-pointer">
+      {{ 'EXPORT.FORMAT.PREPEND_CHAPTER_TITLES' | transloco }}
+    </label>
+  </div>
+
   @if (format() === 'pdf-manuscript') {
     <div class="flex flex-col gap-3">
       <label class="text-ink-subtle text-xs font-medium uppercase tracking-wide">
