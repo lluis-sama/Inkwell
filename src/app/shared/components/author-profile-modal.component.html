@@ -68,11 +68,11 @@
 
     <!-- Contacto del agente -->
     <div class="flex flex-col gap-1">
-      <label class="field-label">{{ 'AUTHOR_PROFILE.AGENT_LABEL' | transloco }}</label>
+      <label class="field-label">{{ 'AUTHOR_PROFILE.AGENT_CONTACT_LABEL' | transloco }}</label>
       <input
         class="field-input"
         type="text"
-        [placeholder]="'AUTHOR_PROFILE.AGENT_PLACEHOLDER' | transloco"
+        [placeholder]="'AUTHOR_PROFILE.AGENT_CONTACT_PLACEHOLDER' | transloco"
         [(ngModel)]="agentContact"
       />
     </div>
@@ -123,6 +123,17 @@
         type="number"
         [(ngModel)]="copyrightYear"
       />
+    </div>
+
+    <!-- Sinopsis -->
+    <div class="flex flex-col gap-1 col-span-2">
+      <label class="field-label">{{ 'AUTHOR_PROFILE.SYNOPSIS_LABEL' | transloco }}</label>
+      <textarea
+        class="field-input resize-none"
+        rows="4"
+        [placeholder]="'AUTHOR_PROFILE.SYNOPSIS_PLACEHOLDER' | transloco"
+        [(ngModel)]="synopsis"
+      ></textarea>
     </div>
   </div>
 

@@ -64,7 +64,7 @@ export class AppComponent implements OnInit {
       event.preventDefault();
       this.router.navigate(["/narrative"]);
     } else if (
-      event.ctrlKey &&
+      (event.ctrlKey || event.metaKey) &&
       event.shiftKey &&
       event.key === "?" &&
       !["INPUT", "TEXTAREA"].includes((event.target as HTMLElement).tagName)

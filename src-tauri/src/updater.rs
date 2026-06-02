@@ -22,6 +22,10 @@ pub struct UpdateInfo {
     pub url: String,
 }
 
+fn parse_remote_version(tag: &str) -> Option<Version> {
+    Version::parse(tag.trim_start_matches('v')).ok()
+}
+
 #[tauri::command]
 pub async fn check_for_update(app: AppHandle) -> Result<Option<UpdateInfo>, String> {
     let current = app.package_info().version.clone();
@@ -46,8 +50,8 @@ pub async fn check_for_update(app: AppHandle) -> Result<Option<UpdateInfo>, Stri
         .await
         .map_err(|e| e.to_string())?;
 
-    let remote_version_str = release.tag_name.trim_start_matches('v');
-    let remote_semver = Version::parse(remote_version_str).map_err(|e| e.to_string())?;
+    let remote_semver = parse_remote_version(&release.tag_name)
+        .ok_or_else(|| format!("Versión inválida: {}", release.tag_name))?;
 
     if remote_semver > current_semver {
         let release_notes = release
@@ -74,4 +78,42 @@ pub async fn open_releases_page(url: String, app: AppHandle) -> Result<(), Strin
     app.opener()
         .open_url(url, None::<&str>)
         .map_err(|e| e.to_string())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn newer_version_is_detected() {
+        let remote = parse_remote_version("v1.4.0").unwrap();
+        let current = Version::new(1, 3, 1);
+        assert!(remote > current);
+    }
+
+    #[test]
+    fn same_version_no_update() {
+        let remote = parse_remote_version("v1.3.1").unwrap();
+        let current = Version::new(1, 3, 1);
+        assert!(!(remote > current));
+    }
+
+    #[test]
+    fn older_version_no_update() {
+        let remote = parse_remote_version("v1.2.0").unwrap();
+        let current = Version::new(1, 3, 1);
+        assert!(!(remote > current));
+    }
+
+    #[test]
+    fn invalid_semver_returns_none() {
+        assert!(parse_remote_version("not-a-version").is_none());
+    }
+
+    #[test]
+    fn tag_without_v_prefix_works() {
+        let with_v = parse_remote_version("v1.4.0").unwrap();
+        let without_v = parse_remote_version("1.4.0").unwrap();
+        assert_eq!(with_v, without_v);
+    }
 }

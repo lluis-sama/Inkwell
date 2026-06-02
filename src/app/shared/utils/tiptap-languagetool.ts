@@ -136,7 +136,7 @@ interface LanguageToolStorage {
 
 // ─── Inline debounce (replaces lodash) ───────────────────────────────────────
 
-function debounce<T extends (...args: Parameters<T>) => void>(
+export function debounce<T extends (...args: Parameters<T>) => void>(
   fn: T,
   wait: number,
 ): (...args: Parameters<T>) => void {
@@ -377,14 +377,14 @@ export function changedDescendants(old: any, cur: any, offset: number, f: (node:
   }
 }
 
-const gimmeDecoration = (from: number, to: number, m: Match) =>
+export const gimmeDecoration = (from: number, to: number, m: Match) =>
   Decoration.inline(from, to, {
     class: `lt lt-${m.rule.issueType}`,
     nodeName: 'span',
     match: JSON.stringify({ match: m, from, to }),
   });
 
-const moreThan500Words = (s: string) => s.trim().split(/\s+/).length >= 500;
+export const moreThan500Words = (s: string) => s.trim().split(/\s+/).length >= 500;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const getMatchAndSetDecorations = async (doc: any, text: string, originalFrom: number) => {

@@ -21,6 +21,10 @@ export class ImportService {
   private docSvc = inject(DocumentService);
   private toast = inject(ToastService);
 
+  private _markedParse = marked.parse.bind(marked);
+  private _mammothConvert = mammoth.convertToHtml.bind(mammoth);
+  private _generateJSON = generateJSON;
+
   async openAndImport(parentId: string | null = null): Promise<ImportResult[]> {
     const paths = await this.bridge.openFilesDialog(SUPPORTED_EXTENSIONS, true);
     if (paths.length === 0) return [];
@@ -92,18 +96,18 @@ export class ImportService {
 
   private async importMarkdown(filePath: string): Promise<object> {
     const raw = await this.bridge.readJsonFile(filePath);
-    const html = marked.parse(raw) as string;
-    return generateJSON(html, [StarterKit]);
+    const html = this._markedParse(raw) as string;
+    return this._generateJSON(html, [StarterKit]);
   }
 
   private async importDocx(filePath: string): Promise<{ content: object; warnings: string[] }> {
     const bytes = await this.bridge.readFileBytes(filePath);
     const buffer = new Uint8Array(bytes).buffer;
-    const result = await mammoth.convertToHtml({ arrayBuffer: buffer });
+    const result = await this._mammothConvert({ arrayBuffer: buffer });
     const warnings = result.messages
       .filter(m => m.type === 'warning')
       .map(m => m.message);
-    const content = generateJSON(result.value, [StarterKit]);
+    const content = this._generateJSON(result.value, [StarterKit]);
     return { content, warnings };
   }
 

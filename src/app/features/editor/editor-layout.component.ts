@@ -304,32 +304,33 @@ export class EditorLayoutComponent implements OnInit, OnDestroy {
 
   @HostListener('document:keydown', ['$event'])
   onKeyDown(event: KeyboardEvent): void {
-    if (event.ctrlKey && event.key === 'b') {
+    const mod = event.ctrlKey || event.metaKey;
+    if (mod && event.key === 'b') {
       event.preventDefault();
       this.showBinder.update(v => !v);
     }
-    if (event.ctrlKey && !event.shiftKey && event.key === 'f') {
+    if (mod && !event.shiftKey && event.key === 'f') {
       event.preventDefault();
       this.binder?.showSearch.update(v => !v);
     }
-    if (event.ctrlKey && event.shiftKey && event.key === 'F') {
+    if (mod && event.shiftKey && event.key === 'F') {
       event.preventDefault();
       this.toggleFocusMode();
     }
-    if (event.ctrlKey && event.key === 's') {
+    if (mod && event.key === 's') {
       event.preventDefault();
       this.saveCurrentDocument();
     }
-    if (event.ctrlKey && event.shiftKey && event.key === 'A') {
+    if (mod && event.shiftKey && event.key === 'A') {
       event.preventDefault();
       this.toggleAiPanel();
     }
-    if (event.ctrlKey && event.key === 'h') {
+    if (mod && event.key === 'h') {
       event.preventDefault();
       this.findReplaceWithReplace.set(true);
       this.showFindReplace.set(true);
     }
-    if (event.ctrlKey && event.key === 'g') {
+    if (mod && event.key === 'g') {
       event.preventDefault();
       this.findReplaceWithReplace.set(false);
       this.showFindReplace.set(true);
