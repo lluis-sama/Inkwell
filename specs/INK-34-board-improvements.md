@@ -1,4 +1,4 @@
-# INK-33 — Mejoras de tableros: contraste, expansión de tarjetas y conexiones animadas
+# INK-34 — Mejoras de tableros: contraste, expansión de tarjetas y conexiones animadas
 
 ## Objetivo
 

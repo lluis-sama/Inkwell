@@ -1,12 +1,8 @@
-# INK-33 — Addendum A: Waypoints en conexiones y posición de tarjetas
-
-Este addendum complementa la spec INK-33. Se debe aplicar junto con ella; no es una spec independiente.
-
----
+# INK-35 — Waypoints en conexiones y posición de tarjetas
 
 ## Clarificación: persistencia de posición de tarjetas
 
-**La posición `(x, y)` de cada tarjeta ya se persiste desde INK-07** (`"su posición se persiste inmediatamente al soltar"`). INK-33 no altera ese comportamiento. Se documenta aquí para evitar ambigüedad: el Implementer no debe tocar la lógica de persistencia de posición de tarjetas al implementar las conexiones.
+**La posición `(x, y)` de cada tarjeta ya se persiste desde INK-07** (`"su posición se persiste inmediatamente al soltar"`). INK-34 no altera ese comportamiento. Se documenta aquí para evitar ambigüedad: el Implementer no debe tocar la lógica de persistencia de posición de tarjetas al implementar las conexiones.
 
 ---
 
@@ -226,7 +222,7 @@ board.connections = (board.connections ?? []).map(conn => ({
 
 ---
 
-## Fuera de alcance (extensión de la lista de INK-33)
+## Fuera de alcance (extensión de la lista de INK-35)
 
 - Snapping de waypoints a una rejilla.
 - Eliminar todos los waypoints de una conexión a la vez desde el popover (el usuario los elimina uno a uno).
