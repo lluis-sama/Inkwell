@@ -14,6 +14,7 @@ export interface NarrativeCard {
   wordCount: number;
   characters: string[];
   isSection: boolean;
+  content: object;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -67,6 +68,7 @@ export class NarrativeService {
             wordCount: 0,
             characters: [],
             isSection: true,
+            content: {},
           };
         }
 
@@ -77,10 +79,12 @@ export class NarrativeService {
           .map(card => card.title);
 
         let synopsis = '';
+        let docContent: object = {};
         try {
           const raw = await this.bridge.readJsonFile(documentPath(basePath, node.id));
           const doc = JSON.parse(raw) as DocumentFile;
           synopsis = doc.synopsis ?? '';
+          docContent = doc.content;
         } catch {
           synopsis = '';
         }
@@ -92,6 +96,7 @@ export class NarrativeService {
           wordCount,
           characters: appearedCharacters,
           isSection: false,
+          content: docContent,
         };
       }),
     );
