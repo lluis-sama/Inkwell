@@ -94,7 +94,8 @@ export class BoardCanvasComponent {
   onConnectionLabelChanged(label: string): void {
     const conn = this.selectedConnection();
     if (!conn) return;
-    const updated: CardConnection = { ...conn, label: label || undefined };
+    const trimmed = label.trim();
+    const updated: CardConnection = { ...conn, label: trimmed || undefined };
     this.selectedConnection.set(updated);
     this.connectionUpdated.emit(updated);
   }

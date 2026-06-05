@@ -8,6 +8,7 @@
       [connections]="board().connections"
       [cards]="cardsWithLivePositions()"
       [provisionalConnection]="provisionalConnection()"
+      [paused]="selectedConnection() !== null"
       (connectionSelected)="onConnectionSelected($event)"
     />
     @if (selectedConnection()) {

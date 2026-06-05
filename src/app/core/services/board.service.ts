@@ -95,9 +95,10 @@ export class BoardService {
     toCardId: string,
     label = '',
     color = '#a78bfa',
+    id?: string,
   ): BoardFile {
     const connection: CardConnection = {
-      id: crypto.randomUUID(),
+      id: id ?? crypto.randomUUID(),
       fromCardId,
       toCardId,
       label: label || undefined,

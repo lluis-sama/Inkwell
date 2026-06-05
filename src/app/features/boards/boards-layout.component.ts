@@ -164,7 +164,9 @@ export class BoardsLayoutComponent implements OnInit {
       conn.toCardId,
       conn.label,
       conn.color,
+      conn.id,
     );
+    this.activeBoard.set(updated);
     await this.persistBoard(updated);
   }
 
@@ -172,6 +174,7 @@ export class BoardsLayoutComponent implements OnInit {
     const board = this.activeBoard();
     if (!board) return;
     const updated = this.boardService.updateConnection(board, conn);
+    this.activeBoard.set(updated);
     await this.persistBoard(updated);
   }
 
@@ -179,16 +182,22 @@ export class BoardsLayoutComponent implements OnInit {
     const board = this.activeBoard();
     if (!board) return;
     const updated = this.boardService.deleteConnection(board, connectionId);
+    this.activeBoard.set(updated);
     await this.persistBoard(updated);
   }
 
+  private persistQueue = Promise.resolve();
+
   private async persistBoard(board: BoardFile): Promise<void> {
-    try {
-      const saved = await this.boardService.saveBoard(board);
-      this.activeBoard.set(saved);
-      this.boards.update(bs => bs.map(b => b.id === saved.id ? saved : b));
-    } catch {
-      this.toast.error(this.#transloco.translate('BOARDS.ERROR_SAVE'));
-    }
+    this.persistQueue = this.persistQueue.then(async () => {
+      try {
+        const saved = await this.boardService.saveBoard(board);
+        this.activeBoard.set(saved);
+        this.boards.update(bs => bs.map(b => b.id === saved.id ? saved : b));
+      } catch {
+        this.toast.error(this.#transloco.translate('BOARDS.ERROR_SAVE'));
+      }
+    });
+    await this.persistQueue;
   }
 }

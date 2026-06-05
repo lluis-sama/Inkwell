@@ -1,4 +1,4 @@
-import { Component, computed, input, output } from '@angular/core';
+import { Component, input, output, viewChild, afterNextRender, effect, ElementRef, OnDestroy } from '@angular/core';
 import { Card, CardConnection } from '../../../core/models/board.model';
 import { prefersReducedMotion } from '../../../shared/utils/reduced-motion';
 
@@ -9,14 +9,91 @@ import { prefersReducedMotion } from '../../../shared/utils/reduced-motion';
   templateUrl: './connection-svg-overlay.component.html',
   styleUrl: './connection-svg-overlay.component.css',
 })
-export class ConnectionSvgOverlayComponent {
+export class ConnectionSvgOverlayComponent implements OnDestroy {
   protected readonly reducedMotion = prefersReducedMotion();
 
   connections = input.required<CardConnection[]>();
   cards = input.required<Card[]>();
   provisionalConnection = input<{ fromX: number; fromY: number; toX: number; toY: number; color: string } | null>(null);
+  paused = input<boolean>(false);
 
   connectionSelected = output<CardConnection>();
+
+  private readonly svgRef = viewChild.required<ElementRef<SVGSVGElement>>('svgRef');
+  private readonly pathAnimations = new Map<SVGPathElement, Animation>();
+
+  constructor() {
+    afterNextRender(() => this.setupPillAnimations());
+
+    effect(() => {
+      // Track connection changes (add/remove/update)
+      this.connections();
+      // Wait for Angular to render the updated DOM before querying paths
+      requestAnimationFrame(() => this.setupPillAnimations());
+    });
+
+    effect(() => {
+      if (this.reducedMotion() || this.paused()) {
+        this.pauseAllAnimations();
+      } else {
+        this.resumeAllAnimations();
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.cancelAllAnimations();
+  }
+
+  private setupPillAnimations(): void {
+    this.cancelAllAnimations();
+    if (this.reducedMotion()) return;
+
+    const svg = this.svgRef().nativeElement;
+    const paths = Array.from(svg.querySelectorAll<SVGPathElement>('.connection-flow'));
+
+    for (const path of paths) {
+      const length = path.getTotalLength();
+      const pillLen = 18;
+      const gap = Math.max(length, pillLen);
+      path.style.strokeDasharray = `${pillLen} ${gap}`;
+
+      const anim = path.animate(
+        [
+          { strokeDashoffset: '0' },
+          { strokeDashoffset: `-${length + pillLen}` },
+        ],
+        {
+          duration: 2000,
+          iterations: Infinity,
+          easing: 'linear',
+        }
+      );
+
+      this.pathAnimations.set(path, anim);
+    }
+
+    if (this.paused()) {
+      this.pauseAllAnimations();
+    }
+  }
+
+  private cancelAllAnimations(): void {
+    this.pathAnimations.forEach(anim => anim.cancel());
+    this.pathAnimations.clear();
+  }
+
+  private pauseAllAnimations(): void {
+    this.pathAnimations.forEach(anim => anim.pause());
+  }
+
+  private resumeAllAnimations(): void {
+    this.pathAnimations.forEach(anim => {
+      if (anim.playState === 'paused') {
+        anim.play();
+      }
+    });
+  }
 
   // ==================== CÁLCULO DE ANCLAJE ====================
   
@@ -141,6 +218,17 @@ export class ConnectionSvgOverlayComponent {
   }
 
   // ==================== CÁLCULO DE ETIQUETA ====================
+
+  private readonly labelCtx = (() => {
+    const c = document.createElement('canvas');
+    const ctx = c.getContext('2d')!;
+    ctx.font = '500 14px sans-serif';
+    return ctx;
+  })();
+
+  getLabelWidth(label: string): number {
+    return this.labelCtx.measureText(label).width;
+  }
 
   getLabelTransform(conn: CardConnection): string {
     const fromCard = this.getCardById(conn.fromCardId);

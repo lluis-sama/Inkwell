@@ -13,6 +13,7 @@
       class="popover-input"
       [value]="connection().label ?? ''"
       [placeholder]="'BOARDS.CONNECTION.LABEL_PLACEHOLDER' | transloco"
+      maxlength="25"
       (input)="onLabelInput($event)"
       (keydown.enter)="onClose()"
     />

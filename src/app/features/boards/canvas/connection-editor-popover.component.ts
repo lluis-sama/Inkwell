@@ -1,4 +1,4 @@
-import { Component, ElementRef, input, output, viewChild } from '@angular/core';
+import { Component, ElementRef, input, output, viewChild, signal, effect } from '@angular/core';
 import { CardConnection } from '../../../core/models/board.model';
 import { ClickOutsideDirective } from '../../../shared/utils/click-outside.directive';
 import { TranslocoPipe } from '@jsverse/transloco';
@@ -21,6 +21,13 @@ export class ConnectionEditorPopoverComponent {
   closed = output<void>();
 
   private colorInput = viewChild.required<ElementRef<HTMLInputElement>>('colorInput');
+  readonly currentLabel = signal('');
+
+  constructor() {
+    effect(() => {
+      this.currentLabel.set(this.connection().label ?? '');
+    });
+  }
 
   readonly predefinedColors = [
     '#cba6f7', // mauve
@@ -38,8 +45,7 @@ export class ConnectionEditorPopoverComponent {
   ];
 
   onLabelInput(event: Event): void {
-    const value = (event.target as HTMLInputElement).value;
-    this.labelChanged.emit(value);
+    this.currentLabel.set((event.target as HTMLInputElement).value);
   }
 
   onColorSelect(color: string): void {
@@ -60,6 +66,11 @@ export class ConnectionEditorPopoverComponent {
   }
 
   onClose(): void {
+    const final = this.currentLabel().trim();
+    const original = this.connection().label ?? '';
+    if (final !== original) {
+      this.labelChanged.emit(final);
+    }
     this.closed.emit();
   }
 }

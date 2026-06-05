@@ -9,16 +9,11 @@
 }
 
 .connection-flow {
-  animation: connectionFlow 1.2s linear infinite;
-}
-
-@keyframes connectionFlow {
-  from { stroke-dashoffset: 0; }
-  to   { stroke-dashoffset: -28; }
+  filter: url(#pillGlow);
 }
 
 .reduced-motion .connection-flow {
-  animation: none;
+  filter: none;
 }
 
 .connection-label-text {
