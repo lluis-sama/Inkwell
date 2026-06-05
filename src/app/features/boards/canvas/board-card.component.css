@@ -41,7 +41,7 @@ div:hover .card-edit {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, transparent 50%);
+  background: linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, transparent 35%, transparent 65%, rgba(0,0,0,0.55) 100%);
   opacity: 0;
   transition: opacity 150ms ease;
   z-index: 1;
@@ -102,8 +102,8 @@ div:hover .card-edit {
 /* Anchor points for connections */
 .anchor {
   position: absolute;
-  width: 10px;
-  height: 10px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   background: #8c8fa1;
   z-index: 20;
@@ -122,21 +122,21 @@ div:hover .card-edit {
 }
 
 .anchor-n {
-  top: -5px;
-  left: calc(50% - 5px);
+  top: -7px;
+  left: calc(50% - 7px);
 }
 
 .anchor-s {
-  bottom: -5px;
-  left: calc(50% - 5px);
+  bottom: -7px;
+  left: calc(50% - 7px);
 }
 
 .anchor-e {
-  right: -5px;
-  top: calc(50% - 5px);
+  right: -7px;
+  top: calc(50% - 7px);
 }
 
 .anchor-w {
-  left: -5px;
-  top: calc(50% - 5px);
+  left: -7px;
+  top: calc(50% - 7px);
 }

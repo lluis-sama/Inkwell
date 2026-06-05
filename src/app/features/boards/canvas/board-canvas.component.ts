@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, computed, input, output, signal } from '@angular/core';
+import { Component, computed, effect, input, output, signal } from '@angular/core';
 import { BoardFile, Card, CardConnection, CardType, CARD_TYPE_LABELS } from '../../../core/models/board.model';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { BoardCardComponent } from './board-card.component';
@@ -19,12 +19,26 @@ import { ConnectionEditorPopoverComponent } from './connection-editor-popover.co
   },
 })
 export class BoardCanvasComponent {
-  @ViewChild('canvasEl') canvasEl!: ElementRef<HTMLDivElement>;
-
   board = input.required<BoardFile>();
 
   readonly cardTypes: CardType[] = ['character', 'note', 'research', 'other'];
   readonly typeLabels = CARD_TYPE_LABELS;
+  readonly isMac = signal(false);
+  readonly hintCollapsed = signal(false);
+  private hintTimer: ReturnType<typeof setTimeout> | null = null;
+
+  constructor() {
+    this.isMac.set(/Mac|iPhone|iPad|iPod/.test(navigator.platform));
+    this.hintTimer = setTimeout(() => this.hintCollapsed.set(true), 5000);
+  }
+
+  onHintClick(): void {
+    if (this.hintCollapsed()) {
+      this.hintCollapsed.set(false);
+      if (this.hintTimer) clearTimeout(this.hintTimer);
+      this.hintTimer = setTimeout(() => this.hintCollapsed.set(true), 5000);
+    }
+  }
 
   positionChanged = output<{ id: string; x: number; y: number }>();
   cardAdded = output<{ x: number; y: number; type: CardType }>();
@@ -39,8 +53,8 @@ export class BoardCanvasComponent {
   contextMenu = signal<{
     screenX: number;
     screenY: number;
-    canvasX: number;
-    canvasY: number;
+    worldX: number;
+    worldY: number;
   } | null>(null);
 
   provisionalConnection = signal<{
@@ -54,6 +68,16 @@ export class BoardCanvasComponent {
   } | null>(null);
 
   selectedConnection = signal<CardConnection | null>(null);
+
+  // ==================== PANNING + ZOOM ====================
+
+  panOffset = signal<{ x: number; y: number }>({ x: 0, y: 0 });
+  zoom = signal(1.0);
+  private readonly ZOOM_MIN = 0.1;
+  private readonly ZOOM_MAX = 3.0;
+
+  private isPanning = false;
+  private panStart = { x: 0, y: 0, clientX: 0, clientY: 0 };
 
   private movingPositions = signal<Record<string, { x: number; y: number }>>({});
 
@@ -73,7 +97,8 @@ export class BoardCanvasComponent {
     return this.cardsWithLivePositions().find(c => c.id === id);
   }
 
-  readonly selectedConnectionLeft = computed(() => {
+  // Coordinates relative to the pan-layer (world coordinates)
+  readonly selectedConnectionScreenLeft = computed(() => {
     const conn = this.selectedConnection();
     if (!conn) return 0;
     const from = this.getCardById(conn.fromCardId);
@@ -82,7 +107,7 @@ export class BoardCanvasComponent {
     return (from.x + from.width / 2 + to.x + to.width / 2) / 2;
   });
 
-  readonly selectedConnectionTop = computed(() => {
+  readonly selectedConnectionScreenTop = computed(() => {
     const conn = this.selectedConnection();
     if (!conn) return 0;
     const from = this.getCardById(conn.fromCardId);
@@ -115,16 +140,44 @@ export class BoardCanvasComponent {
     this.connectionDeleted.emit(conn.id);
   }
 
+  // ==================== PANNING ====================
+
+  onCanvasMouseDown(event: MouseEvent): void {
+    // Middle mouse button (button 1) starts panning
+    if (event.button === 1) {
+      event.preventDefault();
+      this.isPanning = true;
+      const pan = this.panOffset();
+      this.panStart = {
+        x: pan.x,
+        y: pan.y,
+        clientX: event.clientX,
+        clientY: event.clientY,
+      };
+    }
+  }
+
+  onWheel(event: WheelEvent): void {
+    if (!event.ctrlKey) return;
+    event.preventDefault();
+    const delta = event.deltaY > 0 ? -0.1 : 0.1;
+    const newZoom = Math.min(this.ZOOM_MAX, Math.max(this.ZOOM_MIN, this.zoom() + delta));
+    this.zoom.set(Math.round(newZoom * 10) / 10);
+  }
+
+  // ==================== RIGHT-CLICK CONTEXT MENU ====================
+
   onCanvasRightClick(event: MouseEvent): void {
     event.preventDefault();
-    const rect = this.canvasEl.nativeElement.getBoundingClientRect();
-    const canvasX = event.clientX - rect.left;
-    const canvasY = event.clientY - rect.top;
+    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    const z = this.zoom();
+    const worldX = (event.clientX - rect.left - this.panOffset().x) / z;
+    const worldY = (event.clientY - rect.top - this.panOffset().y) / z;
     this.contextMenu.set({
       screenX: event.clientX,
       screenY: event.clientY,
-      canvasX,
-      canvasY,
+      worldX,
+      worldY,
     });
   }
 
@@ -132,7 +185,7 @@ export class BoardCanvasComponent {
     const pos = this.contextMenu();
     this.contextMenu.set(null);
     if (pos) {
-      this.cardAdded.emit({ x: pos.canvasX, y: pos.canvasY, type });
+      this.cardAdded.emit({ x: pos.worldX, y: pos.worldY, type });
     }
   }
 
@@ -146,11 +199,15 @@ export class BoardCanvasComponent {
   onDocumentEscape(): void {
     this.contextMenu.set(null);
     this.selectedConnection.set(null);
+    this.isPanning = false;
+    this.provisionalConnection.set(null);
   }
 
   onImageRequested(card: Card): void {
     this.imageRequested.emit(card);
   }
+
+  // ==================== CONNECTIONS ====================
 
   onConnectionStarted(event: { cardId: string; side: 'n' | 's' | 'e' | 'w'; x: number; y: number }): void {
     this.contextMenu.set(null);
@@ -171,19 +228,42 @@ export class BoardCanvasComponent {
   }
 
   onDocumentMouseMove(event: MouseEvent): void {
+    // Panning
+    if (this.isPanning) {
+      const dx = event.clientX - this.panStart.clientX;
+      const dy = event.clientY - this.panStart.clientY;
+      this.panOffset.set({
+        x: this.panStart.x + dx,
+        y: this.panStart.y + dy,
+      });
+      return;
+    }
+
+    // Provisional connection
     const prov = this.provisionalConnection();
     if (!prov) return;
 
-    const rect = this.canvasEl.nativeElement.getBoundingClientRect();
+    const viewport = document.querySelector('.viewport');
+    if (!viewport) return;
+    const rect = viewport.getBoundingClientRect();
+    const z = this.zoom();
+    const worldX = (event.clientX - rect.left - this.panOffset().x) / z;
+    const worldY = (event.clientY - rect.top - this.panOffset().y) / z;
+
     this.provisionalConnection.set({
       ...prov,
-      toX: event.clientX - rect.left,
-      toY: event.clientY - rect.top,
+      toX: worldX,
+      toY: worldY,
       color: prov.color,
     });
   }
 
   onDocumentMouseUp(event: MouseEvent): void {
+    // Stop panning
+    if (this.isPanning) {
+      this.isPanning = false;
+    }
+
     this.movingPositions.set({});
 
     const prov = this.provisionalConnection();

@@ -18,6 +18,7 @@ export class BoardCardComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly projectService = inject(ProjectService);
 
   card = input.required<Card>();
+  zoom = input(1.0);
 
   positionChanged = output<{ id: string; x: number; y: number }>();
   editRequested = output<Card>();
@@ -48,27 +49,24 @@ export class BoardCardComponent implements OnInit, AfterViewInit, OnDestroy {
     event.preventDefault();
 
     const card = this.card();
-    const el = this.cardEl.nativeElement;
-    const actualWidth = el.offsetWidth;
-    const actualHeight = el.offsetHeight;
 
     let anchorX = card.x;
     let anchorY = card.y;
 
     switch (side) {
       case 'n':
-        anchorX += actualWidth / 2;
+        anchorX += card.width / 2;
         break;
       case 's':
-        anchorX += actualWidth / 2;
-        anchorY += actualHeight;
+        anchorX += card.width / 2;
+        anchorY += card.height;
         break;
       case 'e':
-        anchorX += actualWidth;
-        anchorY += actualHeight / 2;
+        anchorX += card.width;
+        anchorY += card.height / 2;
         break;
       case 'w':
-        anchorY += actualHeight / 2;
+        anchorY += card.height / 2;
         break;
     }
 
@@ -84,8 +82,9 @@ export class BoardCardComponent implements OnInit, AfterViewInit, OnDestroy {
       listeners: {
         move: (event) => {
           const el = event.target as HTMLElement;
-          const x = (parseFloat(el.style.left) || 0) + event.dx;
-          const y = (parseFloat(el.style.top) || 0) + event.dy;
+          const z = this.zoom();
+          const x = (parseFloat(el.style.left) || 0) + event.dx / z;
+          const y = (parseFloat(el.style.top) || 0) + event.dy / z;
           el.style.left = `${x}px`;
           el.style.top = `${y}px`;
           this.positionChanged.emit({ id: this.card().id, x, y });
@@ -99,12 +98,7 @@ export class BoardCardComponent implements OnInit, AfterViewInit, OnDestroy {
           });
         },
       },
-      modifiers: [
-        interact.modifiers.restrictRect({
-          restriction: 'parent',
-          endOnly: true,
-        }),
-      ],
+
     });
   }
 
