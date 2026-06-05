@@ -12,23 +12,70 @@ div:hover .card-image {
   opacity: 1 !important;
 }
 
+div:hover .card-edit {
+  opacity: 1 !important;
+}
+
 .card-action-btn {
   @apply absolute w-5 h-5 rounded flex items-center justify-center
-         opacity-0 hover:opacity-100 hover:bg-black/20 transition-all;
+         opacity-0 transition-all;
+  z-index: 30;
+  background: rgba(0,0,0,0.5);
+  pointer-events: auto;
+}
+
+.card-action-btn:hover {
+  opacity: 1 !important;
+  background: rgba(0,0,0,0.75);
 }
 
 .card-root {
   @apply absolute rounded-lg border shadow-md cursor-grab
          active:cursor-grabbing select-none flex flex-col overflow-hidden;
+  transition: filter 150ms ease;
+  height: auto;
+}
+
+.card-root::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, transparent 50%);
+  opacity: 0;
+  transition: opacity 150ms ease;
+  z-index: 1;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.card-root:hover::after {
+  opacity: 1;
+}
+
+.card-root:hover .card-action-btn,
+.card-root:hover .card-image-btn {
+  opacity: 1;
+}
+
+.card-root:hover {
+  filter: brightness(0.85);
 }
 
 .card-body-text {
-  @apply text-ink-subtle text-xs leading-relaxed break-words whitespace-pre-wrap;
+  @apply text-xs leading-relaxed break-words whitespace-pre-wrap;
 }
 
 .card-image-btn {
   @apply absolute w-6 h-6 rounded flex items-center justify-center
-         opacity-0 hover:opacity-100 hover:bg-black/20 transition-all;
+         opacity-0 transition-all;
+  z-index: 30;
+  background: rgba(0,0,0,0.5);
+  pointer-events: auto;
+}
+
+.card-image-btn:hover {
+  opacity: 1 !important;
+  background: rgba(0,0,0,0.75);
 }
 
 .card-image-overlay {
@@ -37,4 +84,58 @@ div:hover .card-image {
 
 .card-type-row {
   @apply flex items-center gap-1.5 px-3 pt-2.5 pb-0;
+}
+
+.card-section-label {
+  @apply text-[10px] uppercase tracking-wider opacity-60 font-medium block mb-1;
+}
+
+.card-chapters-pills {
+  @apply flex flex-wrap gap-1;
+}
+
+.card-chapter-pill {
+  @apply text-[10px] px-1.5 py-0.5 rounded bg-black/10 font-medium;
+}
+
+/* Anchor points for connections */
+.anchor {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #8c8fa1;
+  z-index: 20;
+  cursor: crosshair;
+  opacity: 0;
+  transition: opacity 150ms ease, transform 150ms ease;
+}
+
+.card-root:hover .anchor {
+  opacity: 1;
+}
+
+.anchor:hover {
+  transform: scale(1.4);
+  background: #c6a0f6;
+}
+
+.anchor-n {
+  top: -5px;
+  left: calc(50% - 5px);
+}
+
+.anchor-s {
+  bottom: -5px;
+  left: calc(50% - 5px);
+}
+
+.anchor-e {
+  right: -5px;
+  top: calc(50% - 5px);
+}
+
+.anchor-w {
+  left: -5px;
+  top: calc(50% - 5px);
 }

@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
 import { TauriBridgeService } from './tauri-bridge.service';
 import { ProjectService } from './project.service';
-import { BoardFile, Card, CardType, DEFAULT_COLORS_BY_TYPE } from '../models/board.model';
+import { BoardFile, Card, CardType, CardConnection, DEFAULT_COLORS_BY_TYPE } from '../models/board.model';
 import { boardPath, boardsFolderPath } from '../../shared/utils/project-paths';
 
 @Injectable({ providedIn: 'root' })
@@ -16,6 +16,7 @@ export class BoardService {
     const raw = await this.bridge.readJsonFile(boardPath(basePath, id));
     const board = JSON.parse(raw) as BoardFile;
     board.cards = board.cards.map(c => ({ ...c, type: c.type ?? 'note' }));
+    board.connections = board.connections ?? [];
     return board;
   }
 
@@ -34,6 +35,7 @@ export class BoardService {
       id: crypto.randomUUID(),
       title,
       cards: [],
+      connections: [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -66,7 +68,7 @@ export class BoardService {
       type,
       x: position.x,
       y: position.y,
-      width: 220,
+      width: 280,
       height: 160,
     };
 
@@ -84,6 +86,42 @@ export class BoardService {
     return {
       ...board,
       cards: board.cards.filter(c => c.id !== cardId),
+    };
+  }
+
+  addConnection(
+    board: BoardFile,
+    fromCardId: string,
+    toCardId: string,
+    label = '',
+    color = '#a78bfa',
+  ): BoardFile {
+    const connection: CardConnection = {
+      id: crypto.randomUUID(),
+      fromCardId,
+      toCardId,
+      label: label || undefined,
+      color,
+    };
+    return {
+      ...board,
+      connections: [...board.connections, connection],
+    };
+  }
+
+  updateConnection(board: BoardFile, updated: CardConnection): BoardFile {
+    return {
+      ...board,
+      connections: board.connections.map(c =>
+        c.id === updated.id ? updated : c,
+      ),
+    };
+  }
+
+  deleteConnection(board: BoardFile, connectionId: string): BoardFile {
+    return {
+      ...board,
+      connections: board.connections.filter(c => c.id !== connectionId),
     };
   }
 

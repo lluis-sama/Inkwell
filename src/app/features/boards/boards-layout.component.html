@@ -32,6 +32,9 @@
         (editRequested)="onEditRequested($event)"
         (deleteRequested)="onDeleteCard($event)"
         (imageRequested)="onImageRequested($event)"
+        (connectionAdded)="onConnectionAdded($event)"
+        (connectionUpdated)="onConnectionUpdated($event)"
+        (connectionDeleted)="onConnectionDeleted($event)"
       />
     } @else {
       <div class="flex flex-col items-center justify-center flex-1 gap-4 opacity-40">

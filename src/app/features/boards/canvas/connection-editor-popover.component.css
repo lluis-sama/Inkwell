@@ -1,0 +1,117 @@
+.connection-popover {
+  position: absolute;
+  z-index: 50;
+  width: 190px;
+  max-width: 190px;
+  padding: 12px;
+  border-radius: 8px;
+  background-color: var(--ink-surface);
+  border: 1px solid var(--ink-border);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.popover-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.popover-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-subtle);
+  font-weight: 500;
+}
+
+.popover-input {
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--ink-border);
+  background-color: var(--ink-bg);
+  color: var(--ink-text);
+  font-size: 13px;
+  outline: none;
+}
+
+.popover-input:focus {
+  border-color: var(--ink-accent);
+}
+
+.color-palette {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.color-swatch {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.color-swatch.selected {
+  border-color: var(--ink-text);
+}
+
+.custom-color-trigger {
+  background-color: var(--ink-bg);
+  border: 1px dashed var(--ink-border);
+  color: var(--ink-subtle);
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.custom-color-input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  width: 0;
+  height: 0;
+}
+
+.popover-footer {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 4px;
+  border-top: 1px solid var(--ink-border);
+}
+
+.popover-save-btn {
+  font-size: 12px;
+  color: var(--ink-text);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.popover-save-btn:hover {
+  background-color: var(--ink-border);
+}
+
+.popover-delete-btn {
+  font-size: 12px;
+  color: var(--ink-danger);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.popover-delete-btn:hover {
+  background-color: rgba(243, 139, 168, 0.1);
+}

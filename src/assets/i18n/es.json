@@ -496,5 +496,15 @@
   "SETTINGS.LT.TOGGLE_DESC": "Detecta errores de gramática, estilo y ortografía. Requiere ~390 MB de espacio en disco.",
   "SETTINGS.LT.STATUS": "Estado",
   "SETTINGS.LT.MEMORY_HINT": "Uso de memoria cuando está activo: ~400 MB",
-  "SETTINGS.LT.UNINSTALL": "Desinstalar"
+  "SETTINGS.LT.UNINSTALL": "Desinstalar",
+  "BOARDS.CARD.EDIT": "Editar tarjeta",
+  "BOARDS.CARD.GENERATE_IMAGE": "Generar imagen",
+  "BOARDS.CARD.EXPAND": "Expandir",
+  "BOARDS.CARD.COLLAPSE": "Colapsar",
+  "BOARDS.CARD.EXPANDED_APPEARS_IN": "Aparece en:",
+  "BOARDS.CARD.EXPANDED_ALIASES": "También conocido como:",
+  "BOARDS.CONNECTION.LABEL": "Etiqueta",
+  "BOARDS.CONNECTION.LABEL_PLACEHOLDER": "Describe la relación...",
+  "BOARDS.CONNECTION.COLOR": "Color",
+  "BOARDS.CONNECTION.DELETE": "Eliminar"
 }

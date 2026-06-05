@@ -7,7 +7,7 @@
   [style.width.px]="card().width"
   [style.min-height.px]="card().height"
   [style.background]="hasImage() ? 'transparent' : card().color"
-  (dblclick)="editRequested.emit(card())"
+  [style.color]="textColor()"
 >
   <!-- Background image -->
   @if (hasImage()) {
@@ -21,13 +21,13 @@
   }
 
   <!-- Content wrapper -->
-  <div class="relative z-10 flex flex-col h-full">
+  <div class="relative z-10 flex flex-col h-full content-wrapper">
 
-    <!-- Type indicator -->
+    <!-- Type indicator row -->
     <div class="card-type-row">
-      <span class="text-xs opacity-70" [class]="hasImage() ? 'text-white' : ''">{{ typeIcon(card().type) }}</span>
+      <span class="text-xs opacity-70">{{ typeLabels[card().type] | transloco }}</span>
       @if (card().type === 'character' && chapterCount() > 0) {
-        <span class="ml-auto text-xs opacity-60 font-mono" [class]="hasImage() ? 'text-white' : ''">
+        <span class="ml-auto text-xs opacity-60 font-mono">
           {{ chapterCount() }} cap.
         </span>
       }
@@ -35,23 +35,56 @@
 
     <!-- Header -->
     <div class="px-3 pt-3 pb-1">
-      <p [class]="hasImage() ? 'text-white drop-shadow text-sm font-medium leading-snug break-words' : 'text-ink-text text-sm font-medium leading-snug break-words'">{{ card().title }}</p>
+      <p class="text-sm font-medium leading-snug break-words">{{ card().title }}</p>
     </div>
 
-    <!-- Body (conditional) -->
+    <!-- Body -->
     @if (card().body && !hasImage()) {
       <div class="px-3 pb-3 flex-1">
         <p class="card-body-text">{{ card().body }}</p>
       </div>
     }
 
+    <!-- Aliases -->
+    @if (card().type === 'character' && card().characterData?.aliases?.length) {
+      <div class="px-3 pb-1.5">
+        <span class="card-section-label">{{ 'BOARDS.CARD.EXPANDED_ALIASES' | transloco }}</span>
+        <span class="text-xs italic opacity-80">{{ card().characterData!.aliases!.join(', ') }}</span>
+      </div>
+    }
+
+    <!-- Appears in chapters -->
+    @if (card().characterData?.appearsInChapters?.length) {
+      <div class="px-3 pb-3">
+        <span class="card-section-label">{{ 'BOARDS.CARD.EXPANDED_APPEARS_IN' | transloco }}</span>
+        <div class="card-chapters-pills">
+          @for (docId of card().characterData!.appearsInChapters; track docId) {
+            <span class="card-chapter-pill">{{ getDocumentTitle(docId) }}</span>
+          }
+        </div>
+      </div>
+    }
+
   </div>
+
+  <!-- Edit button -->
+  <button
+    (click)="editRequested.emit(card()); $event.stopPropagation()"
+    (mousedown)="$event.preventDefault(); $event.stopPropagation()"
+    [title]="'BOARDS.CARD.EDIT' | transloco"
+    class="card-action-btn top-1.5 left-1.5 hover:text-ink-accent card-edit text-current"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+      <path d="m15 5 4 4"/>
+    </svg>
+  </button>
 
   <!-- Delete button -->
   <button
     (click)="deleteRequested.emit(card().id); $event.stopPropagation()"
-    class="card-action-btn top-1.5 right-1.5 hover:text-ink-danger card-delete"
-    [class]="hasImage() ? 'text-white' : 'text-ink-subtle'"
+    (mousedown)="$event.preventDefault(); $event.stopPropagation()"
+    class="card-action-btn top-1.5 right-1.5 hover:text-ink-danger card-delete text-current"
   >
     <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
       <path d="M1.293 1.293a1 1 0 0 1 1.414 0L5 3.586l2.293-2.293a1 1 0 1 1 1.414 1.414L6.414 5l2.293 2.293a1 1 0 0 1-1.414 1.414L5 6.414 2.707 8.707a1 1 0 0 1-1.414-1.414L3.586 5 1.293 2.707a1 1 0 0 1 0-1.414z"/>
@@ -61,9 +94,9 @@
   <!-- Camera button -->
   <button
     (click)="imageRequested.emit(card()); $event.stopPropagation()"
-    title="Generar imagen"
-    class="card-image-btn bottom-1.5 right-1.5 card-image"
-    [class]="hasImage() ? 'text-white' : 'text-ink-subtle hover:text-ink-accent'">
+    (mousedown)="$event.preventDefault(); $event.stopPropagation()"
+    [title]="'BOARDS.CARD.GENERATE_IMAGE' | transloco"
+    class="card-image-btn bottom-1.5 right-1.5 card-image text-current hover:text-ink-accent">
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
          stroke="currentColor" stroke-width="2">
       <rect x="3" y="3" width="18" height="18" rx="2"/>
@@ -71,4 +104,10 @@
       <polyline points="21,15 16,10 5,21"/>
     </svg>
   </button>
+
+  <!-- Anchor points for connections -->
+  <div class="anchor anchor-n" (mousedown)="startConnection('n', $event)"></div>
+  <div class="anchor anchor-s" (mousedown)="startConnection('s', $event)"></div>
+  <div class="anchor anchor-e" (mousedown)="startConnection('e', $event)"></div>
+  <div class="anchor anchor-w" (mousedown)="startConnection('w', $event)"></div>
 </div>

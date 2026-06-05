@@ -2,6 +2,7 @@ export interface BoardFile {
   id: string;
   title: string;
   cards: Card[];
+  connections: CardConnection[];
   createdAt: string;
   updatedAt: string;
 }
@@ -27,6 +28,14 @@ export interface Card {
   characterData?: CharacterData;
   imageData?: string;    // base64 data URL: "data:image/jpeg;base64,..."
   imagePrompt?: string;  // prompt usado para generar la imagen
+}
+
+export interface CardConnection {
+  id: string;
+  fromCardId: string;
+  toCardId: string;
+  label?: string;
+  color: string;
 }
 
 export const DEFAULT_CARD_COLORS: string[] = [

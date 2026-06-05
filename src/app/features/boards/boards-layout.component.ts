@@ -5,7 +5,7 @@ import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { ProjectService } from '../../core/services/project.service';
 import { BoardService } from '../../core/services/board.service';
 import { ToastService } from '../../shared/services/toast.service';
-import { BoardFile, Card, CardType } from '../../core/models/board.model';
+import { BoardFile, Card, CardConnection, CardType } from '../../core/models/board.model';
 
 import { InkNavComponent } from '../../shared/components/ink-nav.component';
 import { BoardSelectorComponent } from './board-selector/board-selector.component';
@@ -152,6 +152,33 @@ export class BoardsLayoutComponent implements OnInit {
     const card = board.cards.find(c => c.id === pos.id);
     if (!card) return;
     const updated = this.boardService.updateCard(board, { ...card, x: pos.x, y: pos.y });
+    await this.persistBoard(updated);
+  }
+
+  async onConnectionAdded(conn: CardConnection): Promise<void> {
+    const board = this.activeBoard();
+    if (!board) return;
+    const updated = this.boardService.addConnection(
+      board,
+      conn.fromCardId,
+      conn.toCardId,
+      conn.label,
+      conn.color,
+    );
+    await this.persistBoard(updated);
+  }
+
+  async onConnectionUpdated(conn: CardConnection): Promise<void> {
+    const board = this.activeBoard();
+    if (!board) return;
+    const updated = this.boardService.updateConnection(board, conn);
+    await this.persistBoard(updated);
+  }
+
+  async onConnectionDeleted(connectionId: string): Promise<void> {
+    const board = this.activeBoard();
+    if (!board) return;
+    const updated = this.boardService.deleteConnection(board, connectionId);
     await this.persistBoard(updated);
   }
 

@@ -4,13 +4,32 @@
   (contextmenu)="onCanvasRightClick($event)"
 >
   <div #canvasEl class="relative" style="min-width: 3000px; min-height: 2000px;">
-    @for (card of board().cards; track card.id) {
+    <app-connection-svg-overlay
+      [connections]="board().connections"
+      [cards]="cardsWithLivePositions()"
+      [provisionalConnection]="provisionalConnection()"
+      (connectionSelected)="onConnectionSelected($event)"
+    />
+    @if (selectedConnection()) {
+      <app-connection-editor-popover
+        [connection]="selectedConnection()!"
+        [left]="selectedConnectionLeft()"
+        [top]="selectedConnectionTop()"
+        (labelChanged)="onConnectionLabelChanged($event)"
+        (colorChanged)="onConnectionColorChanged($event)"
+        (deleteRequested)="onConnectionDeleteRequested()"
+        (closed)="selectedConnection.set(null)"
+      />
+    }
+    @for (card of cardsWithLivePositions(); track card.id) {
       <app-board-card
         [card]="card"
+        [attr.data-card-id]="card.id"
         (positionChanged)="onPositionChanged($event)"
         (editRequested)="editRequested.emit($event)"
         (deleteRequested)="deleteRequested.emit($event)"
         (imageRequested)="onImageRequested($event)"
+        (connectionStarted)="onConnectionStarted($event)"
       />
     }
   </div>
@@ -30,8 +49,7 @@
           (click)="onAddCard(type)"
           class="w-full flex items-center gap-2.5 text-left px-4 py-2
                  text-sm text-ink-text hover:bg-ink-border transition-colors">
-          <span>{{ typeIcons[type] }}</span>
-          {{ typeLabels[type] }}
+          {{ typeLabels[type] | transloco }}
         </button>
       }
     </div>

@@ -1,0 +1,71 @@
+<svg class="connection-svg" [class.reduced-motion]="reducedMotion()" xmlns="http://www.w3.org/2000/svg">
+  @for (conn of connections(); track conn.id) {
+    <g class="connection" [attr.data-id]="conn.id">
+      <!-- Línea base semi-transparente -->
+      <path
+        [attr.d]="getPathD(conn)"
+        [attr.stroke]="conn.color"
+        stroke-width="2"
+        stroke-opacity="0.35"
+        fill="none"
+      />
+
+      <!-- Línea animada (sin animación CSS aún, solo dasharray) -->
+      <path
+        [attr.d]="getPathD(conn)"
+        [attr.stroke]="conn.color"
+        stroke-width="2"
+        fill="none"
+        stroke-dasharray="8 6"
+        class="connection-flow"
+      />
+
+      <!-- Flecha en extremo B -->
+      <polygon
+        [attr.points]="getArrowPoints(conn)"
+        [attr.fill]="conn.color"
+      />
+
+      <!-- Etiqueta -->
+      @if (conn.label) {
+        <g class="connection-label" [attr.transform]="getLabelTransform(conn)">
+          <rect
+            x="-60"
+            y="-14"
+            width="120"
+            height="28"
+            rx="14"
+            fill="rgba(0,0,0,0.55)"
+            stroke="none"
+          />
+          <text
+            text-anchor="middle"
+            dominant-baseline="central"
+            class="connection-label-text"
+          >{{ conn.label }}</text>
+        </g>
+      }
+
+      <!-- Área de click invisible -->
+      <path
+        [attr.d]="getPathD(conn)"
+        stroke="transparent"
+        stroke-width="16"
+        fill="none"
+        style="pointer-events: stroke; cursor: pointer;"
+        (click)="onConnectionClick(conn, $event)"
+      />
+    </g>
+  }
+
+  @if (provisionalConnection()) {
+    <path
+      [attr.d]="getProvisionalPathD()"
+      stroke="#a78bfa"
+      stroke-width="2"
+      fill="none"
+      stroke-dasharray="4 4"
+      opacity="0.7"
+    />
+  }
+</svg>
