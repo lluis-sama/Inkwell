@@ -83,90 +83,55 @@ export class ConnectionSvgOverlayComponent {
 
     const from = this.getAnchorPoint(conn.fromCardId, 'auto', toCard.x + toCard.width / 2, toCard.y + toCard.height / 2);
     const to = this.getAnchorPoint(conn.toCardId, 'auto', fromCard.x + fromCard.width / 2, fromCard.y + fromCard.height / 2);
-    
-    // Acortar la línea 8px antes de la tarjeta destino para que no se meta debajo de la flecha
+
+    // Puntos de control: desplazamiento en la dirección DOMINANTE de la conexión
     const dx = to.x - from.x;
     const dy = to.y - from.y;
-    const dist = Math.hypot(dx, dy) || 1;
-    const shorten = 8;
-    const toLineX = to.x - (dx / dist) * shorten;
-    const toLineY = to.y - (dy / dist) * shorten;
-
-    const controlDx = Math.abs(toLineX - from.x) * 0.5;
-    return `M ${from.x} ${from.y} C ${from.x + controlDx} ${from.y}, ${toLineX - controlDx} ${toLineY}, ${toLineX} ${toLineY}`;
+    if (Math.abs(dx) > Math.abs(dy)) {
+      const controlDx = Math.abs(to.x - from.x) * 0.5;
+      return `M ${from.x} ${from.y} C ${from.x + controlDx} ${from.y}, ${to.x - controlDx} ${to.y}, ${to.x} ${to.y}`;
+    } else {
+      const controlDy = Math.abs(to.y - from.y) * 0.5;
+      return `M ${from.x} ${from.y} C ${from.x} ${from.y + controlDy}, ${to.x} ${to.y - controlDy}, ${to.x} ${to.y}`;
+    }
   }
 
   // ==================== CÁLCULO DE FLECHA ====================
 
-  private sampleBezier(
-    p0: { x: number; y: number },
-    p1: { x: number; y: number },
-    p2: { x: number; y: number },
-    p3: { x: number; y: number },
-    t: number,
-  ): { x: number; y: number } {
-    const mt = 1 - t;
-    const mt2 = mt * mt;
-    const mt3 = mt2 * mt;
-    const t2 = t * t;
-    const t3 = t2 * t;
-    return {
-      x: mt3 * p0.x + 3 * mt2 * t * p1.x + 3 * mt * t2 * p2.x + t3 * p3.x,
-      y: mt3 * p0.y + 3 * mt2 * t * p1.y + 3 * mt * t2 * p2.y + t3 * p3.y,
-    };
-  }
-
   getArrowPoints(conn: CardConnection): string {
-    const fromCard = this.getCardById(conn.fromCardId);
     const toCard = this.getCardById(conn.toCardId);
-    if (!fromCard || !toCard) return '';
+    const toDims = this.getCardDimensions(conn.toCardId);
+    if (!toCard || !toDims) return '';
 
-    // Anchor points
-    const from = this.getAnchorPoint(conn.fromCardId, 'auto', toCard.x + toCard.width / 2, toCard.y + toCard.height / 2);
-    const to = this.getAnchorPoint(conn.toCardId, 'auto', fromCard.x + fromCard.width / 2, fromCard.y + fromCard.height / 2);
+    // Anchor point on destination card edge (using DOM dimensions)
+    const to = this.getAnchorPoint(conn.toCardId, 'auto', 0, 0);
+    // Center of destination card (using DOM dimensions)
+    const cx = toCard.x + toDims.width / 2;
+    const cy = toCard.y + toDims.height / 2;
 
-    // Shorten endpoint by 8px for the line
-    const dx = to.x - from.x;
-    const dy = to.y - from.y;
-    const dist = Math.hypot(dx, dy) || 1;
-    const shorten = 8;
-    const lineEndX = to.x - (dx / dist) * shorten;
-    const lineEndY = to.y - (dy / dist) * shorten;
-
-    // Bézier control points (same logic as getPathD)
-    const controlDx = Math.abs(lineEndX - from.x) * 0.5;
-    const cp1 = { x: from.x + controlDx, y: from.y };
-    const cp2 = { x: lineEndX - controlDx, y: lineEndY };
-    const p0 = from;
-    const p3 = { x: lineEndX, y: lineEndY };
-
-    // Sample a point just before the end to get the true visual tangent
-    const sampled = this.sampleBezier(p0, cp1, cp2, p3, 0.92);
-
-    // Direction from sampled point toward line end = curve direction at endpoint
-    const dirX = p3.x - sampled.x;
-    const dirY = p3.y - sampled.y;
-    const dirLen = Math.hypot(dirX, dirY) || 1;
-    const nx = dirX / dirLen; // normalized direction the curve is heading at the end
-    const ny = dirY / dirLen;
+    // Direction from anchor TOWARD card center
+    const dirX = cx - to.x;
+    const dirY = cy - to.y;
+    const len = Math.hypot(dirX, dirY) || 1;
+    const nx = dirX / len;
+    const ny = dirY / len;
 
     // Perpendicular
     const px = -ny;
     const py = nx;
 
-    const tipLen = 9;
+    const tipLen = 10;
     const wingLen = 6;
 
-    // Arrow tip at the actual anchor point (on card edge), slightly inset so it doesn't overlap
-    const inset = 2;
-    const tipX = to.x - nx * inset;
-    const tipY = to.y - ny * inset;
+    // Arrow BASE at the card edge (where the line ends)
+    const baseX = to.x;
+    const baseY = to.y;
 
-    // Arrow base behind the tip, along the curve direction
-    const baseX = tipX - nx * tipLen;
-    const baseY = tipY - ny * tipLen;
+    // Arrow TIP pointing inward toward center
+    const tipX = to.x + nx * tipLen;
+    const tipY = to.y + ny * tipLen;
 
-    // Wings spread perpendicular from base
+    // Wings spread perpendicular from base (at card edge)
     const wing1X = baseX + px * wingLen;
     const wing1Y = baseY + py * wingLen;
     const wing2X = baseX - px * wingLen;

@@ -34,6 +34,7 @@ div:hover .card-edit {
          active:cursor-grabbing select-none flex flex-col overflow-hidden;
   transition: filter 150ms ease;
   height: auto;
+  min-width: 280px;
 }
 
 .card-root::after {

@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild, computed, input, output, inject } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, AfterViewInit, ViewChild, computed, input, output, inject } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
 import interact from 'interactjs';
 import { Card, CardType, CARD_TYPE_LABELS } from '../../../core/models/board.model';
@@ -12,7 +12,7 @@ import { ProjectService, findNode } from '../../../core/services/project.service
   templateUrl: './board-card.component.html',
   styleUrl: './board-card.component.css',
 })
-export class BoardCardComponent implements OnInit, OnDestroy {
+export class BoardCardComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('cardEl', { static: true }) cardEl!: ElementRef<HTMLDivElement>;
 
   private readonly projectService = inject(ProjectService);
@@ -76,6 +76,7 @@ export class BoardCardComponent implements OnInit, OnDestroy {
   }
 
   private interactable: ReturnType<typeof interact> | null = null;
+  private aspectObserver: ResizeObserver | null = null;
 
   ngOnInit(): void {
     this.interactable = interact(this.cardEl.nativeElement).draggable({
@@ -107,7 +108,27 @@ export class BoardCardComponent implements OnInit, OnDestroy {
     });
   }
 
+  ngAfterViewInit(): void {
+    const el = this.cardEl?.nativeElement;
+    if (!el) return;
+
+    this.aspectObserver = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry) return;
+      const h = entry.contentRect.height;
+      const w = entry.contentRect.width;
+      if (h > w) {
+        const newWidth = h + 40;
+        if (Math.abs((el.style.width ? parseFloat(el.style.width) : w) - newWidth) > 2) {
+          el.style.width = `${newWidth}px`;
+        }
+      }
+    });
+    this.aspectObserver.observe(el);
+  }
+
   ngOnDestroy(): void {
+    this.aspectObserver?.disconnect();
     this.interactable?.unset();
   }
 }

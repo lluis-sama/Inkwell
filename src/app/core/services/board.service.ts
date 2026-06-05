@@ -68,7 +68,7 @@ export class BoardService {
       type,
       x: position.x,
       y: position.y,
-      width: 280,
+      width: 320,
       height: 160,
     };
 
