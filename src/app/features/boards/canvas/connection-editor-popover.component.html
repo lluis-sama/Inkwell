@@ -1,0 +1,65 @@
+<div
+  class="connection-popover"
+  [style.left.px]="left()"
+  [style.top.px]="top()"
+  clickOutside
+  (clickOutside)="onClose()"
+>
+  <!-- Label input -->
+  <div class="popover-section">
+    <label class="popover-label">{{ 'BOARDS.CONNECTION.LABEL' | transloco }}</label>
+    <input
+      type="text"
+      class="popover-input"
+      [value]="connection().label ?? ''"
+      [placeholder]="'BOARDS.CONNECTION.LABEL_PLACEHOLDER' | transloco"
+      maxlength="25"
+      (input)="onLabelInput($event)"
+      (keydown.enter)="onClose()"
+    />
+  </div>
+
+  <!-- Color palette -->
+  <div class="popover-section">
+    <label class="popover-label">{{ 'BOARDS.CONNECTION.COLOR' | transloco }}</label>
+    <div class="color-palette">
+      @for (color of predefinedColors; track color) {
+        <button
+          class="color-swatch"
+          [class.selected]="connection().color === color"
+          [style.background-color]="color"
+          (click)="onColorSelect(color)"
+          [title]="color"
+        ></button>
+      }
+      <button
+        class="color-swatch custom-color-trigger"
+        (click)="onCustomColorTrigger()"
+        title="Custom color"
+      >+</button>
+      <input
+        #colorInput
+        type="color"
+        class="custom-color-input"
+        [value]="connection().color"
+        (change)="onCustomColorChange($event)"
+      />
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="popover-footer">
+    <button
+      class="popover-save-btn"
+      (click)="onClose()"
+    >
+      {{ 'COMMON.SAVE' | transloco }}
+    </button>
+    <button
+      class="popover-delete-btn"
+      (click)="onDelete()"
+    >
+      {{ 'BOARDS.CONNECTION.DELETE' | transloco }}
+    </button>
+  </div>
+</div>

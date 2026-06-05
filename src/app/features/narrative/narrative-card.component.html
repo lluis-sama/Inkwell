@@ -47,7 +47,7 @@
           (ngModelChange)="draftSynopsis.set($event)"
           (click)="$event.stopPropagation()"
         ></textarea>
-        <div class="flex gap-2 mt-1">
+        <div class="flex items-center gap-2 mt-1">
           <button
             class="synopsis-save-btn"
             (click)="commitEdit(); $event.stopPropagation()"
@@ -60,6 +60,29 @@
           >
             {{ 'COMMON.CANCEL' | transloco }}
           </button>
+          @if (canGenerateAi()) {
+            <button
+              (click)="generateWithAi(); $event.stopPropagation()"
+              [disabled]="generating()"
+              class="flex items-center gap-1.5 ml-auto px-2 py-1 rounded text-xs font-medium
+                     border border-ink-accent text-ink-accent
+                     hover:bg-ink-accent hover:text-ink-panel transition-colors
+                     disabled:opacity-40 disabled:cursor-not-allowed">
+              @if (generating()) {
+                <span class="inline-block w-3 h-3 border border-current
+                             border-t-transparent rounded-full animate-spin"></span>
+              } @else {
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2">
+                  <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                  <path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
+              }
+              {{ generating() ? ('SYNOPSIS.GENERATING' | transloco) : ('SYNOPSIS.GENERATE_AI' | transloco) }}
+            </button>
+          } @else if (!ai.hasApiKey()) {
+            <span class="text-ink-muted text-xs ml-auto">{{ 'SYNOPSIS.API_KEY_REQUIRED' | transloco }}</span>
+          }
         </div>
       </div>
     }

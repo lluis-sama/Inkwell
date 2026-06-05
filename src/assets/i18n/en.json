@@ -71,6 +71,9 @@
   "BOARDS.CARD_EDITOR_MODAL.CANCEL": "Cancel",
   "BOARDS.CARD_EDITOR_MODAL.SAVE": "Save",
   "BOARDS.CANVAS.ADD_CARD": "New card here",
+  "BOARDS.CANVAS.HINT_PAN": "Middle-click + drag to pan",
+  "BOARDS.CANVAS.HINT_ZOOM": "Ctrl + scroll to zoom",
+  "BOARDS.CANVAS.HINT_ZOOM_MAC": "Cmd + scroll to zoom",
   "BOARDS.LAYOUT.HEADER_EMPTY": "Select or create a board",
   "BOARDS.LAYOUT.NO_BOARD_SELECTED": "Select a board or create a new one",
   "BOARDS.LAYOUT.CARDS_COUNT_SUFFIX": "cards",
@@ -495,5 +498,15 @@
   "SETTINGS.LT.TOGGLE_DESC": "Detects grammar, style and spelling errors. Requires ~390 MB of disk space.",
   "SETTINGS.LT.STATUS": "Status",
   "SETTINGS.LT.MEMORY_HINT": "Memory usage when active: ~400 MB",
-  "SETTINGS.LT.UNINSTALL": "Uninstall"
+  "SETTINGS.LT.UNINSTALL": "Uninstall",
+  "BOARDS.CARD.EDIT": "Edit card",
+  "BOARDS.CARD.GENERATE_IMAGE": "Generate image",
+  "BOARDS.CARD.EXPAND": "Expand",
+  "BOARDS.CARD.COLLAPSE": "Collapse",
+  "BOARDS.CARD.EXPANDED_APPEARS_IN": "Appears in:",
+  "BOARDS.CARD.EXPANDED_ALIASES": "Also known as:",
+  "BOARDS.CONNECTION.LABEL": "Label",
+  "BOARDS.CONNECTION.LABEL_PLACEHOLDER": "Describe the relationship...",
+  "BOARDS.CONNECTION.COLOR": "Color",
+  "BOARDS.CONNECTION.DELETE": "Delete"
 }

@@ -1,0 +1,92 @@
+<svg
+    #svgRef
+    class="connection-svg"
+    [class.reduced-motion]="reducedMotion()"
+    xmlns="http://www.w3.org/2000/svg"
+>
+    <defs>
+    <filter id="pillGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="7" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="blur" />
+        <feMergeNode in="blur" />
+        <feMergeNode in="blur" />
+        <feMergeNode in="blur" />
+        <feMergeNode in="blur" />
+        <feMergeNode in="blur" />
+        <feMergeNode in="blur" />
+      </feMerge>
+    </filter>
+    </defs>
+
+    @for (conn of connections(); track conn.id) {
+        <g class="connection" [attr.data-id]="conn.id">
+            <!-- Línea base semi-transparente (fondo de la línea) -->
+            <path
+                [attr.d]="getPathD(conn)"
+                [attr.stroke]="conn.color"
+                stroke-width="3"
+                stroke-opacity="0.35"
+                fill="none"
+            />
+
+            <!-- Pildorita animada con blur (viaja de A a B) -->
+            <path
+                [attr.d]="getPathD(conn)"
+                [attr.stroke]="conn.color"
+                stroke-width="3"
+                stroke-opacity="1"
+                fill="none"
+                stroke-linecap="round"
+                class="connection-flow"
+            />
+
+            <!-- Etiqueta -->
+            @if (conn.label) {
+                <g
+                    class="connection-label"
+                    [attr.transform]="getLabelTransform(conn)"
+                >
+                    <rect
+                        [attr.x]="-(getLabelWidth(conn.label!) + 32) / 2"
+                        y="-16"
+                        [attr.width]="getLabelWidth(conn.label!) + 32"
+                        height="32"
+                        rx="16"
+                        fill="rgba(0,0,0,0.55)"
+                        stroke="none"
+                    />
+                    <text
+                        text-anchor="middle"
+                        dominant-baseline="central"
+                        class="connection-label-text"
+                    >
+                        {{ conn.label }}
+                    </text>
+                </g>
+            }
+
+            <!-- Área de click invisible -->
+            <path
+                [attr.d]="getPathD(conn)"
+                stroke="transparent"
+                stroke-width="16"
+                fill="none"
+                style="pointer-events: stroke; cursor: pointer"
+                (click)="onConnectionClick(conn, $event)"
+            />
+        </g>
+    }
+
+    @if (provisionalConnection()) {
+        <path
+            [attr.d]="getProvisionalPathD()"
+            stroke="#a78bfa"
+            stroke-width="3"
+            fill="none"
+            stroke-dasharray="4 4"
+            opacity="0.7"
+        />
+    }
+</svg>

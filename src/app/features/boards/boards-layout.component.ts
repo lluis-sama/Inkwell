@@ -5,7 +5,7 @@ import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { ProjectService } from '../../core/services/project.service';
 import { BoardService } from '../../core/services/board.service';
 import { ToastService } from '../../shared/services/toast.service';
-import { BoardFile, Card, CardType } from '../../core/models/board.model';
+import { BoardFile, Card, CardConnection, CardType } from '../../core/models/board.model';
 
 import { InkNavComponent } from '../../shared/components/ink-nav.component';
 import { BoardSelectorComponent } from './board-selector/board-selector.component';
@@ -155,13 +155,49 @@ export class BoardsLayoutComponent implements OnInit {
     await this.persistBoard(updated);
   }
 
+  async onConnectionAdded(conn: CardConnection): Promise<void> {
+    const board = this.activeBoard();
+    if (!board) return;
+    const updated = this.boardService.addConnection(
+      board,
+      conn.fromCardId,
+      conn.toCardId,
+      conn.label,
+      conn.color,
+      conn.id,
+    );
+    this.activeBoard.set(updated);
+    await this.persistBoard(updated);
+  }
+
+  async onConnectionUpdated(conn: CardConnection): Promise<void> {
+    const board = this.activeBoard();
+    if (!board) return;
+    const updated = this.boardService.updateConnection(board, conn);
+    this.activeBoard.set(updated);
+    await this.persistBoard(updated);
+  }
+
+  async onConnectionDeleted(connectionId: string): Promise<void> {
+    const board = this.activeBoard();
+    if (!board) return;
+    const updated = this.boardService.deleteConnection(board, connectionId);
+    this.activeBoard.set(updated);
+    await this.persistBoard(updated);
+  }
+
+  private persistQueue = Promise.resolve();
+
   private async persistBoard(board: BoardFile): Promise<void> {
-    try {
-      const saved = await this.boardService.saveBoard(board);
-      this.activeBoard.set(saved);
-      this.boards.update(bs => bs.map(b => b.id === saved.id ? saved : b));
-    } catch {
-      this.toast.error(this.#transloco.translate('BOARDS.ERROR_SAVE'));
-    }
+    this.persistQueue = this.persistQueue.then(async () => {
+      try {
+        const saved = await this.boardService.saveBoard(board);
+        this.activeBoard.set(saved);
+        this.boards.update(bs => bs.map(b => b.id === saved.id ? saved : b));
+      } catch {
+        this.toast.error(this.#transloco.translate('BOARDS.ERROR_SAVE'));
+      }
+    });
+    await this.persistQueue;
   }
 }
