@@ -204,6 +204,16 @@
       >+</button>
     </div>
 
+    <!-- Puntuación literaria española -->
+    <button
+      [class.active]="literaryEnabled()"
+      [title]="literaryTooltip()"
+      (click)="toggleLiterary()"
+      aria-label="Puntuación literaria española"
+      class="toolbar-btn">
+      <span class="text-xs font-serif">&laquo;&raquo;</span>
+    </button>
+
     <!-- Spacer -->
     <div class="flex-1"></div>
 

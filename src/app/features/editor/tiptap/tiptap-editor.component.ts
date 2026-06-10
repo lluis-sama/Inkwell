@@ -24,6 +24,8 @@ import { SettingsService } from "../../../core/services/settings.service";
 import { LanguageToolService } from "../../../core/services/language-tool.service";
 import { AppConfigService } from "../../../core/services/app-config.service";
 import { LanguageTool } from "../../../shared/utils/tiptap-languagetool";
+import { LiteraryPunctuationSettingsService } from "../literary-punctuation/literary-punctuation-settings.service";
+import { LiteraryPunctuationExtension } from "../literary-punctuation/literary-punctuation.extension";
 
 interface SearchState {
   term: string;
@@ -103,6 +105,7 @@ export class TiptapEditorComponent
   private readonly settingsService = inject(SettingsService);
   readonly ltService = inject(LanguageToolService);
   private readonly appConfigSvc = inject(AppConfigService);
+  private readonly literarySettings = inject(LiteraryPunctuationSettingsService);
 
   readonly editorFontFamily = computed(() => this.settingsService.settings().editor.fontFamily);
   readonly editorFontSize   = computed(() => this.settingsService.settings().editor.fontSize);
@@ -169,6 +172,7 @@ export class TiptapEditorComponent
       Placeholder.configure({ placeholder: this.placeholder() }),
       CharacterCount,
       SearchPlugin,
+      LiteraryPunctuationExtension.configure({ config: this.literarySettings.config() }),
     ];
 
     // CRÍTICO-4: solo añadir la extensión LanguageTool si el servidor ya está listo

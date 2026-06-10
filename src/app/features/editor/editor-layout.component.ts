@@ -26,6 +26,7 @@ import { StatsService } from '../../core/services/stats.service';
 import { SettingsService } from '../../core/services/settings.service';
 import { DeskPanelComponent } from './desk/desk-panel.component';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { LiteraryPunctuationSettingsService } from './literary-punctuation/literary-punctuation-settings.service';
 
 @Component({
   selector: 'app-editor-layout',
@@ -48,6 +49,7 @@ export class EditorLayoutComponent implements OnInit, OnDestroy {
   private statsService     = inject(StatsService);
   private settingsService  = inject(SettingsService);
   readonly ltService       = inject(LanguageToolService);
+  private literarySettings = inject(LiteraryPunctuationSettingsService);
 
   showBinder          = signal(true);
   editorRebuildKey    = signal(0);
@@ -95,6 +97,48 @@ export class EditorLayoutComponent implements OnInit, OnDestroy {
   private accumulatedSessionWords = 0;
 
   constructor() {
+    // Efecto: cuando cambian los atajos de puntuación literaria, recrear el editor
+    let prevNeedsRebuild = this.literarySettings.needsRebuild();
+    effect(() => {
+      const version = this.literarySettings.needsRebuild();
+      if (version === prevNeedsRebuild) return;
+      prevNeedsRebuild = version;
+
+      const docId = this.activeDocumentId();
+      if (!docId) return;
+
+      // Guardar posición de scroll
+      const scrollTop = this.tiptapEditor?.editorEl?.nativeElement?.scrollTop ?? 0;
+
+      // Guardar documento si está sucio
+      if (this.isDirty && this.activeDocument()) {
+        this.saveCurrentDocument();
+      }
+
+      // Cerrar documento actual
+      const currentId = docId;
+      this.activeDocument.set(null);
+      this.activeDocumentId.set(null);
+      this.isDirty = false;
+      this.saveStatus.set('saved');
+
+      // Reabrir el documento (destruye y recrea el editor completo)
+      const node = findNode(this.projectService.project()!.tree, currentId);
+      if (node) {
+        this.openDocument(node).then(() => {
+          // Restaurar posición de scroll después de reabrir
+          // El editor necesita un poco de tiempo para renderizar
+          requestAnimationFrame(() => {
+            setTimeout(() => {
+              if (this.tiptapEditor?.editorEl?.nativeElement) {
+                this.tiptapEditor.editorEl.nativeElement.scrollTop = scrollTop;
+              }
+            }, 100);
+          });
+        });
+      }
+    });
+
     effect(() => {
       const handle = this.pillHandleEl()?.nativeElement;
       if (!handle) {

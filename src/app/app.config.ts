@@ -9,6 +9,7 @@ import { TranslocoService } from '@jsverse/transloco';
 import { routes } from './app.routes';
 import { TranslocoHttpLoader } from './core/services/transloco-http.loader';
 import { AppConfigService } from './core/services/app-config.service';
+import { LiteraryPunctuationSettingsService } from './features/editor/literary-punctuation/literary-punctuation-settings.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -30,13 +31,18 @@ export const appConfig: ApplicationConfig = {
     {
       provide:    APP_INITIALIZER,
       useFactory: () => {
-        const appConfig   = inject(AppConfigService);
-        const transloco   = inject(TranslocoService);
+        const appConfig         = inject(AppConfigService);
+        const transloco         = inject(TranslocoService);
+        const literarySettings  = inject(LiteraryPunctuationSettingsService);
         return async () => {
           await appConfig.load();
           const lang = appConfig.config().lang;
           if (lang !== transloco.getActiveLang()) {
             transloco.setActiveLang(lang);
+          }
+          const literaryStored = appConfig.config().appSettings.literaryPunctuation;
+          if (literaryStored) {
+            literarySettings.load(literaryStored);
           }
         };
       },

@@ -1,3 +1,5 @@
+import type { LiteraryPunctuationConfig } from '../../features/editor/literary-punctuation/literary-punctuation.types';
+
 export interface EditorSettings {
   fontFamily: string;
   fontSize: number;
@@ -27,6 +29,7 @@ export interface AppSettings {
   appearance: AppearanceSettings;
   aiPanel: AiPanelSettings;
   deskPanel: DeskPanelSettings;
+  literaryPunctuation?: Partial<LiteraryPunctuationConfig>;
 }
 
 export const DEFAULT_APP_SETTINGS: AppSettings = {
@@ -46,4 +49,5 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
     bottomHeight: 300,
     sideWidth: 320,
   },
+  literaryPunctuation: undefined,
 };

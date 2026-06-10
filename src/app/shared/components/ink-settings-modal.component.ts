@@ -14,6 +14,10 @@ import { InkModalComponent } from './ink-modal.component';
 import { InkButtonComponent } from './ink-button.component';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { LtInstallModalComponent } from './lt-install-modal/lt-install-modal.component';
+import { ShortcutCaptureModalComponent } from './shortcut-capture-modal.component';
+import { LiteraryPunctuationSettingsService } from '../../features/editor/literary-punctuation/literary-punctuation-settings.service';
+import { formatShortcutLabel } from '../../features/editor/literary-punctuation/literary-punctuation.helpers';
+import { getLiteraryPunctuationDefaults, LiteraryShortcutTrigger } from '../../features/editor/literary-punctuation/literary-punctuation.types';
 
 type SettingsSection = 'editor' | 'ai' | 'appearance' | 'corrector';
 
@@ -26,7 +30,7 @@ const AI_MODELS = [
 @Component({
   selector: 'ink-settings-modal',
   standalone: true,
-  imports: [InkModalComponent, InkButtonComponent, FormsModule, TranslocoPipe, LtInstallModalComponent],
+  imports: [InkModalComponent, InkButtonComponent, FormsModule, TranslocoPipe, LtInstallModalComponent, ShortcutCaptureModalComponent],
   templateUrl: './ink-settings-modal.component.html',
   styleUrl: './ink-settings-modal.component.css',
 })
@@ -38,11 +42,16 @@ export class InkSettingsModalComponent implements OnInit {
   themeService = inject(ThemeService);
   readonly ltService = inject(LanguageToolService);
   readonly appConfigSvc = inject(AppConfigService);
+  readonly literarySettings = inject(LiteraryPunctuationSettingsService);
+  readonly formatShortcutLabel = formatShortcutLabel;
 
   closed = output<void>();
 
   activeSection = signal<SettingsSection>('editor');
   showLtInstallModal = signal(false);
+  readonly showShortcutCaptureModal = signal(false);
+  shortcutCaptureTarget: 'quote' | 'dash' | null = null;
+  shortcutCaptureTitle = signal('');
 
   // Editor settings
   autosaveInterval = 30;
@@ -312,4 +321,40 @@ export class InkSettingsModalComponent implements OnInit {
       this.showLtInstallModal.set(false);
     }
   });
+
+  resetLiteraryDefaults(): void {
+    this.literarySettings.update(getLiteraryPunctuationDefaults());
+  }
+
+  onQuoteLookbackChange(event: Event): void {
+    const value = parseInt((event.target as HTMLInputElement).value, 10);
+    if (!isNaN(value)) {
+      this.literarySettings.update({ quoteLookbackChars: value });
+    }
+  }
+
+  openShortcutCapture(target: 'quote' | 'dash'): void {
+    this.shortcutCaptureTarget = target;
+    const title = target === 'quote'
+      ? 'SETTINGS.LITERARY.CAPTURE_QUOTE_TITLE'
+      : 'SETTINGS.LITERARY.CAPTURE_DASH_TITLE';
+    this.shortcutCaptureTitle.set(title);
+    this.showShortcutCaptureModal.set(true);
+  }
+
+  onShortcutSaved(trigger: LiteraryShortcutTrigger): void {
+    if (this.shortcutCaptureTarget) {
+      this.literarySettings.updateShortcut(
+        this.shortcutCaptureTarget === 'quote' ? 'quoteShortcut' : 'dashShortcut',
+        trigger
+      );
+    }
+    this.showShortcutCaptureModal.set(false);
+    this.shortcutCaptureTarget = null;
+  }
+
+  onShortcutCaptureClosed(): void {
+    this.showShortcutCaptureModal.set(false);
+    this.shortcutCaptureTarget = null;
+  }
 }
