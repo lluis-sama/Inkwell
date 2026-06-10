@@ -41,6 +41,13 @@ const BASE_SHORTCUTS: ShortcutGroup[] = [
     ],
   },
   {
+    title: "Puntuación literaria",
+    shortcuts: [
+      { keys: ["Ctrl", "Shift", "<>"], description: "Insertar comillas españolas" },
+      { keys: ["Ctrl", "Shift", "-"], description: "Insertar raya de diálogo" },
+    ],
+  },
+  {
     title: "Snapshots y versiones",
     shortcuts: [
       { keys: ["—"], description: "Crear snapshot (botón en top bar)" },

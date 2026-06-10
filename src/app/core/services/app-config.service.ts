@@ -2,6 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { TauriBridgeService } from './tauri-bridge.service';
 import { AppConfig, DEFAULT_APP_CONFIG, RecentProject } from '../models/app-config.model';
 import { AppSettings, DEFAULT_APP_SETTINGS } from '../models/app-settings.model';
+import { LiteraryPunctuationConfig } from '../../features/editor/literary-punctuation/literary-punctuation.types';
 
 @Injectable({ providedIn: 'root' })
 export class AppConfigService {
@@ -112,6 +113,17 @@ export class AppConfigService {
     await this.persist();
   }
 
+  async setLiteraryPunctuation(value: Partial<LiteraryPunctuationConfig> | undefined): Promise<void> {
+    this.config.update(c => ({
+      ...c,
+      appSettings: {
+        ...c.appSettings,
+        literaryPunctuation: value,
+      },
+    }));
+    await this.persist();
+  }
+
   getRecentProjects(): RecentProject[] {
     return this.config().recentProjects;
   }
@@ -150,6 +162,10 @@ export class AppConfigService {
           appearance: { ...DEFAULT_APP_SETTINGS.appearance, ...stored.appearance },
           aiPanel:    { ...DEFAULT_APP_SETTINGS.aiPanel,    ...stored.aiPanel },
           deskPanel:  { ...DEFAULT_APP_SETTINGS.deskPanel,  ...stored.deskPanel },
+          literaryPunctuation: {
+            ...DEFAULT_APP_SETTINGS.literaryPunctuation,
+            ...stored.literaryPunctuation,
+          },
         };
       }
     } catch { /* ignorar */ }
@@ -194,6 +210,10 @@ export class AppConfigService {
           appearance: { ...DEFAULT_APP_SETTINGS.appearance, ...stored.appSettings.appearance },
           aiPanel:    { ...DEFAULT_APP_SETTINGS.aiPanel,    ...stored.appSettings.aiPanel },
           deskPanel:  { ...DEFAULT_APP_SETTINGS.deskPanel,  ...stored.appSettings.deskPanel },
+          literaryPunctuation: {
+            ...DEFAULT_APP_SETTINGS.literaryPunctuation,
+            ...stored.appSettings.literaryPunctuation,
+          },
         }
       : DEFAULT_APP_SETTINGS;
 

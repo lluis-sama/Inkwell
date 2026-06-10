@@ -21,77 +21,146 @@
     <!-- Contenido de la sección -->
     <div class="flex-1 px-6 py-4 min-h-72 w-full max-w-[720px] mx-auto">
 
-      <!-- Editor: con proyecto abierto -->
-      @if (activeSection() === 'editor' && projectService.isLoaded()) {
+      @if (activeSection() === 'editor') {
         <div class="flex flex-col gap-5">
 
-          <div class="flex flex-col gap-1.5">
-            <label class="field-label">
-              {{ 'SETTINGS.GENERAL.AUTOSAVE_LABEL' | transloco }}
-            </label>
-            <select
-              [(ngModel)]="autosaveInterval"
-              class="form-input">
-              <option [ngValue]="0">{{ 'SETTINGS.GENERAL.AUTOSAVE_OFF' | transloco }}</option>
-              <option [ngValue]="15">{{ 'SETTINGS.GENERAL.AUTOSAVE_15S' | transloco }}</option>
-              <option [ngValue]="30">{{ 'SETTINGS.GENERAL.AUTOSAVE_30S' | transloco }}</option>
-              <option [ngValue]="60">{{ 'SETTINGS.GENERAL.AUTOSAVE_1M' | transloco }}</option>
-              <option [ngValue]="300">{{ 'SETTINGS.GENERAL.AUTOSAVE_5M' | transloco }}</option>
-            </select>
-          </div>
+          <!-- Puntuación literaria española -->
+          <div class="flex flex-col gap-4">
+            <p class="section-heading">{{ 'SETTINGS.LITERARY.TITLE' | transloco }}</p>
 
-          <div class="flex flex-col gap-1.5">
-            <label class="field-label">
-              {{ 'SETTINGS.GENERAL.SNAPSHOTS_LABEL' | transloco }}
-            </label>
-            <select
-              [(ngModel)]="maxSnapshots"
-              class="form-input">
-              <option [ngValue]="5">{{ 'SETTINGS.GENERAL.SNAPSHOTS_5' | transloco }}</option>
-              <option [ngValue]="10">{{ 'SETTINGS.GENERAL.SNAPSHOTS_10' | transloco }}</option>
-              <option [ngValue]="20">{{ 'SETTINGS.GENERAL.SNAPSHOTS_20' | transloco }}</option>
-              <option [ngValue]="50">{{ 'SETTINGS.GENERAL.SNAPSHOTS_50' | transloco }}</option>
-            </select>
-            <p class="text-ink-muted text-xs">
-              {{ 'SETTINGS.GENERAL.SNAPSHOTS_HINT' | transloco }}
-            </p>
-          </div>
-
-          <!-- Corrector ortográfico -->
-          <div class="flex items-center justify-between">
-            <div class="flex flex-col gap-0.5">
-              <span class="text-ink-text text-sm">{{ 'SETTINGS.GENERAL.SPELLCHECK' | transloco }}</span>
-              <span class="text-ink-muted text-xs">
-                {{ 'SETTINGS.GENERAL.SPELLCHECK_HINT' | transloco }}
-              </span>
+            <!-- Toggle activar -->
+            <div class="flex items-center justify-between">
+              <div class="flex flex-col gap-0.5">
+                <span class="text-ink-text text-sm">{{ 'SETTINGS.LITERARY.ENABLED_LABEL' | transloco }}</span>
+                <span class="text-ink-muted text-xs">{{ 'SETTINGS.LITERARY.ENABLED_HINT' | transloco }}</span>
+              </div>
+              <label class="toggle-label">
+                <input type="checkbox" class="sr-only peer"
+                       [checked]="literarySettings.config().enabled"
+                       (change)="literarySettings.update({ enabled: !literarySettings.config().enabled })" />
+                <div class="toggle-track peer-checked:bg-ink-accent peer-focus:ring-2 peer-focus:ring-ink-accent peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
+              </label>
             </div>
-            <label class="toggle-label">
-              <input type="checkbox" [(ngModel)]="spellcheck" class="sr-only peer"/>
-              <div class="toggle-track peer-checked:bg-ink-accent peer-focus:ring-2 peer-focus:ring-ink-accent peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
-            </label>
+
+            <!-- Capturador de atajo — Comillas españolas -->
+            <div class="flex flex-col gap-1.5">
+              <label class="text-ink-subtle text-xs">{{ 'SETTINGS.LITERARY.QUOTE_SHORTCUT_LABEL' | transloco }}</label>
+              <div class="flex items-center gap-2">
+                <div class="form-input font-mono text-sm text-ink-text-primary bg-ink-bg/50 flex-1">
+                  {{ formatShortcutLabel(literarySettings.config().quoteShortcut) }}
+                </div>
+                <button
+                  (click)="openShortcutCapture('quote')"
+                  class="text-xs text-ink-accent hover:text-ink-text transition-colors px-2 py-1 rounded hover:bg-ink-hover">
+                  {{ 'COMMON.CHANGE' | transloco }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Capturador de atajo — Raya de diálogo -->
+            <div class="flex flex-col gap-1.5">
+              <label class="text-ink-subtle text-xs">{{ 'SETTINGS.LITERARY.DASH_SHORTCUT_LABEL' | transloco }}</label>
+              <div class="flex items-center gap-2">
+                <div class="form-input font-mono text-sm text-ink-text-primary bg-ink-bg/50 flex-1">
+                  {{ formatShortcutLabel(literarySettings.config().dashShortcut) }}
+                </div>
+                <button
+                  (click)="openShortcutCapture('dash')"
+                  class="text-xs text-ink-accent hover:text-ink-text transition-colors px-2 py-1 rounded hover:bg-ink-hover">
+                  {{ 'COMMON.CHANGE' | transloco }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Ventana de detección -->
+            <div class="flex flex-col gap-1.5">
+              <label class="text-ink-subtle text-xs">{{ 'SETTINGS.LITERARY.LOOKBACK_LABEL' | transloco }}</label>
+              <input type="number" min="100" max="5000"
+                     [value]="literarySettings.config().quoteLookbackChars"
+                     (change)="onQuoteLookbackChange($event)"
+                     class="form-input font-mono" />
+              <p class="text-ink-muted text-xs">{{ 'SETTINGS.LITERARY.LOOKBACK_HINT' | transloco }}</p>
+            </div>
+
+            <!-- Restaurar por defecto -->
+            <div class="flex justify-end">
+              <button (click)="resetLiteraryDefaults()"
+                      class="text-ink-subtle text-xs hover:text-ink-accent transition-colors">
+                {{ 'SETTINGS.LITERARY.RESET_DEFAULTS' | transloco }}
+              </button>
+            </div>
           </div>
 
-          <ink-button variant="primary" (clicked)="saveEditorSettings()">
-            {{ 'SETTINGS.GENERAL.SAVE_BTN' | transloco }}
-          </ink-button>
+          @if (projectService.isLoaded()) {
+            <div class="flex flex-col gap-5">
 
-          <div class="pt-2 border-t border-ink-border">
-            <p class="text-ink-subtle text-xs mb-3">
-              {{ 'SETTINGS.GENERAL.BACKUP_DESC' | transloco }}
+              <div class="flex flex-col gap-1.5">
+                <label class="field-label">
+                  {{ 'SETTINGS.GENERAL.AUTOSAVE_LABEL' | transloco }}
+                </label>
+                <select
+                  [(ngModel)]="autosaveInterval"
+                  class="form-input">
+                  <option [ngValue]="0">{{ 'SETTINGS.GENERAL.AUTOSAVE_OFF' | transloco }}</option>
+                  <option [ngValue]="15">{{ 'SETTINGS.GENERAL.AUTOSAVE_15S' | transloco }}</option>
+                  <option [ngValue]="30">{{ 'SETTINGS.GENERAL.AUTOSAVE_30S' | transloco }}</option>
+                  <option [ngValue]="60">{{ 'SETTINGS.GENERAL.AUTOSAVE_1M' | transloco }}</option>
+                  <option [ngValue]="300">{{ 'SETTINGS.GENERAL.AUTOSAVE_5M' | transloco }}</option>
+                </select>
+              </div>
+
+              <div class="flex flex-col gap-1.5">
+                <label class="field-label">
+                  {{ 'SETTINGS.GENERAL.SNAPSHOTS_LABEL' | transloco }}
+                </label>
+                <select
+                  [(ngModel)]="maxSnapshots"
+                  class="form-input">
+                  <option [ngValue]="5">{{ 'SETTINGS.GENERAL.SNAPSHOTS_5' | transloco }}</option>
+                  <option [ngValue]="10">{{ 'SETTINGS.GENERAL.SNAPSHOTS_10' | transloco }}</option>
+                  <option [ngValue]="20">{{ 'SETTINGS.GENERAL.SNAPSHOTS_20' | transloco }}</option>
+                  <option [ngValue]="50">{{ 'SETTINGS.GENERAL.SNAPSHOTS_50' | transloco }}</option>
+                </select>
+                <p class="text-ink-muted text-xs">
+                  {{ 'SETTINGS.GENERAL.SNAPSHOTS_HINT' | transloco }}
+                </p>
+              </div>
+
+              <!-- Corrector ortográfico -->
+              <div class="flex items-center justify-between">
+                <div class="flex flex-col gap-0.5">
+                  <span class="text-ink-text text-sm">{{ 'SETTINGS.GENERAL.SPELLCHECK' | transloco }}</span>
+                  <span class="text-ink-muted text-xs">
+                    {{ 'SETTINGS.GENERAL.SPELLCHECK_HINT' | transloco }}
+                  </span>
+                </div>
+                <label class="toggle-label">
+                  <input type="checkbox" [(ngModel)]="spellcheck" class="sr-only peer"/>
+                  <div class="toggle-track peer-checked:bg-ink-accent peer-focus:ring-2 peer-focus:ring-ink-accent peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
+                </label>
+              </div>
+
+              <ink-button variant="primary" (clicked)="saveEditorSettings()">
+                {{ 'SETTINGS.GENERAL.SAVE_BTN' | transloco }}
+              </ink-button>
+
+              <div class="pt-2 border-t border-ink-border">
+                <p class="text-ink-subtle text-xs mb-3">
+                  {{ 'SETTINGS.GENERAL.BACKUP_DESC' | transloco }}
+                </p>
+                <ink-button variant="secondary" [fullWidth]="true" (clicked)="backup()">
+                  {{ 'SETTINGS.GENERAL.BACKUP_BTN' | transloco }}
+                </ink-button>
+              </div>
+
+            </div>
+          } @else {
+            <p class="text-ink-subtle text-sm mt-4">
+              {{ 'SETTINGS.GENERAL.NO_PROJECT' | transloco }}
             </p>
-            <ink-button variant="secondary" [fullWidth]="true" (clicked)="backup()">
-              {{ 'SETTINGS.GENERAL.BACKUP_BTN' | transloco }}
-            </ink-button>
-          </div>
+          }
 
         </div>
-      }
-
-      <!-- Editor: sin proyecto abierto -->
-      @if (activeSection() === 'editor' && !projectService.isLoaded()) {
-        <p class="text-ink-subtle text-sm mt-4">
-          {{ 'SETTINGS.GENERAL.NO_PROJECT' | transloco }}
-        </p>
       }
 
       <!-- IA -->
@@ -522,6 +591,14 @@
 
     </div>
   </div>
+
+  @if (showShortcutCaptureModal()) {
+    <app-shortcut-capture-modal
+      [title]="shortcutCaptureTitle()"
+      [initialTrigger]="shortcutCaptureTarget === 'quote' ? literarySettings.config().quoteShortcut : literarySettings.config().dashShortcut"
+      (saved)="onShortcutSaved($event)"
+      (closed)="onShortcutCaptureClosed()" />
+  }
 </ink-modal>
 
 @if (showLtInstallModal()) {

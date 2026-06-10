@@ -3,6 +3,8 @@ import { TranslocoPipe } from '@jsverse/transloco';
 import { Editor } from '@tiptap/core';
 import { SettingsService } from '../../../core/services/settings.service';
 import { LanguageToolService } from '../../../core/services/language-tool.service';
+import { LiteraryPunctuationSettingsService } from '../literary-punctuation/literary-punctuation-settings.service';
+import { formatShortcutLabel } from '../literary-punctuation/literary-punctuation.helpers';
 import { LtStatusIndicatorComponent } from '../../../shared/components/lt-status-indicator/lt-status-indicator.component';
 import { LtInstallModalComponent } from '../../../shared/components/lt-install-modal/lt-install-modal.component';
 import { InkModalComponent } from '../../../shared/components/ink-modal.component';
@@ -40,15 +42,29 @@ export class EditorToolbarComponent {
 
   private readonly settingsService = inject(SettingsService);
   readonly ltService = inject(LanguageToolService);
+  private readonly literarySettings = inject(LiteraryPunctuationSettingsService);
 
   readonly fontOptions = EDITOR_FONT_OPTIONS;
 
   readonly editorFontFamily = computed(() => this.settingsService.settings().editor.fontFamily);
   readonly editorFontSize   = computed(() => this.settingsService.settings().editor.fontSize);
 
+  readonly literaryEnabled = computed(() => this.literarySettings.config().enabled);
+
+  readonly literaryTooltip = computed(() => {
+    const config = this.literarySettings.config();
+    const label = formatShortcutLabel(config.quoteShortcut);
+    const state = config.enabled ? 'Activada' : 'Desactivada';
+    return `Puntuación literaria española (${label})\n${state}`;
+  });
+
   readonly showLtInstallModal = signal(false);
   readonly showLtRunningModal = signal(false);
   readonly showLtStoppedModal = signal(false);
+
+  toggleLiterary(): void {
+    this.literarySettings.update({ enabled: !this.literaryEnabled() });
+  }
 
   toggleHeading(level: number): void {
     this.editor()?.chain().focus().toggleHeading({ level: level as 1 | 2 | 3 }).run();
